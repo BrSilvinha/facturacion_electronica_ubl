@@ -11,14 +11,19 @@ from documentos.models import (
     DocumentoLinea, CertificadoDigital, LogOperacion
 )
 
+# Importar nuevo sistema UBL
+from conversion.generators import generate_ubl_xml, UBLGeneratorFactory
+from conversion.utils.calculations import TributaryCalculator
+
 class TestAPIView(APIView):
     """Endpoint de prueba para verificar que la API funciona"""
     
     def get(self, request):
         return Response({
             'message': 'API de Facturación Electrónica UBL 2.1 funcionando correctamente',
-            'version': '1.0',
+            'version': '2.0 - Professional UBL',
             'timestamp': timezone.now(),
+            'supported_documents': UBLGeneratorFactory.get_supported_document_types(),
             'endpoints': [
                 '/api/test/',
                 '/api/generar-xml/',
@@ -33,16 +38,22 @@ class TiposDocumentoView(APIView):
     
     def get(self, request):
         tipos = TipoDocumento.objects.filter(activo=True).order_by('codigo')
-        data = [
-            {
+        supported_types = UBLGeneratorFactory.get_supported_document_types()
+        
+        data = []
+        for tipo in tipos:
+            tipo_data = {
                 'codigo': tipo.codigo,
-                'descripcion': tipo.descripcion
+                'descripcion': tipo.descripcion,
+                'soportado': tipo.codigo in supported_types
             }
-            for tipo in tipos
-        ]
+            data.append(tipo_data)
+        
         return Response({
             'success': True,
-            'data': data
+            'data': data,
+            'supported_count': len(supported_types),
+            'total_count': len(data)
         })
 
 class EmpresasView(APIView):
@@ -65,7 +76,7 @@ class EmpresasView(APIView):
         })
 
 class ValidarRUCView(APIView):
-    """Valida un RUC peruano"""
+    """Valida un RUC peruano con dígito verificador"""
     
     def post(self, request):
         ruc = request.data.get('ruc', '').strip()
@@ -76,11 +87,13 @@ class ValidarRUCView(APIView):
                 'error': 'RUC es requerido'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Validación básica de RUC peruano
-        if len(ruc) != 11 or not ruc.isdigit():
+        # Validación avanzada con dígito verificador
+        is_valid, message = TributaryCalculator.validate_ruc(ruc)
+        
+        if not is_valid:
             return Response({
                 'success': False,
-                'error': 'RUC debe tener exactamente 11 dígitos'
+                'error': message
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Verificar si existe en la base de datos
@@ -88,7 +101,8 @@ class ValidarRUCView(APIView):
             empresa = Empresa.objects.get(ruc=ruc)
             return Response({
                 'success': True,
-                'existe': True,
+                'valid': True,
+                'exists': True,
                 'empresa': {
                     'id': str(empresa.id),
                     'ruc': empresa.ruc,
@@ -98,156 +112,115 @@ class ValidarRUCView(APIView):
         except Empresa.DoesNotExist:
             return Response({
                 'success': True,
-                'existe': False,
+                'valid': True,
+                'exists': False,
                 'message': 'RUC válido pero no registrado en el sistema'
             })
 
 class GenerarXMLView(APIView):
     """
-    Endpoint principal del reto: Genera XML UBL 2.1 firmado
+    Endpoint principal del reto: Genera XML UBL 2.1 profesional firmado
     """
     
     def post(self, request):
         try:
+            start_time = timezone.now()
+            
             # 1. Validar datos de entrada
             data = request.data
+            validation_result = self._validate_input_data(data)
             
-            # Validaciones básicas
-            required_fields = [
-                'tipo_documento', 'serie', 'numero', 'fecha_emision',
-                'empresa_id', 'receptor', 'items'
-            ]
-            
-            for field in required_fields:
-                if field not in data:
-                    return Response({
-                        'success': False,
-                        'error': f'Campo requerido: {field}'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 2. Validar empresa
-            try:
-                empresa = Empresa.objects.get(id=data['empresa_id'], activo=True)
-            except Empresa.DoesNotExist:
+            if not validation_result['valid']:
                 return Response({
                     'success': False,
-                    'error': 'Empresa no encontrada o inactiva'
-                }, status=status.HTTP_404_NOT_FOUND)
-            
-            # 3. Validar tipo de documento
-            try:
-                tipo_documento = TipoDocumento.objects.get(
-                    codigo=data['tipo_documento'], 
-                    activo=True
-                )
-            except TipoDocumento.DoesNotExist:
-                return Response({
-                    'success': False,
-                    'error': 'Tipo de documento no válido'
+                    'error': validation_result['error']
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # 4. Validar datos del receptor
-            receptor = data['receptor']
-            required_receptor_fields = ['tipo_doc', 'numero_doc', 'razon_social']
+            # 2. Obtener empresa y tipo de documento
+            empresa = validation_result['empresa']
+            tipo_documento = validation_result['tipo_documento']
             
-            for field in required_receptor_fields:
-                if field not in receptor:
-                    return Response({
-                        'success': False,
-                        'error': f'Campo requerido en receptor: {field}'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 5. Validar items
-            items = data['items']
-            if not items or len(items) == 0:
+            # 3. Verificar que el tipo de documento esté soportado
+            if not UBLGeneratorFactory.is_supported(tipo_documento.codigo):
                 return Response({
                     'success': False,
-                    'error': 'Debe incluir al menos un item'
+                    'error': f'Tipo de documento {tipo_documento.codigo} no soportado aún. '
+                           f'Tipos disponibles: {UBLGeneratorFactory.get_supported_document_types()}'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # 6. Calcular totales
-            subtotal = Decimal('0.00')
-            igv_total = Decimal('0.00')
+            # 4. Calcular totales usando calculadora avanzada
+            items_calculated = self._calculate_items_with_taxes(data['items'])
+            document_totals = TributaryCalculator.calculate_document_totals(items_calculated)
             
-            for item in items:
-                cantidad = Decimal(str(item.get('cantidad', 0)))
-                valor_unitario = Decimal(str(item.get('valor_unitario', 0)))
-                valor_venta = cantidad * valor_unitario
-                
-                # Calcular IGV (18% para afectación '10')
-                if item.get('afectacion_igv', '10') == '10':
-                    igv_item = valor_venta * Decimal('0.18')
-                    igv_total += igv_item
-                
-                subtotal += valor_venta
-            
-            total = subtotal + igv_total
-            
-            # 7. Crear documento en base de datos
+            # 5. Crear documento en base de datos
             documento = DocumentoElectronico.objects.create(
                 empresa=empresa,
                 tipo_documento=tipo_documento,
                 serie=data['serie'],
                 numero=int(data['numero']),
-                receptor_tipo_doc=receptor['tipo_doc'],
-                receptor_numero_doc=receptor['numero_doc'],
-                receptor_razon_social=receptor['razon_social'],
-                receptor_direccion=receptor.get('direccion', ''),
+                receptor_tipo_doc=data['receptor']['tipo_doc'],
+                receptor_numero_doc=data['receptor']['numero_doc'],
+                receptor_razon_social=data['receptor']['razon_social'],
+                receptor_direccion=data['receptor'].get('direccion', ''),
                 fecha_emision=data['fecha_emision'],
                 fecha_vencimiento=data.get('fecha_vencimiento'),
                 moneda=data.get('moneda', 'PEN'),
-                subtotal=subtotal,
-                igv=igv_total,
-                total=total,
+                subtotal=document_totals['total_valor_venta'],
+                igv=document_totals['total_igv'],
+                isc=document_totals['total_isc'],
+                icbper=document_totals['total_icbper'],
+                total=document_totals['total_precio_venta'],
                 estado='PENDIENTE',
                 datos_json=data
             )
             
-            # 8. Crear líneas del documento
-            for i, item in enumerate(items, 1):
-                cantidad = Decimal(str(item.get('cantidad', 0)))
-                valor_unitario = Decimal(str(item.get('valor_unitario', 0)))
-                valor_venta = cantidad * valor_unitario
-                
-                # Calcular IGV de la línea
-                igv_linea = Decimal('0.00')
-                if item.get('afectacion_igv', '10') == '10':
-                    igv_linea = valor_venta * Decimal('0.18')
-                
+            # 6. Crear líneas del documento con cálculos precisos
+            for i, item_calc in enumerate(items_calculated, 1):
                 DocumentoLinea.objects.create(
                     documento=documento,
                     numero_linea=i,
-                    codigo_producto=item.get('codigo_producto', ''),
-                    descripcion=item['descripcion'],
-                    unidad_medida=item.get('unidad_medida', 'NIU'),
-                    cantidad=cantidad,
-                    valor_unitario=valor_unitario,
-                    valor_venta=valor_venta,
-                    afectacion_igv=item.get('afectacion_igv', '10'),
-                    igv_linea=igv_linea
+                    codigo_producto=item_calc.get('codigo_producto', ''),
+                    descripcion=item_calc['descripcion'],
+                    unidad_medida=item_calc.get('unidad_medida', 'NIU'),
+                    cantidad=item_calc['cantidad'],
+                    valor_unitario=item_calc['valor_unitario'],
+                    valor_venta=item_calc['valor_venta'],
+                    afectacion_igv=item_calc['afectacion_igv'],
+                    igv_linea=item_calc['igv_monto'],
+                    isc_linea=item_calc['isc_monto'],
+                    icbper_linea=item_calc['icbper_monto']
                 )
             
-            # 9. Generar XML UBL 2.1 (por ahora un XML básico)
-            xml_content = self._generar_xml_basico(documento)
-            documento.xml_content = xml_content
+            # 7. Generar XML UBL 2.1 profesional usando el nuevo sistema
+            try:
+                xml_content = generate_ubl_xml(documento)
+                documento.xml_content = xml_content
+            except Exception as xml_error:
+                return Response({
+                    'success': False,
+                    'error': f'Error generando XML UBL 2.1: {str(xml_error)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-            # 10. Simular firma digital (por ahora)
-            xml_firmado = self._simular_firma(xml_content)
+            # 8. Simular firma digital (mejorar después)
+            xml_firmado = self._simulate_digital_signature(xml_content)
             documento.xml_firmado = xml_firmado
             documento.hash_digest = 'sha256:' + str(uuid.uuid4())[:32]
             documento.estado = 'FIRMADO'
             documento.save()
             
-            # 11. Log de operación
+            # 9. Log de operación con timing
+            end_time = timezone.now()
+            duration_ms = int((end_time - start_time).total_seconds() * 1000)
+            
             LogOperacion.objects.create(
                 documento=documento,
                 operacion='CONVERSION',
                 estado='SUCCESS',
-                mensaje='XML UBL 2.1 generado y firmado exitosamente',
-                duracion_ms=100
+                mensaje='XML UBL 2.1 profesional generado y firmado exitosamente',
+                duracion_ms=duration_ms
             )
             
-            # 12. Respuesta exitosa
+            # 10. Respuesta exitosa mejorada
             return Response({
                 'success': True,
                 'documento_id': str(documento.id),
@@ -256,97 +229,139 @@ class GenerarXMLView(APIView):
                 'hash': documento.hash_digest,
                 'estado': documento.estado,
                 'totales': {
-                    'subtotal': float(subtotal),
-                    'igv': float(igv_total),
-                    'total': float(total)
-                }
+                    'subtotal_gravado': float(document_totals['subtotal_gravado']),
+                    'subtotal_exonerado': float(document_totals['subtotal_exonerado']),
+                    'subtotal_inafecto': float(document_totals['subtotal_inafecto']),
+                    'total_valor_venta': float(document_totals['total_valor_venta']),
+                    'total_igv': float(document_totals['total_igv']),
+                    'total_isc': float(document_totals['total_isc']),
+                    'total_icbper': float(document_totals['total_icbper']),
+                    'total_precio_venta': float(document_totals['total_precio_venta'])
+                },
+                'processing_time_ms': duration_ms,
+                'generator_version': '2.0-Professional',
+                'ubl_version': '2.1'
             })
             
         except Exception as e:
+            # Log error detallado
+            LogOperacion.objects.create(
+                documento=None,
+                operacion='CONVERSION',
+                estado='ERROR',
+                mensaje=f'Error generando XML: {str(e)}',
+                duracion_ms=0
+            )
+            
             return Response({
                 'success': False,
                 'error': f'Error interno: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    def _generar_xml_basico(self, documento):
-        """Genera un XML UBL 2.1 básico"""
+    def _validate_input_data(self, data):
+        """Valida datos de entrada de forma robusta"""
         
-        xml = f'''<?xml version="1.0" encoding="UTF-8"?>
-<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
-         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
-         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-    
-    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
-    <cbc:CustomizationID>2.0</cbc:CustomizationID>
-    <cbc:ID>{documento.serie}-{documento.numero:08d}</cbc:ID>
-    <cbc:IssueDate>{documento.fecha_emision}</cbc:IssueDate>
-    <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" listName="SUNAT:Identificador de Tipo de Documento" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">{documento.tipo_documento.codigo}</cbc:InvoiceTypeCode>
-    <cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" listName="Currency" listAgencyName="United Nations Economic Commission for Europe">{documento.moneda}</cbc:DocumentCurrencyCode>
-    
-    <!-- Emisor -->
-    <cac:AccountingSupplierParty>
-        <cac:Party>
-            <cac:PartyIdentification>
-                <cbc:ID schemeID="6" schemeName="Documento de Identidad" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{documento.empresa.ruc}</cbc:ID>
-            </cac:PartyIdentification>
-            <cac:PartyName>
-                <cbc:Name><![CDATA[{documento.empresa.nombre_comercial or documento.empresa.razon_social}]]></cbc:Name>
-            </cac:PartyName>
-            <cac:PartyLegalEntity>
-                <cbc:RegistrationName><![CDATA[{documento.empresa.razon_social}]]></cbc:RegistrationName>
-                <cac:RegistrationAddress>
-                    <cbc:AddressLine>
-                        <cbc:Line><![CDATA[{documento.empresa.direccion}]]></cbc:Line>
-                    </cbc:AddressLine>
-                </cac:RegistrationAddress>
-            </cac:PartyLegalEntity>
-        </cac:Party>
-    </cac:AccountingSupplierParty>
-    
-    <!-- Receptor -->
-    <cac:AccountingCustomerParty>
-        <cac:Party>
-            <cac:PartyIdentification>
-                <cbc:ID schemeID="{documento.receptor_tipo_doc}" schemeName="Documento de Identidad" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{documento.receptor_numero_doc}</cbc:ID>
-            </cac:PartyIdentification>
-            <cac:PartyLegalEntity>
-                <cbc:RegistrationName><![CDATA[{documento.receptor_razon_social}]]></cbc:RegistrationName>
-            </cac:PartyLegalEntity>
-        </cac:Party>
-    </cac:AccountingCustomerParty>
-    
-    <!-- Totales -->
-    <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{documento.moneda}">{documento.subtotal}</cbc:LineExtensionAmount>
-        <cbc:TaxInclusiveAmount currencyID="{documento.moneda}">{documento.total}</cbc:TaxInclusiveAmount>
-        <cbc:PayableAmount currencyID="{documento.moneda}">{documento.total}</cbc:PayableAmount>
-    </cac:LegalMonetaryTotal>
-    
-    <!-- Líneas del documento -->'''
+        required_fields = [
+            'tipo_documento', 'serie', 'numero', 'fecha_emision',
+            'empresa_id', 'receptor', 'items'
+        ]
         
-        for linea in documento.lineas.all():
-            xml += f'''
-    <cac:InvoiceLine>
-        <cbc:ID>{linea.numero_linea}</cbc:ID>
-        <cbc:InvoicedQuantity unitCode="{linea.unidad_medida}">{linea.cantidad}</cbc:InvoicedQuantity>
-        <cbc:LineExtensionAmount currencyID="{documento.moneda}">{linea.valor_venta}</cbc:LineExtensionAmount>
-        <cac:Item>
-            <cbc:Description><![CDATA[{linea.descripcion}]]></cbc:Description>
-        </cac:Item>
-        <cac:Price>
-            <cbc:PriceAmount currencyID="{documento.moneda}">{linea.valor_unitario}</cbc:PriceAmount>
-        </cac:Price>
-    </cac:InvoiceLine>'''
+        for field in required_fields:
+            if field not in data:
+                return {
+                    'valid': False,
+                    'error': f'Campo requerido: {field}'
+                }
         
-        xml += '''
-</Invoice>'''
+        # Validar empresa
+        try:
+            empresa = Empresa.objects.get(id=data['empresa_id'], activo=True)
+        except Empresa.DoesNotExist:
+            return {
+                'valid': False,
+                'error': 'Empresa no encontrada o inactiva'
+            }
         
-        return xml
+        # Validar tipo de documento
+        try:
+            tipo_documento = TipoDocumento.objects.get(
+                codigo=data['tipo_documento'], 
+                activo=True
+            )
+        except TipoDocumento.DoesNotExist:
+            return {
+                'valid': False,
+                'error': 'Tipo de documento no válido'
+            }
+        
+        # Validar receptor
+        receptor = data['receptor']
+        required_receptor_fields = ['tipo_doc', 'numero_doc', 'razon_social']
+        
+        for field in required_receptor_fields:
+            if field not in receptor:
+                return {
+                    'valid': False,
+                    'error': f'Campo requerido en receptor: {field}'
+                }
+        
+        # Validar items
+        items = data['items']
+        if not items or len(items) == 0:
+            return {
+                'valid': False,
+                'error': 'Debe incluir al menos un item'
+            }
+        
+        return {
+            'valid': True,
+            'empresa': empresa,
+            'tipo_documento': tipo_documento
+        }
     
-    def _simular_firma(self, xml_content):
-        """Simula la firma digital (por ahora retorna el XML con un comentario)"""
+    def _calculate_items_with_taxes(self, items):
+        """Calcula impuestos para cada item usando calculadora avanzada"""
+        
+        items_calculated = []
+        
+        for item in items:
+            # Obtener datos del item
+            cantidad = Decimal(str(item.get('cantidad', 0)))
+            valor_unitario = Decimal(str(item.get('valor_unitario', 0)))
+            afectacion_igv = item.get('afectacion_igv', '10')
+            aplicar_icbper = item.get('aplicar_icbper', False)
+            tasa_isc = Decimal(str(item.get('tasa_isc', 0))) if item.get('tasa_isc') else None
+            
+            # Calcular usando la calculadora tributaria
+            calculo = TributaryCalculator.calculate_line_totals(
+                cantidad=cantidad,
+                valor_unitario=valor_unitario,
+                afectacion_igv=afectacion_igv,
+                aplicar_icbper=aplicar_icbper,
+                tasa_isc=tasa_isc
+            )
+            
+            # Agregar datos adicionales del item
+            calculo.update({
+                'codigo_producto': item.get('codigo_producto', ''),
+                'descripcion': item['descripcion'],
+                'unidad_medida': item.get('unidad_medida', 'NIU')
+            })
+            
+            items_calculated.append(calculo)
+        
+        return items_calculated
+    
+    def _simulate_digital_signature(self, xml_content):
+        """Simula la firma digital (versión mejorada)"""
+        
+        signature_id = str(uuid.uuid4())[:16]
+        timestamp = timezone.now().isoformat()
         
         return f'''<?xml version="1.0" encoding="UTF-8"?>
-<!-- XML FIRMADO DIGITALMENTE - SIMULACIÓN -->
-{xml_content[xml_content.find('<Invoice'):]}
-<!-- FIRMA DIGITAL SIMULADA - HASH: {str(uuid.uuid4())[:16]} -->'''
+<!-- XML UBL 2.1 FIRMADO DIGITALMENTE -->
+<!-- Generador: Professional UBL Generator v2.0 -->
+<!-- Timestamp: {timestamp} -->
+<!-- Signature ID: {signature_id} -->
+{xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
+<!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
