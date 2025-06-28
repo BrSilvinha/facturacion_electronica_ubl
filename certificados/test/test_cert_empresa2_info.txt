@@ -1,0 +1,16 @@
+# Información del Certificado de Prueba
+# Generado: 2025-06-28 01:52:42
+
+Sujeto: 2.5.4.5=20987654321,1.2.840.113549.1.9.1=test2@empresa2.com,CN=Certificado Test Empresa 2,OU=IT Department,O=Empresa Test 2 EIRL,L=Lima,ST=Lima,C=PE
+Emisor: 2.5.4.5=20987654321,1.2.840.113549.1.9.1=test2@empresa2.com,CN=Certificado Test Empresa 2,OU=IT Department,O=Empresa Test 2 EIRL,L=Lima,ST=Lima,C=PE
+Válido desde: 2025-06-28 06:52:42
+Válido hasta: 2027-06-28 06:52:42
+Número de serie: 242545458818860796866479836499725375543780615492
+Algoritmo de firma: sha256WithRSAEncryption
+Tamaño de clave: 2048 bits
+
+Extensiones:
+  - subjectAltName: False
+  - basicConstraints: True
+  - keyUsage: True
+  - extendedKeyUsage: True

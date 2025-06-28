@@ -1,0 +1,15 @@
+
+# 🔐 CERTIFICADOS DIGITALES - NIVEL 2
+# Proteger certificados de producción
+certificados/production/
+certificados/backup/
+*.pfx
+*.p12
+*.key
+*.pem
+!certificados/test/*.pfx
+!certificados/test/*.pem
+
+# Logs de firma digital
+logs/
+*.log

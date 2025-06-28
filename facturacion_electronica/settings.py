@@ -68,8 +68,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'facturacion_electronica.wsgi.application'
 
-
-
+# Database
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
@@ -137,4 +136,136 @@ FACTURACION_CONFIG = {
     'CERT_PATH': config('CERT_PATH', default='certificados/'),
     'XML_OUTPUT_PATH': 'xml_output/',
     'UBL_VERSION': '2.1',
+}
+
+# =============================================================================
+# CONFIGURACIÓN NIVEL 2 - FIRMA DIGITAL REAL
+# =============================================================================
+
+import logging
+
+# Directorios de certificados
+CERTIFICATES_BASE_DIR = BASE_DIR / 'certificados'
+CERTIFICATES_TEST_DIR = CERTIFICATES_BASE_DIR / 'test'
+CERTIFICATES_PROD_DIR = CERTIFICATES_BASE_DIR / 'production'
+CERTIFICATES_BACKUP_DIR = CERTIFICATES_BASE_DIR / 'backup'
+
+# Configuración de Firma Digital (SIN xmlsec - Solo signxml + pyOpenSSL)
+DIGITAL_SIGNATURE_CONFIG = {
+    # Algoritmos criptográficos
+    'SIGNATURE_ALGORITHM': 'RSA-SHA256',
+    'DIGEST_ALGORITHM': 'SHA256',
+    'CANONICALIZATION_METHOD': 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
+    'USE_XMLSEC': False,  # Deshabilitado en Windows sin Build Tools
+    
+    # Configuración de certificados
+    'CERT_TEST_DIR': str(CERTIFICATES_TEST_DIR),
+    'CERT_PROD_DIR': str(CERTIFICATES_PROD_DIR),
+    'CERT_BACKUP_DIR': str(CERTIFICATES_BACKUP_DIR),
+    'CERT_CACHE_TIMEOUT': 3600,  # 1 hora en segundos
+    
+    # Validación
+    'VALIDATE_CERT_CHAIN': True,
+    'REQUIRE_CERT_NOT_EXPIRED': True,
+    'MAX_CERT_AGE_DAYS': 1095,  # 3 años máximo
+    
+    # Performance
+    'SIGNATURE_TIMEOUT': 30,  # 30 segundos máximo por firma
+    'MAX_CONCURRENT_SIGNATURES': 10,
+    
+    # Logging
+    'LOG_SIGNATURE_OPERATIONS': True,
+    'LOG_CERT_OPERATIONS': True,
+}
+
+# Configuración de logging específica para firma digital
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file_signature': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'signature.log',
+            'formatter': 'verbose',
+        },
+        'file_certificates': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'certificates.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'signature': {
+            'handlers': ['file_signature', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'certificates': {
+            'handlers': ['file_certificates', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+
+# Crear directorio de logs si no existe
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+# Configuración de seguridad para certificados
+CERTIFICATE_SECURITY = {
+    # Encriptación de passwords de certificados
+    'PASSWORD_ENCRYPTION_KEY': config('CERT_PASSWORD_KEY', default=''),
+    'PASSWORD_SALT_LENGTH': 32,
+    
+    # Validación de certificados
+    'ALLOWED_KEY_SIZES': [2048, 3072, 4096],  # RSA key sizes permitidos
+    'ALLOWED_SIGNATURE_ALGORITHMS': ['sha256WithRSAEncryption'],
+    
+    # Restricciones
+    'MAX_CERT_FILE_SIZE': 10 * 1024 * 1024,  # 10MB máximo
+    'ALLOWED_CERT_EXTENSIONS': ['.pfx', '.p12'],
+}
+
+# Actualizar FACTURACION_CONFIG existente
+FACTURACION_CONFIG.update({
+    'DIGITAL_SIGNATURE_ENABLED': True,
+    'SIGNATURE_REQUIRED': config('SIGNATURE_REQUIRED', default=True, cast=bool),
+    'XML_DSIG_VERSION': '1.0',
+    'SUNAT_SIGNATURE_VALIDATION': True,
+})
+
+# Cache en memoria si no hay Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'facturacion-cache',
+        'TIMEOUT': 300,
+    },
+    'certificates': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'certificates-cache',
+        'TIMEOUT': 3600,
+    }
 }
