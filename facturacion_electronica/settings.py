@@ -68,17 +68,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'facturacion_electronica.wsgi.application'
 
-# Database
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='facturacion_electronica_db'),
-        'USER': config('DB_USER', default='facturacion_user'),
-        'PASSWORD': config('DB_PASSWORD', default='facturacion123'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
-}
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+         'NAME': config('DB_NAME', default='facturacion_electronica_db'),
+         'USER': config('DB_USER', default='facturacion_user'),
+         'PASSWORD': config('DB_PASSWORD', default='facturacion123'),
+         'HOST': config('DB_HOST', default='localhost'),
+         'PORT': config('DB_PORT', default='5432'),
+     }
+ }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
