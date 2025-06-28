@@ -137,9 +137,10 @@
     {% for line in lines %}
     <cac:InvoiceLine>
         <cbc:ID>{{ line.id }}</cbc:ID>
-        <cbc:InvoicedQuantity unitCode="{{ line.unit_code }}" 
-                              unitCodeListID="UN/ECE rec 20" 
-                              unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal:3 }}</cbc:InvoicedQuantity>
+        <!-- CORREGIDA -->
+<cbc:InvoicedQuantity unitCode="{{ line.unit_code }}" 
+                      unitCodeListID="UN/ECE rec 20" 
+                      unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal }}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ line.line_extension_amount|format_decimal }}</cbc:LineExtensionAmount>
 
         <!-- Información del precio -->
@@ -197,7 +198,7 @@
         <!-- Precio unitario -->
         <cac:Price>
             <cbc:PriceAmount currencyID="{{ currency_code }}">{{ line.price_amount|format_decimal }}</cbc:PriceAmount>
-            <cbc:BaseQuantity unitCode="{{ line.unit_code }}">{{ line.base_quantity|format_decimal:3 }}</cbc:BaseQuantity>
+            <cbc:BaseQuantity unitCode="{{ line.unit_code }}">{{ line.base_quantity|format_decimal }}</cbc:BaseQuantity>
         </cac:Price>
     </cac:InvoiceLine>
     {% endfor %}

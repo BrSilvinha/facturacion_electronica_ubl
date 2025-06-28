@@ -137,7 +137,7 @@ class DocumentoLinea(models.Model):
     
     # Cantidades y precios
     cantidad = models.DecimalField(max_digits=12, decimal_places=3)
-    valor_unitario = models.DecimalField(max_digits=12, decimal_places=10)
+    valor_unitario = models.DecimalField(max_digits=15, decimal_places=2)
     valor_venta = models.DecimalField(max_digits=15, decimal_places=2)
     
     # Impuestos
