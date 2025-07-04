@@ -1,0 +1,32 @@
+{
+  "tipo_documento": "01",
+  "serie": "F001",
+  "numero": 999,
+  "fecha_emision": "2025-07-04",
+  "moneda": "PEN",
+  "empresa_id": "69c64499-6d4d-48e3-aa06-4cc2f00af1eb",
+  "receptor": {
+    "tipo_doc": "6",
+    "numero_doc": "20987654321",
+    "razon_social": "CLIENTE DE PRUEBA SAC",
+    "direccion": "AV. CLIENTE 456, LIMA"
+  },
+  "items": [
+    {
+      "descripcion": "Producto de prueba para facturación",
+      "cantidad": 2,
+      "valor_unitario": 50.0,
+      "unidad_medida": "NIU",
+      "afectacion_igv": "10",
+      "codigo_producto": "PROD001"
+    },
+    {
+      "descripcion": "Servicio de consultoría",
+      "cantidad": 1,
+      "valor_unitario": 100.0,
+      "unidad_medida": "ZZ",
+      "afectacion_igv": "10",
+      "codigo_producto": "SERV001"
+    }
+  ]
+}

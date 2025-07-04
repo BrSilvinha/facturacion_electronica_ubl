@@ -138,9 +138,7 @@
     <cac:InvoiceLine>
         <cbc:ID>{{ line.id }}</cbc:ID>
         <!-- CORREGIDA -->
-<cbc:InvoicedQuantity unitCode="{{ line.unit_code }}" 
-                      unitCodeListID="UN/ECE rec 20" 
-                      unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal }}</cbc:InvoicedQuantity>
+<cbc:InvoicedQuantity unitCode="{{ line.unit_code }}" unitCodeListID="UN/ECE rec 20" unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal }}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ line.line_extension_amount|format_decimal }}</cbc:LineExtensionAmount>
 
         <!-- Información del precio -->

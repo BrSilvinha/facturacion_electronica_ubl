@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from decimal import Decimal
 import uuid
+import json
 
 from documentos.models import (
     Empresa, TipoDocumento, DocumentoElectronico, 
@@ -79,7 +80,19 @@ class ValidarRUCView(APIView):
     """Valida un RUC peruano con dígito verificador"""
     
     def post(self, request):
-        ruc = request.data.get('ruc', '').strip()
+        # Obtener datos del request (corregido)
+        try:
+            if hasattr(request, 'data') and request.data:
+                data = request.data
+            else:
+                data = json.loads(request.body.decode('utf-8'))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return Response({
+                'success': False,
+                'error': 'JSON inválido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        ruc = data.get('ruc', '').strip()
         
         if not ruc:
             return Response({
@@ -126,8 +139,20 @@ class GenerarXMLView(APIView):
         try:
             start_time = timezone.now()
             
-            # 1. Validar datos de entrada
-            data = request.data
+            # 1. Validar y obtener datos de entrada (CORREGIDO)
+            try:
+                if hasattr(request, 'data') and request.data:
+                    # DRF Request object con datos
+                    data = request.data
+                else:
+                    # Standard Django request o DRF sin datos
+                    data = json.loads(request.body.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                return Response({
+                    'success': False,
+                    'error': f'JSON inválido: {str(e)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
             validation_result = self._validate_input_data(data)
             
             if not validation_result['valid']:
@@ -280,6 +305,11 @@ class GenerarXMLView(APIView):
             return {
                 'valid': False,
                 'error': 'Empresa no encontrada o inactiva'
+            }
+        except ValueError:
+            return {
+                'valid': False,
+                'error': f'UUID de empresa inválido: {data["empresa_id"]}'
             }
         
         # Validar tipo de documento
