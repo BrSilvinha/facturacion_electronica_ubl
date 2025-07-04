@@ -1,11 +1,11 @@
 # Información del Certificado de Prueba
-# Generado: 2025-06-28 01:52:42
+# Generado: 2025-07-04 00:27:52
 
 Sujeto: 2.5.4.5=20123456789,1.2.840.113549.1.9.1=test1@empresa1.com,CN=Certificado Test Empresa 1,OU=IT Department,O=Empresa Test 1 SAC,L=Lima,ST=Lima,C=PE
 Emisor: 2.5.4.5=20123456789,1.2.840.113549.1.9.1=test1@empresa1.com,CN=Certificado Test Empresa 1,OU=IT Department,O=Empresa Test 1 SAC,L=Lima,ST=Lima,C=PE
-Válido desde: 2025-06-28 06:52:42
-Válido hasta: 2026-06-28 06:52:42
-Número de serie: 515933812460860267472982960151603917911876599057
+Válido desde: 2025-07-04 05:27:52
+Válido hasta: 2026-07-04 05:27:52
+Número de serie: 260033711434666304264816692792198692526911484110
 Algoritmo de firma: sha256WithRSAEncryption
 Tamaño de clave: 2048 bits
 

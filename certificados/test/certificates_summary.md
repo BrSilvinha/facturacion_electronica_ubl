@@ -1,6 +1,6 @@
 # 🔐 Resumen de Certificados de Prueba
 
-**Generado:** 2025-06-28 01:52:42
+**Generado:** 2025-07-04 00:27:52
 
 ## ⚠️ SOLO PARA DESARROLLO
 
@@ -16,7 +16,7 @@ Estos certificados son auto-firmados y **NO deben usarse en producción**.
 - **Archivo PFX:** `test_cert_empresa1.pfx`
 - **Password:** `test123`
 - **Validez:** 365 días
-- **Válido hasta:** 2026-06-28
+- **Válido hasta:** 2026-07-04
 
 ### 2. Certificado Test Empresa 2
 
@@ -26,7 +26,7 @@ Estos certificados son auto-firmados y **NO deben usarse en producción**.
 - **Archivo PFX:** `test_cert_empresa2.pfx`
 - **Password:** `test456`
 - **Validez:** 730 días
-- **Válido hasta:** 2027-06-28
+- **Válido hasta:** 2027-07-04
 
 ## 🔧 Uso en Desarrollo
 
