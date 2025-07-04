@@ -1,9 +1,10 @@
 """
 Módulo de Integración SUNAT para Facturación Electrónica UBL 2.1
 Implementa comunicación completa con servicios web SUNAT según manual RS 097-2012/SUNAT
+VERSIÓN CORREGIDA - Lazy loading para evitar conexiones al importar
 """
 
-from .soap_client import SUNATSoapClient, sunat_client
+from .soap_client import SUNATSoapClient, create_sunat_client, get_sunat_client
 from .zip_generator import SUNATZipGenerator, zip_generator
 from .cdr_processor import CDRProcessor, cdr_processor
 from .utils import (
@@ -16,7 +17,7 @@ from .exceptions import (
     SUNATConfigurationError, SUNATTimeoutError
 )
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __author__ = 'Sistema Facturación Electrónica'
 
 # Exportar clases principales
@@ -26,8 +27,11 @@ __all__ = [
     'SUNATZipGenerator', 
     'CDRProcessor',
     
+    # Factory functions
+    'create_sunat_client',
+    'get_sunat_client',
+    
     # Instancias globales
-    'sunat_client',
     'zip_generator',
     'cdr_processor',
     

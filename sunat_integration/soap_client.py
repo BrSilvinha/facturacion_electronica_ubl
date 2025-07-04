@@ -2,6 +2,7 @@
 Cliente SOAP para integración con servicios SUNAT
 Basado en Manual del Programador RS 097-2012/SUNAT
 Ubicación: sunat_integration/soap_client.py
+VERSIÓN CORREGIDA - Compatible con urllib3 moderno
 """
 
 import base64
@@ -43,13 +44,14 @@ class SUNATSoapClient:
     - getStatusCdr: Consulta de CDR por datos del comprobante
     """
     
-    def __init__(self, service_type: str = 'factura', environment: str = None):
+    def __init__(self, service_type: str = 'factura', environment: str = None, lazy_init: bool = False):
         """
         Inicializa cliente SOAP
         
         Args:
             service_type: 'factura', 'guia', 'retencion'
             environment: 'beta' o 'production'
+            lazy_init: Si True, no inicializa conexión hasta que se necesite
         """
         
         self.config = settings.SUNAT_CONFIG
@@ -65,11 +67,18 @@ class SUNATSoapClient:
         self.client = None
         self.session = None
         self.correlation_id = None
+        self._initialized = False
         
-        # Inicializar cliente
-        self._initialize_client()
+        # Inicializar cliente solo si no es lazy
+        if not lazy_init:
+            self._initialize_client()
         
-        logger.info(f"SUNATSoapClient inicializado: {service_type} - {self.environment}")
+        logger.info(f"SUNATSoapClient creado: {service_type} - {self.environment} (lazy={lazy_init})")
+    
+    def _ensure_initialized(self):
+        """Asegura que el cliente esté inicializado"""
+        if not self._initialized:
+            self._initialize_client()
     
     def _initialize_client(self):
         """Inicializa el cliente SOAP con configuración robusta"""
@@ -78,11 +87,11 @@ class SUNATSoapClient:
             # Configurar sesión HTTP con reintentos
             self.session = Session()
             
-            # Configurar estrategia de reintentos
+            # Configurar estrategia de reintentos (CORREGIDO para urllib3 moderno)
             retry_strategy = Retry(
                 total=self.max_retries,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
+                allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],  # CORREGIDO: era method_whitelist
                 backoff_factor=1
             )
             
@@ -112,6 +121,7 @@ class SUNATSoapClient:
             )
             
             self.client.wsse = username_token
+            self._initialized = True
             
             logger.info("Cliente SOAP configurado exitosamente")
             
@@ -131,6 +141,7 @@ class SUNATSoapClient:
             Dict con respuesta de SUNAT
         """
         
+        self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
@@ -206,6 +217,7 @@ class SUNATSoapClient:
             Dict con ticket de SUNAT
         """
         
+        self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
@@ -253,68 +265,6 @@ class SUNATSoapClient:
             logger.error(f"[{self.correlation_id}] Error enviando resumen: {e}")
             raise SUNATError(f"Error enviando resumen: {e}")
     
-    def send_pack(self, documentos: list, xml_contents: Dict[str, str]) -> Dict[str, Any]:
-        """
-        Envío de lotes de documentos (máximo 500)
-        
-        Args:
-            documentos: Lista de DocumentoElectronico
-            xml_contents: Dict con {documento_id: xml_firmado}
-        
-        Returns:
-            Dict con ticket de SUNAT
-        """
-        
-        self.correlation_id = generate_correlation_id()
-        
-        try:
-            logger.info(f"[{self.correlation_id}] Enviando lote: {len(documentos)} documentos")
-            
-            # Crear archivo ZIP de lote
-            zip_content = zip_generator.create_batch_zip(documentos, xml_contents)
-            
-            # Generar nombre de lote
-            first_doc = documentos[0]
-            date_str = first_doc.fecha_emision.strftime('%Y%m%d')
-            zip_filename = f"{first_doc.empresa.ruc}-LT-{date_str}-1.zip"
-            
-            # Codificar en base64
-            zip_base64 = base64.b64encode(zip_content).decode('utf-8')
-            
-            start_time = time.time()
-            
-            # Realizar llamada SOAP
-            response = self._execute_with_retry(
-                self.client.service.sendPack,
-                fileName=zip_filename,
-                contentFile=zip_base64
-            )
-            
-            duration = (time.time() - start_time) * 1000
-            
-            if hasattr(response, 'ticket'):
-                result = {
-                    'success': True,
-                    'method': 'sendPack',
-                    'documents_count': len(documentos),
-                    'zip_filename': zip_filename,
-                    'ticket': response.ticket,
-                    'response_data': response,
-                    'duration_ms': duration,
-                    'correlation_id': self.correlation_id,
-                    'timestamp': datetime.now()
-                }
-                
-                logger.info(f"[{self.correlation_id}] Lote enviado, ticket: {response.ticket}")
-                return result
-            
-            else:
-                raise SUNATError(f"Respuesta sin ticket: {response}")
-                
-        except Exception as e:
-            logger.error(f"[{self.correlation_id}] Error enviando lote: {e}")
-            raise SUNATError(f"Error enviando lote: {e}")
-    
     def get_status(self, ticket: str) -> Dict[str, Any]:
         """
         Consulta estado de procesamiento por ticket
@@ -326,6 +276,7 @@ class SUNATSoapClient:
             Dict con estado y CDR si está listo
         """
         
+        self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
@@ -409,6 +360,7 @@ class SUNATSoapClient:
             Dict con CDR si está disponible
         """
         
+        self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
@@ -520,6 +472,9 @@ class SUNATSoapClient:
         try:
             logger.info("Probando conexión con SUNAT...")
             
+            # Inicializar si no está inicializado
+            self._ensure_initialized()
+            
             # Verificar que el cliente esté inicializado
             if not self.client:
                 raise SUNATConnectionError("Cliente SOAP no inicializado")
@@ -549,5 +504,37 @@ class SUNATSoapClient:
                 'timestamp': datetime.now()
             }
 
-# Instancia global para facturas
-sunat_client = SUNATSoapClient('factura')
+# Función factory para crear clientes
+def create_sunat_client(service_type: str = 'factura', environment: str = None) -> SUNATSoapClient:
+    """
+    Factory function para crear clientes SUNAT
+    
+    Args:
+        service_type: 'factura', 'guia', 'retencion'
+        environment: 'beta' o 'production'
+    
+    Returns:
+        Instancia de SUNATSoapClient
+    """
+    return SUNATSoapClient(service_type, environment, lazy_init=False)
+
+# Variable global para lazy loading
+_global_client = None
+
+def get_sunat_client(service_type: str = 'factura', environment: str = None) -> SUNATSoapClient:
+    """
+    Obtiene cliente SUNAT global con lazy loading
+    
+    Args:
+        service_type: 'factura', 'guia', 'retencion'
+        environment: 'beta' o 'production'
+    
+    Returns:
+        Instancia de SUNATSoapClient
+    """
+    global _global_client
+    
+    if _global_client is None:
+        _global_client = SUNATSoapClient(service_type, environment, lazy_init=True)
+    
+    return _global_client

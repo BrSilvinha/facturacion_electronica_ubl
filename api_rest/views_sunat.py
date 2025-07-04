@@ -1,6 +1,7 @@
 """
 Endpoints de API para integración con SUNAT
 Ubicación: api_rest/views_sunat.py
+VERSIÓN CORREGIDA - Usa lazy loading para clientes SUNAT
 """
 
 from rest_framework.views import APIView
@@ -13,7 +14,7 @@ import logging
 
 from documentos.models import DocumentoElectronico, LogOperacion
 from sunat_integration import (
-    sunat_client, cdr_processor, SUNATError, 
+    get_sunat_client, cdr_processor, SUNATError, 
     SUNATConnectionError, SUNATAuthenticationError, SUNATValidationError
 )
 
@@ -25,8 +26,11 @@ class TestSUNATConnectionView(APIView):
     def get(self, request):
         """Prueba conexión básica"""
         try:
+            # Obtener cliente con lazy loading
+            client = get_sunat_client('factura')
+            
             # Probar conexión
-            result = sunat_client.test_connection()
+            result = client.test_connection()
             
             return Response({
                 'success': result['success'],
@@ -94,11 +98,14 @@ class SendBillToSUNATView(APIView):
             
             start_time = timezone.now()
             
+            # Obtener cliente SUNAT
+            client = get_sunat_client('factura')
+            
             # Enviar a SUNAT
             try:
                 logger.info(f"Enviando documento {documento.get_numero_completo()} a SUNAT")
                 
-                response = sunat_client.send_bill(documento, documento.xml_firmado)
+                response = client.send_bill(documento, documento.xml_firmado)
                 
                 # Procesar CDR
                 cdr_data = cdr_processor.process_cdr_zip(response['cdr_content'])
@@ -258,7 +265,10 @@ class SendSummaryToSUNATView(APIView):
             try:
                 logger.info(f"Enviando resumen {archivo_resumen} a SUNAT")
                 
-                response = sunat_client.send_summary(archivo_resumen, xml_resumen)
+                # Obtener cliente SUNAT
+                client = get_sunat_client('factura')
+                
+                response = client.send_summary(archivo_resumen, xml_resumen)
                 
                 return Response({
                     'success': True,
@@ -312,7 +322,10 @@ class GetStatusSUNATView(APIView):
             try:
                 logger.info(f"Consultando estado de ticket: {ticket}")
                 
-                response = sunat_client.get_status(ticket)
+                # Obtener cliente SUNAT
+                client = get_sunat_client('factura')
+                
+                response = client.get_status(ticket)
                 
                 result = {
                     'success': True,
@@ -397,7 +410,10 @@ class GetStatusCDRView(APIView):
             try:
                 logger.info(f"Consultando CDR: {ruc}-{tipo_documento}-{serie}-{numero:08d}")
                 
-                response = sunat_client.get_status_cdr(ruc, tipo_documento, serie, numero)
+                # Obtener cliente SUNAT
+                client = get_sunat_client('factura')
+                
+                response = client.get_status_cdr(ruc, tipo_documento, serie, numero)
                 
                 result = {
                     'success': True,
@@ -460,7 +476,8 @@ class SUNATStatusView(APIView):
             
             # Probar conexión rápida
             try:
-                connection_test = sunat_client.test_connection()
+                client = get_sunat_client('factura')
+                connection_test = client.test_connection()
                 connection_status = connection_test['success']
                 connection_error = None if connection_status else connection_test.get('error')
             except Exception as e:
