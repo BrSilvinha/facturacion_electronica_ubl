@@ -435,6 +435,7 @@
             agregarItem();
         }
 
+        // FUNCIÓN CORREGIDA - Agregar Item
         function agregarItem() {
             itemCounter++;
             const tbody = document.getElementById('itemsTableBody');
@@ -444,13 +445,17 @@
             row.innerHTML = `
                 <td class="align-middle text-center fw-bold">${itemCounter}</td>
                 <td>
-                    <input type="text" class="form-control form-control-sm" placeholder="Descripción del producto/servicio" required>
+                    <input type="text" class="form-control form-control-sm" 
+                           placeholder="Descripción del producto/servicio" 
+                           value="Producto de prueba ${itemCounter}" required>
                 </td>
                 <td>
-                    <input type="number" class="form-control form-control-sm" value="1" min="0.001" step="0.001" onchange="calcularTotales()">
+                    <input type="number" class="form-control form-control-sm" 
+                           value="1" min="0.001" step="0.001" onchange="calcularTotales()" required>
                 </td>
                 <td>
-                    <input type="number" class="form-control form-control-sm" value="100.00" min="0" step="0.01" onchange="calcularTotales()">
+                    <input type="number" class="form-control form-control-sm" 
+                           value="100.00" min="0" step="0.01" onchange="calcularTotales()" required>
                 </td>
                 <td>
                     <select class="form-select form-select-sm">
@@ -470,7 +475,8 @@
                     </select>
                 </td>
                 <td>
-                    <input type="text" class="form-control form-control-sm" placeholder="PROD001">
+                    <input type="text" class="form-control form-control-sm" 
+                           placeholder="PROD001" value="PROD${itemCounter.toString().padStart(3, '0')}">
                 </td>
                 <td class="align-middle text-end fw-bold valor-venta">S/ 100.00</td>
                 <td class="text-center">
@@ -482,6 +488,8 @@
             
             tbody.appendChild(row);
             calcularTotales();
+            
+            console.log(`✅ Item ${itemCounter} agregado`);
         }
 
         function eliminarItem(id) {
@@ -534,11 +542,13 @@
             document.getElementById('totalGeneral').textContent = `S/ ${total.toFixed(2)}`;
         }
 
+        // FUNCIÓN CORREGIDA - Generar XML
         async function generarXML() {
             try {
                 updateProgress(10, 'Validando datos...');
+                console.log('🚀 Iniciando generación XML...');
                 
-                // Validar formulario
+                // Validar formulario básico
                 if (!validarFormulario()) {
                     updateProgress(0, 'Error en validación');
                     return;
@@ -546,25 +556,45 @@
 
                 updateProgress(30, 'Preparando datos...');
                 
-                // Preparar datos
-                const data = prepararDatos();
+                // Preparar datos con manejo de errores mejorado
+                let data;
+                try {
+                    data = prepararDatos();
+                } catch (error) {
+                    updateProgress(0, 'Error en datos');
+                    showAlert('Error preparando datos: ' + error.message, 'danger');
+                    return;
+                }
+                
+                console.log('📤 Enviando datos:', JSON.stringify(data, null, 2));
                 
                 updateProgress(50, 'Enviando a servidor...');
                 
-                // Enviar a API
+                // Enviar a API con headers completos
                 const response = await fetch(`${API_BASE}/generar-xml/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify(data)
                 });
 
                 updateProgress(80, 'Procesando respuesta...');
                 
-                const result = await response.json();
+                // Leer respuesta como texto primero para debug
+                const responseText = await response.text();
+                console.log('📥 Respuesta del servidor:', responseText);
                 
-                if (result.success) {
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('❌ Error parseando JSON:', parseError);
+                    throw new Error(`Respuesta inválida del servidor: ${responseText.substring(0, 200)}...`);
+                }
+                
+                if (response.ok && result.success) {
                     updateProgress(100, 'Completado exitosamente');
                     
                     // Guardar datos
@@ -579,56 +609,152 @@
                     document.getElementById('verXML').disabled = false;
                     
                     showAlert('¡XML generado exitosamente!', 'success');
+                    console.log('✅ XML generado exitosamente');
+                    
                 } else {
-                    throw new Error(result.error);
+                    // Error del servidor
+                    updateProgress(0, 'Error del servidor');
+                    
+                    let errorMessage = 'Error desconocido';
+                    
+                    if (result.error) {
+                        errorMessage = result.error;
+                    } else if (result.errors) {
+                        errorMessage = JSON.stringify(result.errors);
+                    } else if (!response.ok) {
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    }
+                    
+                    console.error('❌ Error del servidor:', result);
+                    showAlert('Error del servidor: ' + errorMessage, 'danger');
                 }
                 
             } catch (error) {
                 updateProgress(0, 'Error en generación');
-                showAlert('Error generando XML: ' + error.message, 'danger');
+                console.error('❌ Error generando XML:', error);
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showAlert('Error de conexión: Verifique que el servidor esté corriendo', 'danger');
+                } else {
+                    showAlert('Error generando XML: ' + error.message, 'danger');
+                }
             }
         }
 
+        // FUNCIÓN CORREGIDA - Validar Formulario
         function validarFormulario() {
-            const required = ['tipoDocumento', 'serie', 'numero', 'fechaEmision', 'empresaId', 'receptorNumeroDoc', 'receptorRazonSocial'];
+            console.log('🔍 Validando formulario...');
+            
+            const required = [
+                { id: 'tipoDocumento', name: 'Tipo de Documento' },
+                { id: 'serie', name: 'Serie' },
+                { id: 'numero', name: 'Número' },
+                { id: 'fechaEmision', name: 'Fecha de Emisión' },
+                { id: 'empresaId', name: 'Empresa Emisora' },
+                { id: 'receptorNumeroDoc', name: 'Número de Documento del Receptor' },
+                { id: 'receptorRazonSocial', name: 'Razón Social del Receptor' }
+            ];
             
             for (let field of required) {
-                const element = document.getElementById(field);
-                if (!element.value.trim()) {
-                    showAlert(`Campo requerido: ${field}`, 'warning');
-                    element.focus();
+                const element = document.getElementById(field.id);
+                if (!element || !element.value.trim()) {
+                    showAlert(`Campo requerido: ${field.name}`, 'warning');
+                    if (element) element.focus();
+                    console.log(`❌ Campo faltante: ${field.name}`);
                     return false;
                 }
             }
             
-            // Validar que hay items
-            if (document.querySelectorAll('#itemsTableBody tr').length === 0) {
+            // Validar que hay filas en la tabla
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            if (rows.length === 0) {
                 showAlert('Debe agregar al menos un item', 'warning');
+                console.log('❌ No hay items en la tabla');
                 return false;
             }
             
+            // Validar que al menos un item tiene descripción
+            let itemsValidos = 0;
+            rows.forEach((row, index) => {
+                const descripcionInput = row.cells[1].querySelector('input');
+                if (descripcionInput && descripcionInput.value.trim()) {
+                    itemsValidos++;
+                }
+            });
+            
+            if (itemsValidos === 0) {
+                showAlert('Debe tener al menos un item con descripción válida', 'warning');
+                console.log('❌ No hay items válidos');
+                return false;
+            }
+            
+            console.log(`✅ Formulario válido - ${itemsValidos} items encontrados`);
             return true;
         }
 
+        // FUNCIÓN CORREGIDA - Preparar Datos
         function prepararDatos() {
             const items = [];
             const rows = document.querySelectorAll('#itemsTableBody tr');
             
-            rows.forEach(row => {
-                const descripcion = row.cells[1].querySelector('input').value;
-                if (descripcion.trim()) {
-                    items.push({
-                        descripcion: descripcion,
-                        cantidad: parseFloat(row.cells[2].querySelector('input').value),
-                        valor_unitario: parseFloat(row.cells[3].querySelector('input').value),
-                        unidad_medida: row.cells[4].querySelector('select').value,
-                        afectacion_igv: row.cells[5].querySelector('select').value,
-                        codigo_producto: row.cells[6].querySelector('input').value || ''
-                    });
+            console.log(`🔍 Debug: Encontradas ${rows.length} filas`);
+            
+            rows.forEach((row, index) => {
+                try {
+                    // Obtener valores de cada celda
+                    const descripcionInput = row.cells[1].querySelector('input');
+                    const cantidadInput = row.cells[2].querySelector('input');
+                    const precioInput = row.cells[3].querySelector('input');
+                    const unidadSelect = row.cells[4].querySelector('select');
+                    const afectacionSelect = row.cells[5].querySelector('select');
+                    const codigoInput = row.cells[6].querySelector('input');
+                    
+                    // Verificar que los elementos existen
+                    if (!descripcionInput || !cantidadInput || !precioInput || !unidadSelect || !afectacionSelect) {
+                        console.warn(`⚠️ Fila ${index + 1}: Elementos faltantes`);
+                        return; // Saltar esta fila
+                    }
+                    
+                    const descripcion = descripcionInput.value.trim();
+                    const cantidad = parseFloat(cantidadInput.value) || 0;
+                    const valorUnitario = parseFloat(precioInput.value) || 0;
+                    const unidadMedida = unidadSelect.value;
+                    const afectacionIgv = afectacionSelect.value;
+                    const codigoProducto = codigoInput ? codigoInput.value.trim() : '';
+                    
+                    console.log(`📋 Item ${index + 1}:`, { descripcion, cantidad, valorUnitario, unidadMedida, afectacionIgv });
+                    
+                    // Validar que tiene descripción y valores válidos
+                    if (descripcion && cantidad > 0 && valorUnitario >= 0) {
+                        const item = {
+                            descripcion: descripcion,
+                            cantidad: cantidad,
+                            valor_unitario: valorUnitario,
+                            unidad_medida: unidadMedida,
+                            afectacion_igv: afectacionIgv,
+                            codigo_producto: codigoProducto
+                        };
+                        
+                        items.push(item);
+                        console.log(`✅ Item ${index + 1} agregado:`, item);
+                    } else {
+                        console.warn(`⚠️ Item ${index + 1} inválido:`, { descripcion, cantidad, valorUnitario });
+                    }
+                    
+                } catch (error) {
+                    console.error(`❌ Error procesando fila ${index + 1}:`, error);
                 }
             });
+            
+            console.log(`📊 Total items válidos: ${items.length}`);
+            console.log('🔍 Items finales:', items);
+            
+            // Validar que hay al menos un item
+            if (items.length === 0) {
+                throw new Error('No se encontraron items válidos. Verifique que tenga al menos un item con descripción y cantidad mayor a 0.');
+            }
 
-            return {
+            const data = {
                 tipo_documento: document.getElementById('tipoDocumento').value,
                 serie: document.getElementById('serie').value,
                 numero: parseInt(document.getElementById('numero').value),
@@ -643,6 +769,9 @@
                 },
                 items: items
             };
+            
+            console.log('📤 Datos finales a enviar:', data);
+            return data;
         }
 
         function mostrarResultado(result) {

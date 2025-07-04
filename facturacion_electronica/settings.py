@@ -341,3 +341,45 @@ if SUNAT_CONFIG['ENABLE_LOGGING']:
 
 # Import necesario para zipfile
 import zipfile
+
+# =============================================================================
+# CONFIGURACIÓN CORS - DESARROLLO
+# =============================================================================
+
+# Permitir todos los orígenes para desarrollo
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Permitir credenciales (cookies, auth headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Métodos HTTP permitidos
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS', 
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Headers permitidos
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Headers expuestos
+CORS_EXPOSE_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+]
+
+# Aplicar CORS solo a endpoints de API
+CORS_URLS_REGEX = r'^/api/.*$'
