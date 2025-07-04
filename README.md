@@ -441,13 +441,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 - **OASIS** por el estándar UBL 2.1
 - **W3C** por las especificaciones XML-DSig
 - **Comunidad Django** por el excelente framework
-
----
-
-⭐ **Si este proyecto te ayudó, por favor dale una estrella en GitHub**
-
-![Sistema de Facturación Electrónica](https://via.placeholder.com/800x400/007bff/ffffff?text=Sistema+Facturación+Electrónica+UBL+2.1)
-
 ---
 
 ### 📊 Estado del Proyecto
