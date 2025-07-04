@@ -5,6 +5,7 @@ Django settings for facturacion_electronica project.
 from pathlib import Path
 import os
 from decouple import config
+import zipfile 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -269,3 +270,74 @@ CACHES = {
         'TIMEOUT': 3600,
     }
 }
+# Agregar al final de settings.py
+
+# =============================================================================
+# CONFIGURACIÓN INTEGRACIÓN SUNAT - NIVEL 3
+# =============================================================================
+
+# Configuración principal SUNAT
+SUNAT_CONFIG = {
+    # Ambiente actual
+    'ENVIRONMENT': config('SUNAT_ENVIRONMENT', default='beta'),
+    
+    # RUC de la empresa
+    'RUC': config('SUNAT_RUC', default='20123456789'),
+    
+    # Credenciales Beta
+    'BETA_USER': config('SUNAT_BETA_USER', default='MODDATOS'),
+    'BETA_PASSWORD': config('SUNAT_BETA_PASSWORD', default='MODDATOS'),
+    
+    # Credenciales Producción
+    'PROD_USER': config('SUNAT_PROD_USER', default=''),
+    'PROD_PASSWORD': config('SUNAT_PROD_PASSWORD', default=''),
+    
+    # URLs de servicios
+    'WSDL_URLS': {
+        'beta': {
+            'factura': config('SUNAT_BETA_WSDL_FACTURA'),
+            'guia': config('SUNAT_BETA_WSDL_GUIA'),
+            'retencion': config('SUNAT_BETA_WSDL_RETENCION'),
+        },
+        'production': {
+            'factura': config('SUNAT_PROD_WSDL_FACTURA'),
+            'guia': config('SUNAT_PROD_WSDL_GUIA'),
+            'retencion': config('SUNAT_PROD_WSDL_RETENCION'),
+        }
+    },
+    
+    # Configuración de conexión
+    'TIMEOUT': config('SUNAT_TIMEOUT', default=120, cast=int),
+    'MAX_RETRIES': config('SUNAT_MAX_RETRIES', default=3, cast=int),
+    'ENABLE_LOGGING': config('SUNAT_ENABLE_LOGGING', default=True, cast=bool),
+    
+    # Configuración de archivos
+    'ZIP_COMPRESSION': zipfile.ZIP_DEFLATED,
+    'XML_ENCODING': 'UTF-8',
+    'TEMP_DIR': BASE_DIR / 'temp' / 'sunat',
+    
+    # Configuración de retry
+    'RETRY_DELAY': 2,  # segundos
+    'EXPONENTIAL_BACKOFF': True,
+}
+
+# Crear directorio temporal si no existe
+SUNAT_CONFIG['TEMP_DIR'].mkdir(parents=True, exist_ok=True)
+
+# Logging específico para SUNAT
+if SUNAT_CONFIG['ENABLE_LOGGING']:
+    LOGGING['loggers']['sunat'] = {
+        'handlers': ['console', 'file_sunat'],
+        'level': 'INFO',
+        'propagate': False,
+    }
+    
+    LOGGING['handlers']['file_sunat'] = {
+        'level': 'INFO',
+        'class': 'logging.FileHandler',
+        'filename': BASE_DIR / 'logs' / 'sunat.log',
+        'formatter': 'verbose',
+    }
+
+# Import necesario para zipfile
+import zipfile
