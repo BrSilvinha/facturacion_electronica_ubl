@@ -1,6 +1,6 @@
 """
 Cliente SOAP para integración con servicios SUNAT
-VERSIÓN CORREGIDA - Autenticación HTTP en el transporte
+VERSIÓN CORREGIDA - Autenticación WS-Security únicamente
 """
 
 import base64
@@ -16,7 +16,6 @@ from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from requests import Session
 from requests.adapters import HTTPAdapter
-from requests.auth import HTTPBasicAuth
 from urllib3.util.retry import Retry
 
 from .utils import (
@@ -80,15 +79,15 @@ class SUNATSoapClient:
             print(f"   RUC: {credentials['ruc']}")
             print(f"   Ambiente: {self.environment}")
             
-            # Configurar sesión HTTP con autenticación básica
+            # Configurar sesión HTTP básica (sin autenticación HTTP)
             self.session = Session()
-            self.session.auth = HTTPBasicAuth(username, password)
             
-            # Configurar headers
+            # Configurar headers básicos
             self.session.headers.update({
-                'User-Agent': 'FacturacionElectronica/2.0',
+                'User-Agent': 'Python-SUNAT/1.0',
                 'Accept': 'text/xml,application/xml,application/soap+xml',
-                'Content-Type': 'text/xml; charset=utf-8'
+                'Content-Type': 'text/xml; charset=utf-8',
+                'SOAPAction': ''
             })
             
             # Configurar estrategia de reintentos
@@ -118,19 +117,24 @@ class SUNATSoapClient:
             self.client = Client(wsdl_url, transport=transport)
             print("✅ Cliente SOAP creado exitosamente")
             
-            # Configurar autenticación WS-Security adicional
-            username_token = UsernameToken(
+            # Configurar SOLO WS-Security (sin HTTP Basic Auth)
+            wsse = UsernameToken(
                 username=username,
-                password=password
+                password=password,
+                use_digest=False  # SUNAT usa texto plano
             )
             
-            self.client.wsse = username_token
-            self._initialized = True
+            # Aplicar WS-Security al cliente
+            self.client.wsse = wsse
             
+            self._initialized = True
             print("✅ Cliente SOAP configurado exitosamente")
             
         except Exception as e:
             print(f"❌ Error inicializando cliente SOAP: {e}")
+            # Imprimir más detalles del error
+            import traceback
+            traceback.print_exc()
             raise SUNATConnectionError(f"Error conectando con SUNAT: {e}")
     
     def send_bill(self, documento, xml_firmado: str) -> Dict[str, Any]:
@@ -426,6 +430,33 @@ class SUNATSoapClient:
             wsdl_url = get_wsdl_url(self.service_type, self.environment)
             credentials = get_sunat_credentials(self.environment)
             
+            # Intentar una operación simple para verificar conectividad
+            # En SUNAT Beta, podemos intentar sendBill con datos dummy para verificar autenticación
+            try:
+                # Crear un ZIP dummy mínimo para probar autenticación
+                dummy_zip = base64.b64encode(b"dummy content").decode('utf-8')
+                
+                # Esto debería fallar con un error de validación, no de autenticación
+                test_response = self.client.service.sendBill(
+                    fileName="test.zip",
+                    contentFile=dummy_zip
+                )
+                
+                # Si llegamos aquí, la autenticación funcionó
+                auth_ok = True
+                
+            except zeep.exceptions.Fault as e:
+                error_msg = str(e)
+                if 'authentication' in error_msg.lower() or '401' in error_msg:
+                    auth_ok = False
+                else:
+                    # Error de validación es esperado con datos dummy
+                    auth_ok = True
+                    
+            except Exception as e:
+                # Otros errores podrían indicar problemas de autenticación
+                auth_ok = False
+            
             service_info = {
                 'wsdl_url': wsdl_url,
                 'operations': list(self.client.service.__dict__.keys()) if hasattr(self.client, 'service') else [],
@@ -433,7 +464,8 @@ class SUNATSoapClient:
                 'service_type': self.service_type,
                 'ruc_configured': credentials['ruc'],
                 'username_configured': f"{credentials['ruc']}{credentials['username']}",
-                'wsdl_accessible': True
+                'wsdl_accessible': True,
+                'authentication_ok': auth_ok
             }
             
             print("✅ Conexión SUNAT exitosa")
