@@ -1,6 +1,6 @@
 """
 Cliente SOAP para integración con servicios SUNAT
-VERSIÓN CORREGIDA - Autenticación HTTP Basic + WS-Security
+VERSIÓN CORREGIDA - Solución para Error 401 en archivos WSDL adicionales
 """
 
 import base64
@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional, Union
 from django.conf import settings
 
 import zeep
-from zeep import Client
+from zeep import Client, Settings
 from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from requests import Session
@@ -112,19 +112,33 @@ class SUNATSoapClient:
             self.session.mount("http://", adapter)
             self.session.mount("https://", adapter)
             
-            # Configurar transporte
+            # SOLUCIÓN: Configurar transporte con settings más permisivos
             transport = Transport(
                 session=self.session,
                 timeout=self.timeout,
                 operation_timeout=self.timeout
             )
             
+            # CLAVE: Settings que evitan problemas con archivos WSDL adicionales
+            settings_zeep = Settings(
+                strict=False,           # Menos estricto con validaciones
+                xml_huge_tree=True,     # Permite archivos XML grandes
+                forbid_dtd=False,       # Permite DTDs
+                forbid_entities=False,  # Permite entidades XML
+                forbid_external=False,  # Permite referencias externas
+                xsd_ignore_sequence_order=True  # Ignora orden de secuencia
+            )
+            
             # Obtener WSDL URL
             wsdl_url = get_wsdl_url(self.service_type, self.environment)
             print(f"🌐 Conectando a WSDL: {wsdl_url}")
             
-            # Crear cliente SOAP
-            self.client = Client(wsdl_url, transport=transport)
+            # SOLUCIÓN: Crear cliente SOAP con settings mejorados
+            self.client = Client(
+                wsdl_url, 
+                transport=transport,
+                settings=settings_zeep
+            )
             print("✅ Cliente SOAP creado exitosamente")
             
             # Configurar WS-Security (adicional al HTTP Basic Auth)
