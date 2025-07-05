@@ -16,6 +16,10 @@ from documentos.models import (
 from conversion.generators import generate_ubl_xml, UBLGeneratorFactory
 from conversion.utils.calculations import TributaryCalculator
 
+# IMPORTAR SISTEMA DE FIRMA REAL
+from firma_digital import XMLSigner, certificate_manager
+from firma_digital.exceptions import DigitalSignatureError, CertificateError, SignatureError
+
 class TestAPIView(APIView):
     """Endpoint de prueba para verificar que la API funciona"""
     
@@ -226,11 +230,57 @@ class GenerarXMLView(APIView):
                     'error': f'Error generando XML UBL 2.1: {str(xml_error)}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-            # 8. Simular firma digital (mejorar después)
-            xml_firmado = self._simulate_digital_signature(xml_content)
+            # 8. FIRMA DIGITAL REAL usando XMLSigner
+            try:
+                print("🔐 Iniciando firma digital real...")
+                
+                # Seleccionar certificado según RUC de empresa
+                cert_info = self._get_certificate_for_empresa(empresa)
+                
+                # Firmar con XML-DSig real
+                signer = XMLSigner()
+                xml_firmado = signer.sign_xml_document(xml_content, cert_info)
+                
+                # Verificar que la firma es real
+                if '<ds:Signature' in xml_firmado and 'ds:SignatureValue' in xml_firmado:
+                    print(f"✅ XML firmado digitalmente con certificado: {cert_info['metadata']['subject_cn']}")
+                    documento.estado = 'FIRMADO'
+                    
+                    # Generar hash real del documento firmado
+                    import hashlib
+                    hash_content = hashlib.sha256(xml_firmado.encode('utf-8')).hexdigest()
+                    documento.hash_digest = f'sha256:{hash_content[:32]}'
+                    
+                else:
+                    raise SignatureError("Error: No se detectó firma digital válida en el XML")
+                
+            except (CertificateError, SignatureError, DigitalSignatureError) as sig_error:
+                print(f"⚠️ Error en firma digital real: {sig_error}")
+                print("📝 Usando simulación como fallback...")
+                
+                # Fallback a simulación solo si hay error
+                xml_firmado = self._simulate_digital_signature(xml_content)
+                documento.estado = 'FIRMADO_SIMULADO'
+                documento.hash_digest = 'simulado:' + str(uuid.uuid4())[:32]
+                
+                # Log del error
+                LogOperacion.objects.create(
+                    documento=documento,
+                    operacion='FIRMA',
+                    estado='WARNING',
+                    mensaje=f'Firma real falló, usando simulación: {str(sig_error)}',
+                    duracion_ms=0
+                )
+            
+            except Exception as unexpected_error:
+                print(f"❌ Error inesperado en firma: {unexpected_error}")
+                return Response({
+                    'success': False,
+                    'error': f'Error en firma digital: {str(unexpected_error)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Guardar XML firmado
             documento.xml_firmado = xml_firmado
-            documento.hash_digest = 'sha256:' + str(uuid.uuid4())[:32]
-            documento.estado = 'FIRMADO'
             documento.save()
             
             # 9. Log de operación con timing
@@ -241,7 +291,7 @@ class GenerarXMLView(APIView):
                 documento=documento,
                 operacion='CONVERSION',
                 estado='SUCCESS',
-                mensaje='XML UBL 2.1 profesional generado y firmado exitosamente',
+                mensaje='XML UBL 2.1 generado y firmado exitosamente',
                 duracion_ms=duration_ms
             )
             
@@ -253,6 +303,7 @@ class GenerarXMLView(APIView):
                 'xml_firmado': xml_firmado,
                 'hash': documento.hash_digest,
                 'estado': documento.estado,
+                'signature_type': 'REAL' if documento.estado == 'FIRMADO' else 'SIMULADA',
                 'totales': {
                     'subtotal_gravado': float(document_totals['subtotal_gravado']),
                     'subtotal_exonerado': float(document_totals['subtotal_exonerado']),
@@ -282,6 +333,48 @@ class GenerarXMLView(APIView):
                 'success': False,
                 'error': f'Error interno: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _get_certificate_for_empresa(self, empresa):
+        """
+        Obtiene certificado apropiado para la empresa
+        Mapea RUC de empresa a certificado correspondiente
+        """
+        
+        # Mapeo de RUC a certificados de prueba
+        ruc_to_cert = {
+            '20123456789': {
+                'path': 'certificados/test/test_cert_empresa1.pfx',
+                'password': 'test123'
+            },
+            '20987654321': {
+                'path': 'certificados/test/test_cert_empresa2.pfx', 
+                'password': 'test456'
+            }
+        }
+        
+        # Obtener configuración del certificado
+        cert_config = ruc_to_cert.get(empresa.ruc)
+        
+        if not cert_config:
+            # Usar certificado por defecto si no hay mapeo específico
+            cert_config = {
+                'path': 'certificados/test/test_cert_empresa1.pfx',
+                'password': 'test123'
+            }
+            print(f"⚠️ No hay certificado específico para RUC {empresa.ruc}, usando certificado por defecto")
+        
+        # Cargar certificado usando certificate_manager
+        try:
+            cert_info = certificate_manager.get_certificate(
+                cert_config['path'], 
+                cert_config['password']
+            )
+            
+            print(f"📜 Certificado cargado para {empresa.ruc}: {cert_info['metadata']['subject_cn']}")
+            return cert_info
+            
+        except Exception as e:
+            raise CertificateError(f"Error cargando certificado para {empresa.ruc}: {e}")
     
     def _validate_input_data(self, data):
         """Valida datos de entrada de forma robusta"""
@@ -383,13 +476,14 @@ class GenerarXMLView(APIView):
         return items_calculated
     
     def _simulate_digital_signature(self, xml_content):
-        """Simula la firma digital (versión mejorada)"""
+        """Simula la firma digital (FALLBACK - solo usar si firma real falla)"""
         
         signature_id = str(uuid.uuid4())[:16]
         timestamp = timezone.now().isoformat()
         
         return f'''<?xml version="1.0" encoding="UTF-8"?>
-<!-- XML UBL 2.1 FIRMADO DIGITALMENTE -->
+<!-- XML UBL 2.1 CON FIRMA SIMULADA -->
+<!-- ADVERTENCIA: Esta es una firma simulada, no válida para producción -->
 <!-- Generador: Professional UBL Generator v2.0 -->
 <!-- Timestamp: {timestamp} -->
 <!-- Signature ID: {signature_id} -->

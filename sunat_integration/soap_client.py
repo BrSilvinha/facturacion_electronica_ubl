@@ -1,8 +1,6 @@
 """
 Cliente SOAP para integración con servicios SUNAT
-Basado en Manual del Programador RS 097-2012/SUNAT
-Ubicación: sunat_integration/soap_client.py
-VERSIÓN CORREGIDA - Compatible con urllib3 moderno
+VERSIÓN CORREGIDA - Autenticación HTTP en el transporte
 """
 
 import base64
@@ -18,6 +16,7 @@ from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from requests import Session
 from requests.adapters import HTTPAdapter
+from requests.auth import HTTPBasicAuth
 from urllib3.util.retry import Retry
 
 from .utils import (
@@ -33,26 +32,10 @@ from .zip_generator import zip_generator
 logger = logging.getLogger('sunat')
 
 class SUNATSoapClient:
-    """
-    Cliente SOAP para comunicación con servicios web SUNAT
-    
-    Implementa todos los métodos definidos en el manual:
-    - sendBill: Envío síncrono (facturas, notas)
-    - sendSummary: Envío asíncrono (resúmenes, bajas)  
-    - sendPack: Envío de lotes
-    - getStatus: Consulta de estado por ticket
-    - getStatusCdr: Consulta de CDR por datos del comprobante
-    """
+    """Cliente SOAP para comunicación con servicios web SUNAT"""
     
     def __init__(self, service_type: str = 'factura', environment: str = None, lazy_init: bool = False):
-        """
-        Inicializa cliente SOAP
-        
-        Args:
-            service_type: 'factura', 'guia', 'retencion'
-            environment: 'beta' o 'production'
-            lazy_init: Si True, no inicializa conexión hasta que se necesite
-        """
+        """Inicializa cliente SOAP"""
         
         self.config = settings.SUNAT_CONFIG
         self.service_type = service_type
@@ -73,7 +56,7 @@ class SUNATSoapClient:
         if not lazy_init:
             self._initialize_client()
         
-        logger.info(f"SUNATSoapClient creado: {service_type} - {self.environment} (lazy={lazy_init})")
+        print(f"SUNATSoapClient creado: {service_type} - {self.environment} (lazy={lazy_init})")
     
     def _ensure_initialized(self):
         """Asegura que el cliente esté inicializado"""
@@ -84,14 +67,35 @@ class SUNATSoapClient:
         """Inicializa el cliente SOAP con configuración robusta"""
         
         try:
-            # Configurar sesión HTTP con reintentos
-            self.session = Session()
+            print("🔧 Inicializando cliente SOAP SUNAT...")
             
-            # Configurar estrategia de reintentos (CORREGIDO para urllib3 moderno)
+            # Obtener credenciales
+            credentials = get_sunat_credentials(self.environment)
+            username = f"{credentials['ruc']}{credentials['username']}"
+            password = credentials['password']
+            
+            print(f"🔐 Configurando autenticación:")
+            print(f"   Usuario: {username}")
+            print(f"   Password: {'*' * len(password)}")
+            print(f"   RUC: {credentials['ruc']}")
+            print(f"   Ambiente: {self.environment}")
+            
+            # Configurar sesión HTTP con autenticación básica
+            self.session = Session()
+            self.session.auth = HTTPBasicAuth(username, password)
+            
+            # Configurar headers
+            self.session.headers.update({
+                'User-Agent': 'FacturacionElectronica/2.0',
+                'Accept': 'text/xml,application/xml,application/soap+xml',
+                'Content-Type': 'text/xml; charset=utf-8'
+            })
+            
+            # Configurar estrategia de reintentos
             retry_strategy = Retry(
                 total=self.max_retries,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],  # CORREGIDO: era method_whitelist
+                allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
                 backoff_factor=1
             )
             
@@ -108,44 +112,35 @@ class SUNATSoapClient:
             
             # Obtener WSDL URL
             wsdl_url = get_wsdl_url(self.service_type, self.environment)
-            logger.info(f"Conectando a WSDL: {wsdl_url}")
+            print(f"🌐 Conectando a WSDL: {wsdl_url}")
             
             # Crear cliente SOAP
             self.client = Client(wsdl_url, transport=transport)
+            print("✅ Cliente SOAP creado exitosamente")
             
-            # Configurar autenticación WS-Security
-            credentials = get_sunat_credentials(self.environment)
+            # Configurar autenticación WS-Security adicional
             username_token = UsernameToken(
-                username=credentials['username'],
-                password=credentials['password']
+                username=username,
+                password=password
             )
             
             self.client.wsse = username_token
             self._initialized = True
             
-            logger.info("Cliente SOAP configurado exitosamente")
+            print("✅ Cliente SOAP configurado exitosamente")
             
         except Exception as e:
-            logger.error(f"Error inicializando cliente SOAP: {e}")
+            print(f"❌ Error inicializando cliente SOAP: {e}")
             raise SUNATConnectionError(f"Error conectando con SUNAT: {e}")
     
     def send_bill(self, documento, xml_firmado: str) -> Dict[str, Any]:
-        """
-        Envío síncrono de documentos individuales (facturas, notas)
-        
-        Args:
-            documento: Instancia de DocumentoElectronico
-            xml_firmado: XML firmado digitalmente
-        
-        Returns:
-            Dict con respuesta de SUNAT
-        """
+        """Envío síncrono de documentos individuales"""
         
         self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
-            logger.info(f"[{self.correlation_id}] Enviando documento: {documento.get_numero_completo()}")
+            print(f"[{self.correlation_id}] 📤 Enviando documento: {documento.get_numero_completo()}")
             
             # Crear archivo ZIP
             zip_content = zip_generator.create_document_zip(documento, xml_firmado)
@@ -153,6 +148,8 @@ class SUNATSoapClient:
             
             # Codificar en base64
             zip_base64 = base64.b64encode(zip_content).decode('utf-8')
+            
+            print(f"[{self.correlation_id}] 📦 ZIP creado: {zip_filename} ({len(zip_base64)} chars base64)")
             
             # Preparar parámetros
             start_time = time.time()
@@ -183,45 +180,32 @@ class SUNATSoapClient:
                     'timestamp': datetime.now()
                 }
                 
-                logger.info(f"[{self.correlation_id}] Documento enviado exitosamente en {duration:.0f}ms")
+                print(f"[{self.correlation_id}] ✅ Documento enviado exitosamente en {duration:.0f}ms")
                 return result
             
             else:
-                # Respuesta inesperada
                 raise SUNATError(f"Respuesta inesperada de SUNAT: {response}")
                 
         except zeep.exceptions.Fault as e:
-            # Error SOAP
-            error_info = parse_sunat_error_response(str(e))
-            logger.error(f"[{self.correlation_id}] Error SOAP: {e}")
+            print(f"[{self.correlation_id}] ❌ Error SOAP: {e}")
             
-            if 'authentication' in str(e).lower():
+            if 'authentication' in str(e).lower() or '401' in str(e):
                 raise SUNATAuthenticationError(f"Error de autenticación: {e}")
             else:
-                raise SUNATValidationError(f"Error validación SUNAT: {e}", 
-                                         error_code=error_info.get('error_code'))
+                raise SUNATValidationError(f"Error validación SUNAT: {e}")
         
         except Exception as e:
-            logger.error(f"[{self.correlation_id}] Error enviando documento: {e}")
+            print(f"[{self.correlation_id}] ❌ Error enviando documento: {e}")
             raise SUNATError(f"Error enviando documento: {e}")
     
     def send_summary(self, archivo_resumen: str, xml_content: str) -> Dict[str, Any]:
-        """
-        Envío asíncrono de resúmenes diarios y comunicaciones de baja
-        
-        Args:
-            archivo_resumen: Nombre del archivo (ej: 20123456789-RC-20250628-1)
-            xml_content: Contenido XML del resumen
-        
-        Returns:
-            Dict con ticket de SUNAT
-        """
+        """Envío asíncrono de resúmenes diarios"""
         
         self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
-            logger.info(f"[{self.correlation_id}] Enviando resumen: {archivo_resumen}")
+            print(f"[{self.correlation_id}] 📤 Enviando resumen: {archivo_resumen}")
             
             # Crear archivo ZIP
             zip_content = zip_generator.create_summary_zip(archivo_resumen, xml_content)
@@ -255,32 +239,24 @@ class SUNATSoapClient:
                     'timestamp': datetime.now()
                 }
                 
-                logger.info(f"[{self.correlation_id}] Resumen enviado, ticket: {response.ticket}")
+                print(f"[{self.correlation_id}] ✅ Resumen enviado, ticket: {response.ticket}")
                 return result
             
             else:
                 raise SUNATError(f"Respuesta sin ticket: {response}")
                 
         except Exception as e:
-            logger.error(f"[{self.correlation_id}] Error enviando resumen: {e}")
+            print(f"[{self.correlation_id}] ❌ Error enviando resumen: {e}")
             raise SUNATError(f"Error enviando resumen: {e}")
     
     def get_status(self, ticket: str) -> Dict[str, Any]:
-        """
-        Consulta estado de procesamiento por ticket
-        
-        Args:
-            ticket: Ticket devuelto por sendSummary o sendPack
-        
-        Returns:
-            Dict con estado y CDR si está listo
-        """
+        """Consulta estado de procesamiento por ticket"""
         
         self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
-            logger.info(f"[{self.correlation_id}] Consultando ticket: {ticket}")
+            print(f"[{self.correlation_id}] 🔍 Consultando ticket: {ticket}")
             
             start_time = time.time()
             
@@ -308,34 +284,27 @@ class SUNATSoapClient:
                     'timestamp': datetime.now()
                 }
                 
-                # Estados posibles:
-                # 0 = Procesado correctamente
-                # 98 = En proceso
-                # 99 = Proceso con errores
-                
+                # Estados posibles
                 if status_code == '0':
-                    # Procesado correctamente - CDR disponible
                     if hasattr(response.status, 'content'):
                         result['cdr_content'] = base64.b64decode(response.status.content)
                         result['processed'] = True
-                        logger.info(f"[{self.correlation_id}] Ticket procesado exitosamente")
+                        print(f"[{self.correlation_id}] ✅ Ticket procesado exitosamente")
                     else:
                         result['processed'] = True
                         result['cdr_content'] = None
                 
                 elif status_code == '98':
-                    # En proceso
                     result['processed'] = False
                     result['in_progress'] = True
-                    logger.info(f"[{self.correlation_id}] Ticket en proceso")
+                    print(f"[{self.correlation_id}] ⏳ Ticket en proceso")
                 
                 elif status_code == '99':
-                    # Error en procesamiento
                     result['processed'] = True
                     result['has_errors'] = True
                     if hasattr(response.status, 'content'):
                         result['cdr_content'] = base64.b64decode(response.status.content)
-                    logger.warning(f"[{self.correlation_id}] Ticket con errores")
+                    print(f"[{self.correlation_id}] ⚠️ Ticket con errores")
                 
                 return result
             
@@ -343,28 +312,17 @@ class SUNATSoapClient:
                 raise SUNATError(f"Respuesta inesperada: {response}")
                 
         except Exception as e:
-            logger.error(f"[{self.correlation_id}] Error consultando ticket: {e}")
+            print(f"[{self.correlation_id}] ❌ Error consultando ticket: {e}")
             raise SUNATError(f"Error consultando ticket: {e}")
     
     def get_status_cdr(self, ruc: str, tipo_documento: str, serie: str, numero: int) -> Dict[str, Any]:
-        """
-        Consulta CDR por datos del comprobante
-        
-        Args:
-            ruc: RUC del emisor
-            tipo_documento: Código de tipo documento (01, 07, 08)
-            serie: Serie del documento
-            numero: Número del documento
-        
-        Returns:
-            Dict con CDR si está disponible
-        """
+        """Consulta CDR por datos del comprobante"""
         
         self._ensure_initialized()
         self.correlation_id = generate_correlation_id()
         
         try:
-            logger.info(f"[{self.correlation_id}] Consultando CDR: {ruc}-{tipo_documento}-{serie}-{numero:08d}")
+            print(f"[{self.correlation_id}] 🔍 Consultando CDR: {ruc}-{tipo_documento}-{serie}-{numero:08d}")
             
             start_time = time.time()
             
@@ -399,10 +357,10 @@ class SUNATSoapClient:
                 if hasattr(response.statusCdr, 'content') and response.statusCdr.content:
                     result['cdr_content'] = base64.b64decode(response.statusCdr.content)
                     result['cdr_available'] = True
-                    logger.info(f"[{self.correlation_id}] CDR encontrado")
+                    print(f"[{self.correlation_id}] ✅ CDR encontrado")
                 else:
                     result['cdr_available'] = False
-                    logger.info(f"[{self.correlation_id}] CDR no disponible")
+                    print(f"[{self.correlation_id}] ℹ️ CDR no disponible")
                 
                 return result
             
@@ -410,28 +368,19 @@ class SUNATSoapClient:
                 raise SUNATError(f"Respuesta inesperada: {response}")
                 
         except Exception as e:
-            logger.error(f"[{self.correlation_id}] Error consultando CDR: {e}")
+            print(f"[{self.correlation_id}] ❌ Error consultando CDR: {e}")
             raise SUNATError(f"Error consultando CDR: {e}")
     
     def _execute_with_retry(self, operation, **kwargs):
-        """
-        Ejecuta operación SOAP con reintentos automáticos
-        
-        Args:
-            operation: Método del servicio SOAP
-            **kwargs: Parámetros para el método
-        
-        Returns:
-            Respuesta del servicio
-        """
+        """Ejecuta operación SOAP con reintentos automáticos"""
         
         last_exception = None
         
         for attempt in range(self.max_retries + 1):
             try:
                 if attempt > 0:
-                    delay = self.retry_delay * (2 ** (attempt - 1))  # Backoff exponencial
-                    logger.info(f"[{self.correlation_id}] Reintento #{attempt} en {delay}s")
+                    delay = self.retry_delay * (2 ** (attempt - 1))
+                    print(f"[{self.correlation_id}] 🔄 Reintento #{attempt} en {delay}s")
                     time.sleep(delay)
                 
                 response = operation(**kwargs)
@@ -440,11 +389,11 @@ class SUNATSoapClient:
             except zeep.exceptions.TransportError as e:
                 last_exception = e
                 if 'timeout' in str(e).lower():
-                    logger.warning(f"[{self.correlation_id}] Timeout en intento #{attempt + 1}")
+                    print(f"[{self.correlation_id}] ⏱️ Timeout en intento #{attempt + 1}")
                     if attempt == self.max_retries:
                         raise SUNATTimeoutError(f"Timeout después de {self.max_retries} intentos")
                 else:
-                    logger.warning(f"[{self.correlation_id}] Error transporte en intento #{attempt + 1}: {e}")
+                    print(f"[{self.correlation_id}] 🌐 Error transporte en intento #{attempt + 1}: {e}")
                     if attempt == self.max_retries:
                         raise SUNATConnectionError(f"Error de conexión: {e}")
             
@@ -454,23 +403,17 @@ class SUNATSoapClient:
             
             except Exception as e:
                 last_exception = e
-                logger.warning(f"[{self.correlation_id}] Error en intento #{attempt + 1}: {e}")
+                print(f"[{self.correlation_id}] ⚠️ Error en intento #{attempt + 1}: {e}")
                 if attempt == self.max_retries:
                     raise SUNATError(f"Error después de {self.max_retries} intentos: {e}")
         
-        # Si llegamos aquí, falló todos los intentos
         raise SUNATError(f"Operación falló después de {self.max_retries} intentos: {last_exception}")
     
     def test_connection(self) -> Dict[str, Any]:
-        """
-        Prueba la conexión con SUNAT
-        
-        Returns:
-            Dict con resultado de la prueba
-        """
+        """Prueba la conexión con SUNAT"""
         
         try:
-            logger.info("Probando conexión con SUNAT...")
+            print("🧪 Probando conexión con SUNAT...")
             
             # Inicializar si no está inicializado
             self._ensure_initialized()
@@ -479,15 +422,21 @@ class SUNATSoapClient:
             if not self.client:
                 raise SUNATConnectionError("Cliente SOAP no inicializado")
             
-            # Intentar obtener información del servicio
+            # Obtener información del servicio
+            wsdl_url = get_wsdl_url(self.service_type, self.environment)
+            credentials = get_sunat_credentials(self.environment)
+            
             service_info = {
-                'wsdl_url': self.client.wsdl.location,
-                'operations': list(self.client.service.__dict__.keys()),
+                'wsdl_url': wsdl_url,
+                'operations': list(self.client.service.__dict__.keys()) if hasattr(self.client, 'service') else [],
                 'environment': self.environment,
-                'service_type': self.service_type
+                'service_type': self.service_type,
+                'ruc_configured': credentials['ruc'],
+                'username_configured': f"{credentials['ruc']}{credentials['username']}",
+                'wsdl_accessible': True
             }
             
-            logger.info("Conexión SUNAT exitosa")
+            print("✅ Conexión SUNAT exitosa")
             
             return {
                 'success': True,
@@ -497,41 +446,24 @@ class SUNATSoapClient:
             }
             
         except Exception as e:
-            logger.error(f"Error probando conexión: {e}")
+            print(f"❌ Error probando conexión: {e}")
             return {
                 'success': False,
                 'error': str(e),
+                'error_type': type(e).__name__,
                 'timestamp': datetime.now()
             }
 
 # Función factory para crear clientes
 def create_sunat_client(service_type: str = 'factura', environment: str = None) -> SUNATSoapClient:
-    """
-    Factory function para crear clientes SUNAT
-    
-    Args:
-        service_type: 'factura', 'guia', 'retencion'
-        environment: 'beta' o 'production'
-    
-    Returns:
-        Instancia de SUNATSoapClient
-    """
+    """Factory function para crear clientes SUNAT"""
     return SUNATSoapClient(service_type, environment, lazy_init=False)
 
 # Variable global para lazy loading
 _global_client = None
 
 def get_sunat_client(service_type: str = 'factura', environment: str = None) -> SUNATSoapClient:
-    """
-    Obtiene cliente SUNAT global con lazy loading
-    
-    Args:
-        service_type: 'factura', 'guia', 'retencion'
-        environment: 'beta' o 'production'
-    
-    Returns:
-        Instancia de SUNATSoapClient
-    """
+    """Obtiene cliente SUNAT global con lazy loading"""
     global _global_client
     
     if _global_client is None:

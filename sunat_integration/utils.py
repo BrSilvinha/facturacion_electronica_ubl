@@ -1,6 +1,7 @@
 """
 Utilidades comunes para integración SUNAT
 Ubicación: sunat_integration/utils.py
+VERSIÓN CORREGIDA - Credenciales SUNAT Beta arregladas
 """
 
 import re
@@ -30,13 +31,13 @@ def get_sunat_filename(documento, extension='zip') -> str:
 
 def get_sunat_credentials(environment: str = None) -> Dict[str, str]:
     """
-    Obtiene credenciales SUNAT según ambiente
+    Obtiene credenciales SUNAT según ambiente - CORREGIDO
     
     Args:
         environment: 'beta' o 'production'
     
     Returns:
-        Dict con username y password
+        Dict con ruc, username y password
     """
     
     config = settings.SUNAT_CONFIG
@@ -44,14 +45,18 @@ def get_sunat_credentials(environment: str = None) -> Dict[str, str]:
     ruc = config['RUC']
     
     if env == 'beta':
-        username = f"{ruc}{config['BETA_USER']}"
-        password = config['BETA_PASSWORD']
+        # Para SUNAT Beta: usuario y password fijos
+        username = config['BETA_USER']  # 'MODDATOS'
+        password = config['BETA_PASSWORD']  # 'MODDATOS'
     else:
-        username = f"{ruc}{config['PROD_USER']}"
+        # Para Producción: usuario real de la empresa
+        username = config['PROD_USER']
         password = config['PROD_PASSWORD']
     
+    # ⚠️ IMPORTANTE: No agregar RUC aquí, se hace en soap_client
     return {
-        'username': username,
+        'ruc': ruc,
+        'username': username,  # Solo el usuario base
         'password': password
     }
 
