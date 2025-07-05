@@ -1,6 +1,6 @@
 """
 Cliente SOAP para integración con servicios SUNAT
-VERSIÓN CORREGIDA - Autenticación WS-Security únicamente
+VERSIÓN CORREGIDA - Autenticación HTTP Basic + WS-Security
 """
 
 import base64
@@ -15,6 +15,7 @@ from zeep import Client
 from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from requests import Session
+from requests.auth import HTTPBasicAuth
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -70,19 +71,28 @@ class SUNATSoapClient:
             
             # Obtener credenciales
             credentials = get_sunat_credentials(self.environment)
-            username = f"{credentials['ruc']}{credentials['username']}"
-            password = credentials['password']
+            
+            # Para SUNAT Beta necesitamos:
+            # 1. HTTP Basic Auth: RUC + Usuario como username
+            # 2. WS-Security: RUC + Usuario como username
+            http_username = f"{credentials['ruc']}{credentials['username']}"
+            http_password = credentials['password']
             
             print(f"🔐 Configurando autenticación:")
-            print(f"   Usuario: {username}")
-            print(f"   Password: {'*' * len(password)}")
+            print(f"   HTTP Basic Auth Usuario: {http_username}")
+            print(f"   HTTP Basic Auth Password: {'*' * len(http_password)}")
+            print(f"   WS-Security Usuario: {http_username}")
+            print(f"   WS-Security Password: {'*' * len(http_password)}")
             print(f"   RUC: {credentials['ruc']}")
             print(f"   Ambiente: {self.environment}")
             
-            # Configurar sesión HTTP básica (sin autenticación HTTP)
+            # Crear sesión con autenticación HTTP básica
             self.session = Session()
             
-            # Configurar headers básicos
+            # CLAVE: Configurar HTTP Basic Auth para toda la sesión
+            self.session.auth = HTTPBasicAuth(http_username, http_password)
+            
+            # Configurar headers
             self.session.headers.update({
                 'User-Agent': 'Python-SUNAT/1.0',
                 'Accept': 'text/xml,application/xml,application/soap+xml',
@@ -117,10 +127,10 @@ class SUNATSoapClient:
             self.client = Client(wsdl_url, transport=transport)
             print("✅ Cliente SOAP creado exitosamente")
             
-            # Configurar SOLO WS-Security (sin HTTP Basic Auth)
+            # Configurar WS-Security (adicional al HTTP Basic Auth)
             wsse = UsernameToken(
-                username=username,
-                password=password,
+                username=http_username,
+                password=http_password,
                 use_digest=False  # SUNAT usa texto plano
             )
             
