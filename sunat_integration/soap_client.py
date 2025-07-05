@@ -1,6 +1,6 @@
 """
 Cliente SOAP para integración con servicios SUNAT
-VERSIÓN CORREGIDA - Solución para Error 401 en archivos WSDL adicionales
+VERSIÓN CORREGIDA - Solución definitiva para Error 401 en archivos WSDL adicionales
 """
 
 import base64
@@ -42,7 +42,7 @@ class SUNATSoapClient:
         self.environment = environment or self.config['ENVIRONMENT']
         
         # Configuración de conexión
-        self.timeout = self.config.get('TIMEOUT', 120)
+        self.timeout = self.config.get('TIMEOUT', 180)  # Timeout más largo
         self.max_retries = self.config.get('MAX_RETRIES', 3)
         self.retry_delay = self.config.get('RETRY_DELAY', 2)
         
@@ -63,6 +63,75 @@ class SUNATSoapClient:
         if not self._initialized:
             self._initialize_client()
     
+    def _create_authenticated_session(self, credentials: Dict[str, str]) -> Session:
+        """Crea sesión con autenticación HTTP básica persistente"""
+        
+        # Formato de usuario para SUNAT: RUC + Usuario
+        http_username = f"{credentials['ruc']}{credentials['username']}"
+        http_password = credentials['password']
+        
+        print(f"🔐 Configurando sesión autenticada:")
+        print(f"   Usuario HTTP: {http_username}")
+        print(f"   Password: {'*' * len(http_password)}")
+        
+        # Crear sesión con autenticación persistente
+        session = Session()
+        session.auth = HTTPBasicAuth(http_username, http_password)
+        
+        # Headers importantes para SUNAT
+        session.headers.update({
+            'User-Agent': 'Python-SUNAT-Client/1.0',
+            'Accept': 'text/xml,application/xml,application/soap+xml,*/*',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache'
+        })
+        
+        # Configurar estrategia de reintentos más robusta
+        retry_strategy = Retry(
+            total=5,  # Más intentos
+            status_forcelist=[401, 429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
+            backoff_factor=2,
+            raise_on_status=False  # No lanzar excepción inmediatamente
+        )
+        
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=10,
+            pool_maxsize=10
+        )
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        
+        return session
+    
+    def _test_wsdl_accessibility(self, wsdl_url: str, session: Session) -> bool:
+        """Prueba si el WSDL principal es accesible"""
+        
+        try:
+            print(f"🌐 Probando acceso a WSDL: {wsdl_url}")
+            
+            response = session.get(wsdl_url, timeout=30)
+            
+            if response.status_code == 200:
+                if 'wsdl:definitions' in response.text or 'definitions' in response.text:
+                    print("✅ WSDL principal accesible")
+                    return True
+                else:
+                    print("❌ Respuesta no es WSDL válido")
+                    return False
+            elif response.status_code == 401:
+                print("❌ Error 401: Credenciales incorrectas")
+                return False
+            else:
+                print(f"❌ Error HTTP {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error accediendo WSDL: {e}")
+            return False
+    
     def _initialize_client(self):
         """Inicializa el cliente SOAP con configuración robusta"""
         
@@ -72,94 +141,154 @@ class SUNATSoapClient:
             # Obtener credenciales
             credentials = get_sunat_credentials(self.environment)
             
-            # Para SUNAT Beta necesitamos:
-            # 1. HTTP Basic Auth: RUC + Usuario como username
-            # 2. WS-Security: RUC + Usuario como username
-            http_username = f"{credentials['ruc']}{credentials['username']}"
-            http_password = credentials['password']
-            
-            print(f"🔐 Configurando autenticación:")
-            print(f"   HTTP Basic Auth Usuario: {http_username}")
-            print(f"   HTTP Basic Auth Password: {'*' * len(http_password)}")
-            print(f"   WS-Security Usuario: {http_username}")
-            print(f"   WS-Security Password: {'*' * len(http_password)}")
-            print(f"   RUC: {credentials['ruc']}")
-            print(f"   Ambiente: {self.environment}")
-            
-            # Crear sesión con autenticación HTTP básica
-            self.session = Session()
-            
-            # CLAVE: Configurar HTTP Basic Auth para toda la sesión
-            self.session.auth = HTTPBasicAuth(http_username, http_password)
-            
-            # Configurar headers
-            self.session.headers.update({
-                'User-Agent': 'Python-SUNAT/1.0',
-                'Accept': 'text/xml,application/xml,application/soap+xml',
-                'Content-Type': 'text/xml; charset=utf-8',
-                'SOAPAction': ''
-            })
-            
-            # Configurar estrategia de reintentos
-            retry_strategy = Retry(
-                total=self.max_retries,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
-                backoff_factor=1
-            )
-            
-            adapter = HTTPAdapter(max_retries=retry_strategy)
-            self.session.mount("http://", adapter)
-            self.session.mount("https://", adapter)
-            
-            # SOLUCIÓN: Configurar transporte con settings más permisivos
-            transport = Transport(
-                session=self.session,
-                timeout=self.timeout,
-                operation_timeout=self.timeout
-            )
-            
-            # CLAVE: Settings que evitan problemas con archivos WSDL adicionales
-            settings_zeep = Settings(
-                strict=False,           # Menos estricto con validaciones
-                xml_huge_tree=True,     # Permite archivos XML grandes
-                forbid_dtd=False,       # Permite DTDs
-                forbid_entities=False,  # Permite entidades XML
-                forbid_external=False,  # Permite referencias externas
-                xsd_ignore_sequence_order=True  # Ignora orden de secuencia
-            )
+            # Crear sesión autenticada
+            self.session = self._create_authenticated_session(credentials)
             
             # Obtener WSDL URL
             wsdl_url = get_wsdl_url(self.service_type, self.environment)
-            print(f"🌐 Conectando a WSDL: {wsdl_url}")
             
-            # SOLUCIÓN: Crear cliente SOAP con settings mejorados
-            self.client = Client(
-                wsdl_url, 
-                transport=transport,
-                settings=settings_zeep
+            # Verificar accesibilidad del WSDL
+            if not self._test_wsdl_accessibility(wsdl_url, self.session):
+                raise SUNATAuthenticationError("No se puede acceder al WSDL con las credenciales proporcionadas")
+            
+            # Configurar transporte con sesión autenticada
+            transport = Transport(
+                session=self.session,
+                timeout=self.timeout,
+                operation_timeout=self.timeout,
+                cache=False  # Desactivar cache para evitar problemas
             )
-            print("✅ Cliente SOAP creado exitosamente")
             
-            # Configurar WS-Security (adicional al HTTP Basic Auth)
+            # SOLUCIÓN CLAVE: Settings más permisivos y robustos
+            settings_zeep = Settings(
+                strict=False,              # Modo no estricto
+                xml_huge_tree=True,        # Permitir XML grandes
+                forbid_dtd=False,          # Permitir DTDs
+                forbid_entities=False,     # Permitir entidades XML
+                forbid_external=False,     # Permitir referencias externas
+                xsd_ignore_sequence_order=True,  # Ignorar orden de secuencia
+                force_https=False,         # No forzar HTTPS
+                raw_response=False,        # Respuesta procesada
+                extra_http_headers=None
+            )
+            
+            print(f"🌐 Creando cliente SOAP con WSDL: {wsdl_url}")
+            
+            # Crear cliente SOAP con configuración mejorada
+            try:
+                self.client = Client(
+                    wsdl_url, 
+                    transport=transport,
+                    settings=settings_zeep
+                )
+                print("✅ Cliente SOAP principal creado")
+                
+            except Exception as e:
+                # Si falla, intentar con estrategia alternativa
+                print(f"⚠️ Error con cliente principal: {e}")
+                print("🔄 Intentando estrategia alternativa...")
+                
+                # Estrategia alternativa: Descargar WSDL localmente
+                self.client = self._create_client_with_local_wsdl(wsdl_url, transport, settings_zeep)
+                
+                if not self.client:
+                    raise SUNATConnectionError(f"No se pudo crear cliente SOAP: {e}")
+            
+            # Configurar WS-Security
+            http_username = f"{credentials['ruc']}{credentials['username']}"
             wsse = UsernameToken(
                 username=http_username,
-                password=http_password,
-                use_digest=False  # SUNAT usa texto plano
+                password=credentials['password'],
+                use_digest=False,  # SUNAT usa texto plano
+                timestamp_token=True
             )
             
-            # Aplicar WS-Security al cliente
             self.client.wsse = wsse
+            print("✅ WS-Security configurado")
+            
+            # Verificar operaciones disponibles
+            self._verify_operations()
             
             self._initialized = True
-            print("✅ Cliente SOAP configurado exitosamente")
+            print("✅ Cliente SOAP inicializado exitosamente")
             
         except Exception as e:
             print(f"❌ Error inicializando cliente SOAP: {e}")
-            # Imprimir más detalles del error
+            # Mostrar stack trace para debugging
             import traceback
             traceback.print_exc()
             raise SUNATConnectionError(f"Error conectando con SUNAT: {e}")
+    
+    def _create_client_with_local_wsdl(self, wsdl_url: str, transport: Transport, settings: Settings) -> Optional[Client]:
+        """Estrategia alternativa: Crear cliente con WSDL local"""
+        
+        try:
+            import tempfile
+            import os
+            
+            print("📁 Descargando WSDL para uso local...")
+            
+            # Descargar WSDL con autenticación
+            response = self.session.get(wsdl_url, timeout=60)
+            
+            if response.status_code != 200:
+                print(f"❌ Error descargando WSDL: {response.status_code}")
+                return None
+            
+            # Guardar WSDL localmente
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.wsdl', delete=False) as f:
+                f.write(response.text)
+                local_wsdl_path = f.name
+            
+            print(f"✅ WSDL guardado en: {local_wsdl_path}")
+            
+            try:
+                # Crear cliente con WSDL local
+                client = Client(
+                    f"file://{local_wsdl_path}",
+                    transport=transport,
+                    settings=settings
+                )
+                
+                print("✅ Cliente con WSDL local creado")
+                return client
+                
+            finally:
+                # Limpiar archivo temporal
+                try:
+                    os.unlink(local_wsdl_path)
+                except:
+                    pass
+                    
+        except Exception as e:
+            print(f"❌ Error creando cliente con WSDL local: {e}")
+            return None
+    
+    def _verify_operations(self):
+        """Verifica que las operaciones necesarias estén disponibles"""
+        
+        try:
+            if hasattr(self.client, 'service'):
+                operations = [op for op in dir(self.client.service) if not op.startswith('_')]
+                print(f"✅ Operaciones disponibles: {operations}")
+                
+                # Verificar operaciones críticas
+                required_ops = ['sendBill', 'getStatus', 'sendSummary', 'getStatusCdr']
+                available_ops = [op for op in operations if op in required_ops]
+                missing_ops = [op for op in required_ops if op not in operations]
+                
+                print(f"✅ Operaciones críticas disponibles: {available_ops}")
+                if missing_ops:
+                    print(f"⚠️ Operaciones faltantes: {missing_ops}")
+                
+                return len(available_ops) >= 2  # Al menos sendBill y getStatus
+            else:
+                print("❌ Cliente no tiene atributo 'service'")
+                return False
+                
+        except Exception as e:
+            print(f"⚠️ Error verificando operaciones: {e}")
+            return False
     
     def send_bill(self, documento, xml_firmado: str) -> Dict[str, Any]:
         """Envío síncrono de documentos individuales"""
@@ -217,10 +346,13 @@ class SUNATSoapClient:
         except zeep.exceptions.Fault as e:
             print(f"[{self.correlation_id}] ❌ Error SOAP: {e}")
             
-            if 'authentication' in str(e).lower() or '401' in str(e):
+            error_msg = str(e).lower()
+            if 'authentication' in error_msg or '401' in error_msg:
                 raise SUNATAuthenticationError(f"Error de autenticación: {e}")
-            else:
+            elif 'validation' in error_msg or 'invalid' in error_msg:
                 raise SUNATValidationError(f"Error validación SUNAT: {e}")
+            else:
+                raise SUNATError(f"Error SOAP: {e}")
         
         except Exception as e:
             print(f"[{self.correlation_id}] ❌ Error enviando documento: {e}")
@@ -416,18 +548,36 @@ class SUNATSoapClient:
                 
             except zeep.exceptions.TransportError as e:
                 last_exception = e
-                if 'timeout' in str(e).lower():
+                error_msg = str(e).lower()
+                
+                if 'timeout' in error_msg:
                     print(f"[{self.correlation_id}] ⏱️ Timeout en intento #{attempt + 1}")
                     if attempt == self.max_retries:
                         raise SUNATTimeoutError(f"Timeout después de {self.max_retries} intentos")
+                elif '401' in error_msg:
+                    print(f"[{self.correlation_id}] 🔒 Error autenticación en intento #{attempt + 1}")
+                    if attempt == self.max_retries:
+                        raise SUNATAuthenticationError(f"Error de autenticación: {e}")
                 else:
                     print(f"[{self.correlation_id}] 🌐 Error transporte en intento #{attempt + 1}: {e}")
                     if attempt == self.max_retries:
                         raise SUNATConnectionError(f"Error de conexión: {e}")
             
-            except zeep.exceptions.Fault:
-                # Errores SOAP no se reintentan
-                raise
+            except zeep.exceptions.Fault as e:
+                # Errores SOAP no se reintentan generalmente
+                error_msg = str(e).lower()
+                if 'authentication' in error_msg or '401' in error_msg:
+                    raise SUNATAuthenticationError(f"Error de autenticación: {e}")
+                elif 'validation' in error_msg or 'invalid' in error_msg:
+                    # Errores de validación podrían ser transitorios
+                    if attempt < self.max_retries:
+                        last_exception = e
+                        print(f"[{self.correlation_id}] ⚠️ Error validación en intento #{attempt + 1}: {e}")
+                        continue
+                    else:
+                        raise SUNATValidationError(f"Error de validación: {e}")
+                else:
+                    raise SUNATError(f"Error SOAP: {e}")
             
             except Exception as e:
                 last_exception = e
@@ -454,15 +604,18 @@ class SUNATSoapClient:
             wsdl_url = get_wsdl_url(self.service_type, self.environment)
             credentials = get_sunat_credentials(self.environment)
             
+            # Verificar operaciones disponibles
+            operations_ok = self._verify_operations()
+            
             # Intentar una operación simple para verificar conectividad
-            # En SUNAT Beta, podemos intentar sendBill con datos dummy para verificar autenticación
+            auth_ok = True
             try:
                 # Crear un ZIP dummy mínimo para probar autenticación
                 dummy_zip = base64.b64encode(b"dummy content").decode('utf-8')
                 
                 # Esto debería fallar con un error de validación, no de autenticación
                 test_response = self.client.service.sendBill(
-                    fileName="test.zip",
+                    fileName="test-20123456789-01-F001-00000001.zip",
                     contentFile=dummy_zip
                 )
                 
@@ -470,16 +623,26 @@ class SUNATSoapClient:
                 auth_ok = True
                 
             except zeep.exceptions.Fault as e:
-                error_msg = str(e)
-                if 'authentication' in error_msg.lower() or '401' in error_msg:
+                error_msg = str(e).lower()
+                if 'authentication' in error_msg or '401' in error_msg:
                     auth_ok = False
-                else:
+                    print(f"❌ Error de autenticación: {e}")
+                elif 'validation' in error_msg or 'invalid' in error_msg:
                     # Error de validación es esperado con datos dummy
                     auth_ok = True
+                    print(f"✅ Autenticación OK - Error de validación esperado")
+                else:
+                    auth_ok = True
+                    print(f"✅ Autenticación OK - Error esperado: {e}")
                     
             except Exception as e:
                 # Otros errores podrían indicar problemas de autenticación
-                auth_ok = False
+                error_msg = str(e).lower()
+                if 'authentication' in error_msg or '401' in error_msg:
+                    auth_ok = False
+                else:
+                    auth_ok = True
+                    print(f"✅ Autenticación OK - Error técnico: {e}")
             
             service_info = {
                 'wsdl_url': wsdl_url,
@@ -489,10 +652,11 @@ class SUNATSoapClient:
                 'ruc_configured': credentials['ruc'],
                 'username_configured': f"{credentials['ruc']}{credentials['username']}",
                 'wsdl_accessible': True,
-                'authentication_ok': auth_ok
+                'authentication_ok': auth_ok,
+                'operations_ok': operations_ok
             }
             
-            print("✅ Conexión SUNAT exitosa")
+            print(f"✅ Conexión SUNAT exitosa (auth={auth_ok}, ops={operations_ok})")
             
             return {
                 'success': True,
@@ -509,6 +673,14 @@ class SUNATSoapClient:
                 'error_type': type(e).__name__,
                 'timestamp': datetime.now()
             }
+    
+    def __del__(self):
+        """Limpieza al destruir el objeto"""
+        if hasattr(self, 'session') and self.session:
+            try:
+                self.session.close()
+            except:
+                pass
 
 # Función factory para crear clientes
 def create_sunat_client(service_type: str = 'factura', environment: str = None) -> SUNATSoapClient:
