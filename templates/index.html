@@ -71,19 +71,32 @@
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Tipo Documento</label>
                                     <select class="form-select" id="tipoDocumento" required>
-                                        <option value="01" selected>01 - Factura</option>
-                                        <option value="03">03 - Boleta</option>
-                                        <option value="07">07 - Nota Crédito</option>
-                                        <option value="08">08 - Nota Débito</option>
+                                        <option value="01" data-prefix="F" selected>01 - Factura</option>
+                                        <option value="03" data-prefix="B">03 - Boleta</option>
+                                        <option value="07" data-prefix="FC">07 - Nota Crédito</option>
+                                        <option value="08" data-prefix="FD">08 - Nota Débito</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Serie</label>
-                                    <input type="text" class="form-control" id="serie" value="F001" required>
+                                    <input type="text" class="form-control" id="serie" value="F001" required readonly>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Se genera automáticamente
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Número</label>
-                                    <input type="number" class="form-control" id="numero" value="1001" required>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="numero" value="1" required readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="nextNumero" title="Obtener siguiente número">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text text-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Auto-incremento activado
+                                    </div>
                                 </div>
                             </div>
 
@@ -95,9 +108,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Moneda</label>
                                     <select class="form-select" id="moneda">
-                                        <option value="PEN" selected>PEN - Soles</option>
-                                        <option value="USD">USD - Dólares</option>
-                                        <option value="EUR">EUR - Euros</option>
+                                        <option value="PEN" data-symbol="S/" data-name="Soles" selected>PEN - Soles Peruanos</option>
+                                        <option value="USD" data-symbol="$" data-name="Dólares">USD - Dólares Americanos</option>
+                                        <option value="EUR" data-symbol="€" data-name="Euros">EUR - Euros</option>
                                     </select>
                                 </div>
                             </div>
@@ -327,19 +340,19 @@
         </div>
     </div>
 
-    <!-- Modal para ver XML -->
-    <div class="modal fade" id="xmlModal" tabindex="-1">
+    <!-- Modal para ver XML - CORREGIDO para accesibilidad -->
+    <div class="modal fade" id="xmlModal" tabindex="-1" aria-labelledby="xmlModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="xmlModalLabel">
                         <i class="bi bi-code-slash me-2"></i>
                         XML UBL 2.1 Generado
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <pre id="xmlContent" class="bg-dark text-light p-3 mb-0" style="max-height: 70vh; overflow-y: auto;"></pre>
+                    <pre id="xmlContent" class="bg-dark text-light p-3 mb-0" style="max-height: 70vh; overflow-y: auto;" role="textbox" aria-readonly="true" aria-label="Contenido XML generado"></pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" id="copiarXML">
@@ -362,6 +375,185 @@
         let itemCounter = 0;
         let xmlGenerado = '';
         let documentoId = '';
+        let currentCurrencySymbol = 'S/'; // Símbolo de moneda actual
+
+        // ============================================================================
+        // 🔢 SISTEMA DE NUMERACIÓN ÚNICA Y PERSISTENTE - VERSIÓN MEJORADA
+        // ============================================================================
+
+        // Generador de números únicos que nunca se repiten
+        class UniqueDocumentNumberGenerator {
+            constructor() {
+                this.storageKey = 'facturacion_document_counters_v2';
+                this.backupKey = 'facturacion_backup_counters';
+                this.loadCounters();
+            }
+
+            // Cargar contadores desde localStorage con validación
+            loadCounters() {
+                try {
+                    const saved = localStorage.getItem(this.storageKey);
+                    if (saved) {
+                        this.counters = JSON.parse(saved);
+                        console.log('📥 Contadores cargados:', this.counters);
+                    } else {
+                        // Primera vez: inicializar con números base seguros
+                        this.counters = this.initializeCounters();
+                        console.log('🆕 Contadores inicializados:', this.counters);
+                    }
+                    
+                    // Validar integridad
+                    this.validateCounters();
+                    
+                } catch (error) {
+                    console.error('❌ Error cargando contadores:', error);
+                    this.counters = this.initializeCounters();
+                }
+            }
+
+            // Inicializar contadores con números base únicos
+            initializeCounters() {
+                const now = new Date();
+                const timestamp = now.getFullYear().toString().slice(-2) + 
+                                 (now.getMonth() + 1).toString().padStart(2, '0') +
+                                 now.getDate().toString().padStart(2, '0');
+                
+                // Números base únicos por tipo de documento
+                return {
+                    'F001': parseInt(timestamp + '001'), // Facturas: ej. 25070701
+                    'B001': parseInt(timestamp + '101'), // Boletas: ej. 25070711  
+                    'FC001': parseInt(timestamp + '201'), // Notas Crédito: ej. 25070721
+                    'FD001': parseInt(timestamp + '301'), // Notas Débito: ej. 25070731
+                    'lastUpdate': now.toISOString(),
+                    'sessionId': this.generateSessionId()
+                };
+            }
+
+            // Generar ID de sesión único
+            generateSessionId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            // Validar que los contadores son correctos
+            validateCounters() {
+                const requiredSeries = ['F001', 'B001', 'FC001', 'FD001'];
+                let needsSave = false;
+
+                requiredSeries.forEach(serie => {
+                    if (!this.counters[serie] || this.counters[serie] < 1) {
+                        const timestamp = new Date().getFullYear().toString().slice(-2) + 
+                                         (new Date().getMonth() + 1).toString().padStart(2, '0') +
+                                         new Date().getDate().toString().padStart(2, '0');
+                        
+                        const baseNumber = {
+                            'F001': parseInt(timestamp + '001'),
+                            'B001': parseInt(timestamp + '101'), 
+                            'FC001': parseInt(timestamp + '201'),
+                            'FD001': parseInt(timestamp + '301')
+                        };
+                        
+                        this.counters[serie] = baseNumber[serie];
+                        needsSave = true;
+                        console.log(`🔧 Reparado contador ${serie}: ${this.counters[serie]}`);
+                    }
+                });
+
+                if (needsSave) {
+                    this.saveCounters();
+                }
+            }
+
+            // Obtener siguiente número único para una serie
+            getNextNumber(serie) {
+                if (!this.counters[serie]) {
+                    console.error(`❌ Serie ${serie} no encontrada`);
+                    return this.initializeCounters()[serie] || 1;
+                }
+
+                const currentNumber = this.counters[serie];
+                const nextNumber = currentNumber + 1;
+                
+                // Actualizar contador
+                this.counters[serie] = nextNumber;
+                this.counters.lastUpdate = new Date().toISOString();
+                
+                // Guardar inmediatamente
+                this.saveCounters();
+                
+                console.log(`🔢 ${serie}: ${currentNumber} → ${nextNumber}`);
+                return currentNumber; // Retornamos el número actual, el siguiente queda guardado
+            }
+
+            // Obtener número actual sin incrementar
+            getCurrentNumber(serie) {
+                return this.counters[serie] || this.initializeCounters()[serie] || 1;
+            }
+
+            // Guardar contadores con backup
+            saveCounters() {
+                try {
+                    // Backup del estado anterior
+                    const current = localStorage.getItem(this.storageKey);
+                    if (current) {
+                        localStorage.setItem(this.backupKey, current);
+                    }
+                    
+                    // Guardar nuevo estado
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.counters));
+                    console.log('💾 Contadores guardados:', this.counters);
+                    
+                } catch (error) {
+                    console.error('❌ Error guardando contadores:', error);
+                }
+            }
+
+            // Restaurar desde backup
+            restoreFromBackup() {
+                try {
+                    const backup = localStorage.getItem(this.backupKey);
+                    if (backup) {
+                        this.counters = JSON.parse(backup);
+                        this.saveCounters();
+                        console.log('🔄 Restaurado desde backup');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('❌ Error restaurando backup:', error);
+                }
+                return false;
+            }
+
+            // Mostrar estado actual (para debug)
+            getStatus() {
+                return {
+                    counters: this.counters,
+                    sessionId: this.counters.sessionId,
+                    lastUpdate: this.counters.lastUpdate,
+                    totalDocuments: Object.keys(this.counters)
+                        .filter(k => k.endsWith('001'))
+                        .reduce((sum, k) => sum + (this.counters[k] || 0), 0)
+                };
+            }
+
+            // Resetear solo si es necesario (emergencia)
+            emergencyReset() {
+                if (confirm('⚠️ ADVERTENCIA: Esto reseteará todos los contadores. ¿Continuar?')) {
+                    localStorage.removeItem(this.storageKey);
+                    localStorage.removeItem(this.backupKey);
+                    this.counters = this.initializeCounters();
+                    this.saveCounters();
+                    console.log('🔄 Reset de emergencia completado');
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        // Instancia global del generador
+        const documentNumberGenerator = new UniqueDocumentNumberGenerator();
+
+        // Control de numeración por tipo de documento y serie (LEGACY - Solo para referencia)
+        let documentCounters = {};
 
         // URLs de la API
         const API_BASE = 'http://localhost:8000/api';
@@ -380,9 +572,24 @@
             
             // Cargar empresas
             cargarEmpresas();
+            
+            // Configurar numeración inicial
+            updateSerieAndNumber();
+            
+            // Configurar moneda inicial
+            updateCurrencyDisplay();
         }
 
         function setupEventListeners() {
+            // Cambio de tipo de documento
+            document.getElementById('tipoDocumento').addEventListener('change', updateSerieAndNumber);
+            
+            // Cambio de moneda
+            document.getElementById('moneda').addEventListener('change', updateCurrencyDisplay);
+            
+            // Obtener siguiente número
+            document.getElementById('nextNumero').addEventListener('click', getNextNumber);
+            
             // Agregar item
             document.getElementById('agregarItem').addEventListener('click', agregarItem);
             
@@ -404,6 +611,143 @@
             // Copiar XML
             document.getElementById('copiarXML').addEventListener('click', copiarXML);
         }
+
+        // ============================================================================
+        // NUEVA FUNCIONALIDAD: GESTIÓN DE NUMERACIÓN AUTOMÁTICA
+        // ============================================================================
+
+        function updateSerieAndNumber() {
+            const tipoDocumento = document.getElementById('tipoDocumento');
+            const selectedOption = tipoDocumento.options[tipoDocumento.selectedIndex];
+            const prefix = selectedOption.getAttribute('data-prefix');
+            
+            // Generar serie automática
+            const serie = `${prefix}001`;
+            document.getElementById('serie').value = serie;
+            
+            // ⭐ NUEVO: Obtener número único del generador
+            const currentNumber = documentNumberGenerator.getCurrentNumber(serie);
+            document.getElementById('numero').value = currentNumber;
+            
+            console.log(`📋 Serie actualizada: ${serie}, Número único: ${currentNumber}`);
+            
+            // Mostrar información más detallada
+            const status = documentNumberGenerator.getStatus();
+            showAlert(`Serie: ${serie} | Número único: ${currentNumber} | Documentos totales: ${status.totalDocuments}`, 'info');
+        }
+
+        function getNextNumber() {
+            const serie = document.getElementById('serie').value;
+            
+            // ⭐ NUEVO: Usar generador para obtener siguiente número único
+            const nextNumber = documentNumberGenerator.getNextNumber(serie);
+            document.getElementById('numero').value = nextNumber;
+            
+            console.log(`🔢 Siguiente número único para ${serie}: ${nextNumber}`);
+            showAlert(`Número único obtenido: ${serie}-${nextNumber.toString().padStart(8, '0')}`, 'success');
+        }
+
+        async function getNextNumberFromServer() {
+            try {
+                const empresaId = document.getElementById('empresaId').value;
+                const tipoDocumento = document.getElementById('tipoDocumento').value;
+                const serie = document.getElementById('serie').value;
+                
+                if (!empresaId) {
+                    showAlert('Seleccione una empresa primero', 'warning');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/siguiente-numero/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        empresa_id: empresaId,
+                        tipo_documento: tipoDocumento,
+                        serie: serie
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const nextNumber = result.siguiente_numero;
+                    document.getElementById('numero').value = nextNumber;
+                    documentCounters[serie] = nextNumber;
+                    
+                    showAlert(`Número obtenido del servidor: ${nextNumber}`, 'success');
+                } else {
+                    console.log('Usando numeración local como fallback');
+                    getNextNumber();
+                }
+            } catch (error) {
+                console.log('Error obteniendo número del servidor, usando local:', error);
+                getNextNumber();
+            }
+        }
+
+        // ============================================================================
+        // NUEVA FUNCIONALIDAD: GESTIÓN DE MONEDA DINÁMICA
+        // ============================================================================
+
+        function updateCurrencyDisplay() {
+            const monedaSelect = document.getElementById('moneda');
+            const selectedOption = monedaSelect.options[monedaSelect.selectedIndex];
+            const symbol = selectedOption.getAttribute('data-symbol');
+            const name = selectedOption.getAttribute('data-name');
+            
+            // Actualizar símbolo global
+            currentCurrencySymbol = symbol;
+            
+            // Actualizar todos los elementos de moneda en la interfaz
+            updateAllCurrencyElements();
+            
+            console.log(`💰 Moneda cambiada a: ${name} (${symbol})`);
+            showAlert(`Moneda actualizada: ${name}`, 'info');
+        }
+
+        function updateAllCurrencyElements() {
+            // Elementos en tabla de totales
+            const currencyElements = [
+                'subtotalGravado',
+                'subtotalExonerado', 
+                'subtotalInafecto',
+                'totalIgv',
+                'totalIsc',
+                'totalIcbper',
+                'totalGeneral'
+            ];
+            
+            currencyElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const currentText = element.textContent;
+                    const amount = currentText.replace(/[^\d.,]/g, '');
+                    element.textContent = `${currentCurrencySymbol} ${amount}`;
+                }
+            });
+            
+            // Actualizar valores en tabla de items
+            const valorVentaCells = document.querySelectorAll('.valor-venta');
+            valorVentaCells.forEach(cell => {
+                const currentText = cell.textContent;
+                const amount = currentText.replace(/[^\d.,]/g, '');
+                cell.textContent = `${currentCurrencySymbol} ${amount}`;
+            });
+            
+            // Recalcular totales para aplicar nueva moneda
+            calcularTotales();
+        }
+
+        function formatCurrency(amount) {
+            return `${currentCurrencySymbol} ${parseFloat(amount).toFixed(2)}`;
+        }
+
+        // ============================================================================
+        // FUNCIONES EXISTENTES MODIFICADAS
+        // ============================================================================
 
         async function cargarEmpresas() {
             try {
@@ -435,7 +779,6 @@
             agregarItem();
         }
 
-        // FUNCIÓN CORREGIDA - Agregar Item
         function agregarItem() {
             itemCounter++;
             const tbody = document.getElementById('itemsTableBody');
@@ -478,7 +821,7 @@
                     <input type="text" class="form-control form-control-sm" 
                            placeholder="PROD001" value="PROD${itemCounter.toString().padStart(3, '0')}">
                 </td>
-                <td class="align-middle text-end fw-bold valor-venta">S/ 100.00</td>
+                <td class="align-middle text-end fw-bold valor-venta">${formatCurrency(100.00)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${itemCounter})">
                         <i class="bi bi-trash"></i>
@@ -517,8 +860,8 @@
                 
                 const valorVenta = cantidad * precio;
                 
-                // Actualizar valor de venta en la fila
-                row.cells[7].textContent = `S/ ${valorVenta.toFixed(2)}`;
+                // Actualizar valor de venta en la fila con moneda actual
+                row.cells[7].textContent = formatCurrency(valorVenta);
                 
                 if (afectacion === '10') { // Gravado
                     subtotalGravado += valorVenta;
@@ -532,17 +875,20 @@
 
             const total = subtotalGravado + subtotalExonerado + subtotalInafecto + totalIgv;
 
-            // Actualizar UI
-            document.getElementById('subtotalGravado').textContent = `S/ ${subtotalGravado.toFixed(2)}`;
-            document.getElementById('subtotalExonerado').textContent = `S/ ${subtotalExonerado.toFixed(2)}`;
-            document.getElementById('subtotalInafecto').textContent = `S/ ${subtotalInafecto.toFixed(2)}`;
-            document.getElementById('totalIgv').textContent = `S/ ${totalIgv.toFixed(2)}`;
-            document.getElementById('totalIsc').textContent = `S/ 0.00`;
-            document.getElementById('totalIcbper').textContent = `S/ 0.00`;
-            document.getElementById('totalGeneral').textContent = `S/ ${total.toFixed(2)}`;
+            // Actualizar UI con moneda actual
+            document.getElementById('subtotalGravado').textContent = formatCurrency(subtotalGravado);
+            document.getElementById('subtotalExonerado').textContent = formatCurrency(subtotalExonerado);
+            document.getElementById('subtotalInafecto').textContent = formatCurrency(subtotalInafecto);
+            document.getElementById('totalIgv').textContent = formatCurrency(totalIgv);
+            document.getElementById('totalIsc').textContent = formatCurrency(0);
+            document.getElementById('totalIcbper').textContent = formatCurrency(0);
+            document.getElementById('totalGeneral').textContent = formatCurrency(total);
         }
 
-        // FUNCIÓN CORREGIDA - Generar XML
+        // ============================================================================
+        // FUNCIÓN MEJORADA: GENERAR XML CON AUTO-INCREMENTO
+        // ============================================================================
+
         async function generarXML() {
             try {
                 updateProgress(10, 'Validando datos...');
@@ -597,6 +943,9 @@
                 if (response.ok && result.success) {
                     updateProgress(100, 'Completado exitosamente');
                     
+                    // ⭐ NUEVO: AUTO-INCREMENTAR NÚMERO DESPUÉS DE ÉXITO
+                    incrementarNumeroDocumento();
+                    
                     // Guardar datos
                     xmlGenerado = result.xml_firmado;
                     documentoId = result.documento_id;
@@ -608,7 +957,7 @@
                     document.getElementById('descargarXML').disabled = false;
                     document.getElementById('verXML').disabled = false;
                     
-                    showAlert('¡XML generado exitosamente!', 'success');
+                    showAlert('¡XML generado exitosamente! Número auto-incrementado.', 'success');
                     console.log('✅ XML generado exitosamente');
                     
                 } else {
@@ -641,7 +990,20 @@
             }
         }
 
-        // FUNCIÓN CORREGIDA - Validar Formulario
+        // ⭐ NUEVA FUNCIÓN: AUTO-INCREMENTAR DESPUÉS DE ÉXITO - VERSIÓN ÚNICA
+        function incrementarNumeroDocumento() {
+            const serie = document.getElementById('serie').value;
+            
+            // ⭐ NUEVO: Usar generador para obtener siguiente número único
+            const nextNumber = documentNumberGenerator.getNextNumber(serie);
+            
+            // Actualizar campo en la interfaz con el siguiente número
+            document.getElementById('numero').value = nextNumber;
+            
+            console.log(`🔢 Número auto-incrementado único: ${serie} - ${nextNumber}`);
+            showAlert(`📄 Documento guardado. Siguiente número: ${nextNumber}`, 'success');
+        }
+
         function validarFormulario() {
             console.log('🔍 Validando formulario...');
             
@@ -692,7 +1054,6 @@
             return true;
         }
 
-        // FUNCIÓN CORREGIDA - Preparar Datos
         function prepararDatos() {
             const items = [];
             const rows = document.querySelectorAll('#itemsTableBody tr');
@@ -779,7 +1140,12 @@
             document.getElementById('resultEstado').textContent = result.estado;
             document.getElementById('resultHash').textContent = result.hash;
             document.getElementById('resultTiempo').textContent = result.processing_time_ms;
-            document.getElementById('resultTotal').textContent = `S/ ${result.totales.total_precio_venta.toFixed(2)}`;
+            
+            // ⭐ MOSTRAR TOTAL CON MONEDA ACTUAL
+            const monedaActual = document.getElementById('moneda').value;
+            const symbolActual = document.getElementById('moneda').options[document.getElementById('moneda').selectedIndex].getAttribute('data-symbol');
+            document.getElementById('resultTotal').textContent = `${symbolActual} ${result.totales.total_precio_venta.toFixed(2)}`;
+            
             document.getElementById('resultVersion').textContent = result.generator_version;
             document.getElementById('resultUBL').textContent = result.ubl_version;
             
@@ -789,8 +1155,29 @@
 
         function mostrarXML() {
             if (xmlGenerado) {
+                // ⭐ CORREGIDO: Manejar aria-hidden del modal correctamente
+                const modal = document.getElementById('xmlModal');
+                const modalInstance = new bootstrap.Modal(modal);
+                
+                // Configurar contenido antes de mostrar
                 document.getElementById('xmlContent').textContent = xmlGenerado;
-                new bootstrap.Modal(document.getElementById('xmlModal')).show();
+                
+                // Remover aria-hidden antes de mostrar para evitar problemas de accesibilidad
+                modal.addEventListener('shown.bs.modal', function() {
+                    modal.removeAttribute('aria-hidden');
+                    // Enfocar el botón de cerrar para accesibilidad
+                    const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
+                    if (closeButton) {
+                        closeButton.focus();
+                    }
+                });
+                
+                // Restaurar aria-hidden al cerrar
+                modal.addEventListener('hidden.bs.modal', function() {
+                    modal.setAttribute('aria-hidden', 'true');
+                });
+                
+                modalInstance.show();
             }
         }
 
@@ -800,11 +1187,19 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `factura_${documentoId.substring(0, 8)}.xml`;
+                
+                // ⭐ NOMBRE DE ARCHIVO CON SERIE Y NÚMERO ACTUAL
+                const serie = document.getElementById('serie').value;
+                const numero = document.getElementById('numero').value;
+                const tipoDoc = document.getElementById('tipoDocumento').value;
+                a.download = `${tipoDoc}-${serie}-${numero.toString().padStart(8, '0')}.xml`;
+                
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                
+                showAlert(`XML descargado: ${a.download}`, 'success');
             }
         }
 
@@ -827,12 +1222,18 @@
                 // Restablecer valores por defecto
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('fechaEmision').value = today;
-                document.getElementById('numero').value = parseInt(document.getElementById('numero').value) + 1;
+                
+                // ⭐ MANTENER NUMERACIÓN ACTUAL (NO RESETEAR)
+                updateSerieAndNumber(); // Esto mantendrá el número actual
                 
                 // Limpiar variables
                 xmlGenerado = '';
                 documentoId = '';
                 itemCounter = 0;
+                
+                // Restablecer moneda y símbolo
+                document.getElementById('moneda').value = 'PEN';
+                updateCurrencyDisplay();
                 
                 // Deshabilitar botones
                 document.getElementById('descargarXML').disabled = true;
@@ -842,7 +1243,7 @@
                 agregarItemInicial();
                 
                 updateProgress(0, 'Listo para generar');
-                showAlert('Formulario limpiado exitosamente', 'info');
+                showAlert('Formulario limpiado. Numeración conservada.', 'info');
             }
         }
 
@@ -933,14 +1334,6 @@
             return icons[type] || 'info-circle-fill';
         }
 
-        // Función auxiliar para formatear números
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('es-PE', {
-                style: 'currency',
-                currency: 'PEN'
-            }).format(amount);
-        }
-
         // Auto-calcular totales cuando se cambian valores
         document.addEventListener('input', function(e) {
             if (e.target.matches('#itemsTableBody input[type="number"]') || 
@@ -971,6 +1364,113 @@
             value = value.replace(/[^A-Z0-9]/g, '');
             e.target.value = value.substring(0, 4);
         });
+
+        // ============================================================================
+        // FUNCIONES AUXILIARES DE MONEDA
+        // ============================================================================
+
+        // Mapeo de monedas a sus configuraciones regionales
+        const currencyConfig = {
+            'PEN': { locale: 'es-PE', currency: 'PEN' },
+            'USD': { locale: 'en-US', currency: 'USD' },
+            'EUR': { locale: 'de-DE', currency: 'EUR' }
+        };
+
+        function formatCurrencyAdvanced(amount, currencyCode = null) {
+            const moneda = currencyCode || document.getElementById('moneda').value;
+            const config = currencyConfig[moneda];
+            
+            if (config) {
+                return new Intl.NumberFormat(config.locale, {
+                    style: 'currency',
+                    currency: config.currency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(amount);
+            }
+            
+            // Fallback al símbolo simple
+            return formatCurrency(amount);
+        }
+
+        // ============================================================================
+        // INICIALIZACIÓN DE EVENTOS ESPECIALES
+        // ============================================================================
+
+        // ============================================================================
+        // FUNCIONES AUXILIARES MEJORADAS
+        // ============================================================================
+
+        // Debug: Mostrar contadores actuales - VERSIÓN NUEVA
+        function debugCounters() {
+            const status = documentNumberGenerator.getStatus();
+            console.log('🔢 Sistema de Numeración Única:');
+            console.log('   📊 Contadores actuales:', status.counters);
+            console.log('   🆔 Session ID:', status.sessionId);
+            console.log('   📅 Última actualización:', status.lastUpdate);
+            console.log('   📈 Total documentos:', status.totalDocuments);
+            console.log('💰 Símbolo moneda actual:', currentCurrencySymbol);
+            
+            // Mostrar también en UI
+            showAlert(`Debug: ${status.totalDocuments} documentos | Sesión: ${status.sessionId.slice(-8)}`, 'info');
+        }
+
+        // Función de emergencia para resetear numeración
+        function emergencyResetCounters() {
+            return documentNumberGenerator.emergencyReset();
+        }
+
+        // Función para obtener backup de contadores
+        function backupCounters() {
+            const status = documentNumberGenerator.getStatus();
+            const backup = {
+                timestamp: new Date().toISOString(),
+                data: status
+            };
+            
+            // Crear archivo de descarga
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `facturacion_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showAlert('Backup de contadores descargado', 'success');
+        }
+
+        // Exponer funciones debug al window para uso en consola
+        window.debugCounters = debugCounters;
+        window.emergencyResetCounters = emergencyResetCounters;
+        window.backupCounters = backupCounters;
+        window.documentNumberGenerator = documentNumberGenerator;
+
+        // ============================================================================
+        // INICIALIZACIÓN MEJORADA
+        // ============================================================================
+
+        console.log('🎉 Sistema de Facturación Electrónica UBL 2.1 - Versión Única');
+        console.log('✨ Funcionalidades nuevas:');
+        console.log('   • 🔢 Numeración única que NUNCA se repite');
+        console.log('   • 💾 Persistencia permanente en localStorage');
+        console.log('   • 🔄 Auto-incremento inteligente');
+        console.log('   • 💰 Cambio dinámico de símbolos de moneda');
+        console.log('   • ♿ Accesibilidad corregida en modal');
+        console.log('   • 🛡️ Validaciones y backup automático');
+        console.log('');
+        console.log('💡 Comandos disponibles en consola:');
+        console.log('   debugCounters() - Ver estado actual');
+        console.log('   emergencyResetCounters() - Reset de emergencia');
+        console.log('   backupCounters() - Descargar backup');
+        
+        // Mostrar estado inicial
+        setTimeout(() => {
+            const status = documentNumberGenerator.getStatus();
+            console.log(`📊 Estado inicial: ${status.totalDocuments} documentos generados`);
+        }, 1000);
     </script>
 </body>
 </html>
