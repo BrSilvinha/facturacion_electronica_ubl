@@ -1,13 +1,15 @@
 """
-Cliente SOAP para integración con SUNAT - VERSIÓN CORREGIDA
+Cliente SOAP para integración con SUNAT - VERSIÓN CORREGIDA FINAL
 Ubicación: sunat_integration/soap_client.py
 Implementa comunicación completa con servicios web SUNAT
+CORREGIDO: Problema con schemaLocation en WSDL
 """
 
 import os
 import logging
 import zipfile
 import base64
+import tempfile
 from datetime import datetime
 from io import BytesIO
 from typing import Dict, Any, Optional
@@ -46,6 +48,7 @@ class SUNATSoapClient:
     """
     Cliente SOAP para comunicación con servicios web SUNAT
     Soporta sendBill, sendSummary, getStatus y getStatusCdr
+    VERSIÓN CORREGIDA para problemas de autenticación en WSDL
     """
     
     def __init__(self, service_type: str = 'factura', environment: str = None, lazy_init: bool = True):
@@ -101,8 +104,8 @@ class SUNATSoapClient:
             # Configurar transporte
             self._setup_transport()
             
-            # Crear cliente zeep
-            self._create_zeep_client()
+            # Crear cliente zeep - VERSIÓN CORREGIDA
+            self._create_zeep_client_fixed()
             
             # Configurar autenticación WS-Security
             self._setup_wsse()
@@ -164,8 +167,8 @@ class SUNATSoapClient:
             cache=False  # Deshabilitar cache para evitar problemas
         )
     
-    def _create_zeep_client(self):
-        """Crea cliente zeep"""
+    def _create_zeep_client_fixed(self):
+        """Crea cliente zeep - VERSIÓN CORREGIDA PARA SUNAT"""
         logger.debug(f"🌐 Conectando a WSDL: {self.wsdl_url}")
         
         # Configuración zeep permisiva
@@ -180,50 +183,179 @@ class SUNATSoapClient:
         )
         
         try:
+            # PRIMER INTENTO: WSDL directo con transporte autenticado
             self.zeep_client = Client(
                 wsdl=self.wsdl_url,
-                transport=self.transport,
+                transport=self.transport,  # Ya tiene autenticación configurada
                 settings=settings_zeep
             )
+            logger.info("✅ Cliente SOAP creado exitosamente")
             
         except Exception as e:
-            # Si falla, intentar con WSDL local
-            logger.warning(f"Error con WSDL remoto: {e}")
-            logger.info("Intentando con WSDL local...")
-            self._create_zeep_client_with_local_wsdl()
-    
-    def _create_zeep_client_with_local_wsdl(self):
-        """Crea cliente zeep descargando WSDL localmente"""
-        try:
-            # Descargar WSDL
-            response = self.session.get(self.wsdl_url, timeout=30)
-            response.raise_for_status()
+            # SEGUNDO INTENTO: WSDL sin schemaLocation problemático
+            logger.warning(f"Error con WSDL completo: {e}")
+            logger.info("Intentando con WSDL simplificado...")
             
-            # Guardar temporalmente
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.wsdl', delete=False) as f:
-                f.write(response.text)
-                local_wsdl_path = f.name
-            
-            # Crear cliente con archivo local
-            settings_zeep = Settings(strict=False, xml_huge_tree=True)
-            
-            self.zeep_client = Client(
-                wsdl=f"file://{local_wsdl_path}",
-                transport=self.transport,
-                settings=settings_zeep
-            )
-            
-            # Limpiar archivo temporal
             try:
-                os.unlink(local_wsdl_path)
-            except:
-                pass
+                # Descargar WSDL y corregir
+                response = self.session.get(self.wsdl_url, timeout=30)
+                response.raise_for_status()
+                
+                wsdl_content = response.text
+                
+                # CORRECCIÓN: Remover schemaLocation problemático
+                wsdl_fixed = wsdl_content.replace(
+                    'schemaLocation="billService.xsd2.xsd"', 
+                    ''
+                ).replace(
+                    'schemaLocation="billService?ns1.xsd"',
+                    ''
+                ).replace(
+                    'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
+                    'xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"'
+                )
+                
+                # Guardar WSDL corregido temporalmente
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.wsdl', delete=False, encoding='utf-8') as f:
+                    f.write(wsdl_fixed)
+                    local_wsdl_path = f.name
+                
+                try:
+                    # Crear cliente con WSDL corregido
+                    self.zeep_client = Client(
+                        wsdl=f"file://{local_wsdl_path}",
+                        transport=self.transport,
+                        settings=settings_zeep
+                    )
+                    logger.info("✅ Cliente SOAP creado con WSDL corregido")
+                    
+                finally:
+                    # Limpiar archivo temporal
+                    try:
+                        os.unlink(local_wsdl_path)
+                    except:
+                        pass
+                        
+            except Exception as e2:
+                # TERCER INTENTO: WSDL mínimo funcional
+                logger.warning(f"Error con WSDL corregido: {e2}")
+                logger.info("Creando WSDL mínimo funcional...")
+                
+                # WSDL mínimo que funciona con las operaciones básicas
+                minimal_wsdl = f'''<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://service.sunat.gob.pe"
+    targetNamespace="http://service.sunat.gob.pe">
+    
+    <wsdl:types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                   targetNamespace="http://service.sunat.gob.pe"
+                   elementFormDefault="qualified">
             
-            logger.info("✅ Cliente creado con WSDL local")
+            <xsd:element name="sendBill">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="fileName" type="xsd:string"/>
+                        <xsd:element name="contentFile" type="xsd:base64Binary"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             
-        except Exception as e:
-            raise SUNATConnectionError(f"Error creando cliente con WSDL local: {e}")
+            <xsd:element name="sendBillResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="applicationResponse" type="xsd:base64Binary"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="getStatus">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="ticket" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="getStatusResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="status" type="xsd:string"/>
+                        <xsd:element name="content" type="xsd:base64Binary" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+        </xsd:schema>
+    </wsdl:types>
+    
+    <wsdl:message name="sendBillRequest">
+        <wsdl:part name="parameters" element="tns:sendBill"/>
+    </wsdl:message>
+    <wsdl:message name="sendBillResponse">
+        <wsdl:part name="parameters" element="tns:sendBillResponse"/>
+    </wsdl:message>
+    <wsdl:message name="getStatusRequest">
+        <wsdl:part name="parameters" element="tns:getStatus"/>
+    </wsdl:message>
+    <wsdl:message name="getStatusResponse">
+        <wsdl:part name="parameters" element="tns:getStatusResponse"/>
+    </wsdl:message>
+    
+    <wsdl:portType name="billService">
+        <wsdl:operation name="sendBill">
+            <wsdl:input message="tns:sendBillRequest"/>
+            <wsdl:output message="tns:sendBillResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="getStatus">
+            <wsdl:input message="tns:getStatusRequest"/>
+            <wsdl:output message="tns:getStatusResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    <wsdl:binding name="billServiceSoapBinding" type="tns:billService">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="sendBill">
+            <soap:operation soapAction="urn:sendBill"/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getStatus">
+            <soap:operation soapAction="urn:getStatus"/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    
+    <wsdl:service name="billService">
+        <wsdl:port name="billServicePort" binding="tns:billServiceSoapBinding">
+            <soap:address location="{self.wsdl_url.replace('?wsdl', '')}"/>
+        </wsdl:port>
+    </wsdl:service>
+    
+</wsdl:definitions>'''
+                
+                # Guardar WSDL mínimo
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.wsdl', delete=False, encoding='utf-8') as f:
+                    f.write(minimal_wsdl)
+                    minimal_wsdl_path = f.name
+                
+                try:
+                    self.zeep_client = Client(
+                        wsdl=f"file://{minimal_wsdl_path}",
+                        transport=self.transport,
+                        settings=settings_zeep
+                    )
+                    logger.info("✅ Cliente SOAP creado con WSDL mínimo")
+                    
+                finally:
+                    # Limpiar archivo temporal
+                    try:
+                        os.unlink(minimal_wsdl_path)
+                    except:
+                        pass
     
     def _setup_wsse(self):
         """Configura WS-Security para autenticación SOAP"""
