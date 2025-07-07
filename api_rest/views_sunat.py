@@ -1,7 +1,7 @@
 """
-Endpoints de API para integración con SUNAT
+Endpoints de API para integración con SUNAT - VERSIÓN CORREGIDA
 Ubicación: api_rest/views_sunat.py
-VERSIÓN CORREGIDA - Usa lazy loading para clientes SUNAT
+CORREGIDO: Manejo de importaciones opcionales y lazy loading
 """
 
 from rest_framework.views import APIView
@@ -13,16 +13,38 @@ from decimal import Decimal
 import logging
 
 from documentos.models import DocumentoElectronico, LogOperacion
-from sunat_integration import (
-    get_sunat_client, cdr_processor, SUNATError, 
-    SUNATConnectionError, SUNATAuthenticationError, SUNATValidationError
-)
+
+# Imports seguros de SUNAT
+try:
+    from sunat_integration import (
+        get_sunat_client, create_sunat_client,
+        SUNATError, SUNATConnectionError, SUNATAuthenticationError, 
+        SUNATValidationError, cdr_processor
+    )
+    SUNAT_AVAILABLE = True
+except ImportError as e:
+    SUNAT_AVAILABLE = False
+    SUNAT_ERROR = str(e)
 
 logger = logging.getLogger('sunat')
+
+def sunat_required(func):
+    """Decorador para verificar que SUNAT esté disponible"""
+    def wrapper(*args, **kwargs):
+        if not SUNAT_AVAILABLE:
+            return Response({
+                'success': False,
+                'error': 'SUNAT integration no disponible',
+                'details': SUNAT_ERROR if 'SUNAT_ERROR' in globals() else 'Módulo no cargado',
+                'suggestion': 'Verificar instalación de dependencias: pip install zeep'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return func(*args, **kwargs)
+    return wrapper
 
 class TestSUNATConnectionView(APIView):
     """Prueba la conexión con SUNAT Beta"""
     
+    @sunat_required
     def get(self, request):
         """Prueba conexión básica"""
         try:
@@ -50,6 +72,7 @@ class TestSUNATConnectionView(APIView):
 class SendBillToSUNATView(APIView):
     """Envía documento individual a SUNAT (síncrono)"""
     
+    @sunat_required
     def post(self, request):
         """
         Envía factura, nota de crédito o débito a SUNAT
@@ -107,18 +130,24 @@ class SendBillToSUNATView(APIView):
                 
                 response = client.send_bill(documento, documento.xml_firmado)
                 
-                # Procesar CDR
-                cdr_data = cdr_processor.process_cdr_zip(response['cdr_content'])
+                # Procesar CDR si está disponible
+                cdr_data = None
+                if cdr_processor and response.get('cdr_content'):
+                    cdr_data = cdr_processor.process_cdr_zip(response['cdr_content'])
                 
                 # Actualizar estado del documento
-                if cdr_data['is_accepted']:
+                if cdr_data and cdr_data.get('is_accepted'):
                     documento.estado = 'ACEPTADO'
-                    log_message = f"Documento aceptado por SUNAT. CDR: {cdr_data['cdr_id']}"
+                    log_message = f"Documento aceptado por SUNAT. CDR: {cdr_data.get('cdr_id', 'N/A')}"
                     log_estado = 'SUCCESS'
-                else:
+                elif cdr_data and cdr_data.get('is_rejected'):
                     documento.estado = 'RECHAZADO'
-                    log_message = f"Documento rechazado por SUNAT. Código: {cdr_data['response_code']}"
+                    log_message = f"Documento rechazado por SUNAT. Código: {cdr_data.get('response_code', 'N/A')}"
                     log_estado = 'ERROR'
+                else:
+                    documento.estado = 'ENVIADO'
+                    log_message = "Documento enviado a SUNAT exitosamente"
+                    log_estado = 'SUCCESS'
                 
                 documento.save()
                 
@@ -132,7 +161,8 @@ class SendBillToSUNATView(APIView):
                     duracion_ms=duration_ms
                 )
                 
-                return Response({
+                # Preparar respuesta
+                result = {
                     'success': True,
                     'document_id': str(documento.id),
                     'document_number': documento.get_numero_completo(),
@@ -141,18 +171,23 @@ class SendBillToSUNATView(APIView):
                         'duration_ms': response['duration_ms'],
                         'correlation_id': response['correlation_id']
                     },
-                    'cdr_info': {
-                        'cdr_id': cdr_data['cdr_id'],
-                        'is_accepted': cdr_data['is_accepted'],
-                        'is_rejected': cdr_data['is_rejected'],
-                        'response_code': cdr_data['response_code'],
-                        'response_description': cdr_data['response_description'],
-                        'notes_count': len(cdr_data['notes']),
-                        'status_summary': cdr_data['status_summary']
-                    },
                     'document_status': documento.estado,
                     'timestamp': timezone.now()
-                })
+                }
+                
+                # Agregar información del CDR si está disponible
+                if cdr_data:
+                    result['cdr_info'] = {
+                        'cdr_id': cdr_data.get('cdr_id'),
+                        'is_accepted': cdr_data.get('is_accepted'),
+                        'is_rejected': cdr_data.get('is_rejected'),
+                        'response_code': cdr_data.get('response_code'),
+                        'response_description': cdr_data.get('response_description'),
+                        'notes_count': len(cdr_data.get('notes', [])),
+                        'status_summary': cdr_data.get('status_summary')
+                    }
+                
+                return Response(result)
                 
             except SUNATAuthenticationError as e:
                 # Error de autenticación
@@ -220,6 +255,7 @@ class SendBillToSUNATView(APIView):
 class SendSummaryToSUNATView(APIView):
     """Envía resumen diario a SUNAT (asíncrono)"""
     
+    @sunat_required
     def post(self, request):
         """
         Envía resumen diario de boletas
@@ -252,7 +288,7 @@ class SendSummaryToSUNATView(APIView):
             # Generar nombre de archivo
             archivo_resumen = f"{ruc}-{tipo_resumen}-{fecha_emision.replace('-', '')}-{correlativo}"
             
-            # XML de resumen de ejemplo (simplificado)
+            # XML de resumen simplificado para prueba
             xml_resumen = f'''<?xml version="1.0" encoding="UTF-8"?>
 <SummaryDocuments xmlns="urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1">
     <cbc:UBLVersionID xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">2.0</cbc:UBLVersionID>
@@ -301,6 +337,7 @@ class SendSummaryToSUNATView(APIView):
 class GetStatusSUNATView(APIView):
     """Consulta estado de procesamiento por ticket"""
     
+    @sunat_required
     def post(self, request):
         """
         Consulta estado por ticket
@@ -344,20 +381,20 @@ class GetStatusSUNATView(APIView):
                 }
                 
                 # Si hay CDR disponible, procesarlo
-                if 'cdr_content' in response and response['cdr_content']:
+                if cdr_processor and 'cdr_content' in response and response['cdr_content']:
                     cdr_data = cdr_processor.process_cdr_zip(response['cdr_content'])
                     
                     result['cdr_info'] = {
-                        'cdr_id': cdr_data['cdr_id'],
-                        'is_accepted': cdr_data['is_accepted'],
-                        'is_rejected': cdr_data['is_rejected'],
-                        'response_code': cdr_data['response_code'],
-                        'response_description': cdr_data['response_description'],
-                        'notes_count': len(cdr_data['notes']),
-                        'status_summary': cdr_data['status_summary']
+                        'cdr_id': cdr_data.get('cdr_id'),
+                        'is_accepted': cdr_data.get('is_accepted'),
+                        'is_rejected': cdr_data.get('is_rejected'),
+                        'response_code': cdr_data.get('response_code'),
+                        'response_description': cdr_data.get('response_description'),
+                        'notes_count': len(cdr_data.get('notes', [])),
+                        'status_summary': cdr_data.get('status_summary')
                     }
                     
-                    if cdr_data['notes']:
+                    if cdr_data.get('notes'):
                         result['cdr_info']['notes'] = cdr_data['notes']
                 
                 return Response(result)
@@ -379,6 +416,7 @@ class GetStatusSUNATView(APIView):
 class GetStatusCDRView(APIView):
     """Consulta CDR por datos del comprobante"""
     
+    @sunat_required
     def post(self, request):
         """
         Consulta CDR por datos del documento
@@ -430,20 +468,20 @@ class GetStatusCDRView(APIView):
                 }
                 
                 # Si hay CDR disponible, procesarlo
-                if response['cdr_available'] and 'cdr_content' in response:
+                if cdr_processor and response['cdr_available'] and 'cdr_content' in response:
                     cdr_data = cdr_processor.process_cdr_zip(response['cdr_content'])
                     
                     result['cdr_info'] = {
-                        'cdr_id': cdr_data['cdr_id'],
-                        'is_accepted': cdr_data['is_accepted'],
-                        'is_rejected': cdr_data['is_rejected'],
-                        'response_code': cdr_data['response_code'],
-                        'response_description': cdr_data['response_description'],
-                        'notes_count': len(cdr_data['notes']),
-                        'status_summary': cdr_data['status_summary']
+                        'cdr_id': cdr_data.get('cdr_id'),
+                        'is_accepted': cdr_data.get('is_accepted'),
+                        'is_rejected': cdr_data.get('is_rejected'),
+                        'response_code': cdr_data.get('response_code'),
+                        'response_description': cdr_data.get('response_description'),
+                        'notes_count': len(cdr_data.get('notes', [])),
+                        'status_summary': cdr_data.get('status_summary')
                     }
                     
-                    if cdr_data['notes']:
+                    if cdr_data.get('notes'):
                         result['cdr_info']['notes'] = cdr_data['notes']
                 
                 return Response(result)
@@ -474,15 +512,19 @@ class SUNATStatusView(APIView):
             
             config = settings.SUNAT_CONFIG
             
-            # Probar conexión rápida
-            try:
-                client = get_sunat_client('factura')
-                connection_test = client.test_connection()
-                connection_status = connection_test['success']
-                connection_error = None if connection_status else connection_test.get('error')
-            except Exception as e:
-                connection_status = False
-                connection_error = str(e)
+            # Probar conexión rápida solo si SUNAT está disponible
+            connection_status = False
+            connection_error = "SUNAT integration no disponible"
+            
+            if SUNAT_AVAILABLE:
+                try:
+                    client = get_sunat_client('factura')
+                    connection_test = client.test_connection()
+                    connection_status = connection_test['success']
+                    connection_error = None if connection_status else connection_test.get('error')
+                except Exception as e:
+                    connection_status = False
+                    connection_error = str(e)
             
             # Estadísticas de documentos
             from documentos.models import DocumentoElectronico
@@ -498,13 +540,14 @@ class SUNATStatusView(APIView):
             return Response({
                 'success': True,
                 'sunat_integration': {
-                    'version': MODULE_INFO['version'],
-                    'environment': config['ENVIRONMENT'],
-                    'ruc': config['RUC'],
+                    'available': SUNAT_AVAILABLE,
+                    'version': MODULE_INFO.get('version', '1.0.0') if SUNAT_AVAILABLE else 'N/A',
+                    'environment': config.get('ENVIRONMENT', 'N/A'),
+                    'ruc': config.get('RUC', 'N/A'),
                     'connection_status': connection_status,
                     'connection_error': connection_error,
-                    'supported_documents': MODULE_INFO['supported_documents'],
-                    'supported_operations': MODULE_INFO['supported_operations']
+                    'supported_documents': MODULE_INFO.get('supported_documents', []) if SUNAT_AVAILABLE else [],
+                    'supported_operations': MODULE_INFO.get('supported_operations', []) if SUNAT_AVAILABLE else []
                 },
                 'document_statistics': doc_stats,
                 'timestamp': timezone.now()

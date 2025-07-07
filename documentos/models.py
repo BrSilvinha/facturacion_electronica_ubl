@@ -53,6 +53,7 @@ class DocumentoElectronico(models.Model):
         ('BORRADOR', 'Borrador'),
         ('PENDIENTE', 'Pendiente de Firma'),
         ('FIRMADO', 'Firmado'),
+        ('FIRMADO_SIMULADO', 'Firmado Simulado'),
         ('ENVIADO', 'Enviado a SUNAT'),
         ('ACEPTADO', 'Aceptado por SUNAT'),
         ('RECHAZADO', 'Rechazado'),
@@ -190,7 +191,13 @@ class LogOperacion(models.Model):
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    documento = models.ForeignKey(DocumentoElectronico, on_delete=models.CASCADE, related_name='logs')
+    documento = models.ForeignKey(
+        DocumentoElectronico, 
+        on_delete=models.CASCADE, 
+        related_name='logs',
+        blank=True,
+        null=True
+    )
     operacion = models.CharField(max_length=20, choices=TIPOS_OPERACION)
     timestamp = models.DateTimeField(auto_now_add=True)
     duracion_ms = models.IntegerField(blank=True, null=True)
