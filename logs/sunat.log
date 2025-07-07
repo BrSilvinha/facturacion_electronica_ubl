@@ -1,0 +1,303 @@
+ERROR 2025-07-03 23:51:51,855 soap_client 30960 3812 Error inicializando cliente SOAP: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+INFO 2025-07-03 23:55:07,793 soap_client 5952 31652 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-03 23:55:08,163 soap_client 5952 31652 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 00:14:13,456 soap_client 4216 24404 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 00:14:13,456 soap_client 4216 24404 Probando conexión con SUNAT...
+INFO 2025-07-04 00:14:13,456 soap_client 4216 24404 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 00:14:13,902 soap_client 4216 24404 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 00:14:13,902 soap_client 4216 24404 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 00:14:34,967 soap_client 4216 30340 Probando conexión con SUNAT...
+INFO 2025-07-04 00:14:34,968 soap_client 4216 30340 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 00:14:35,345 soap_client 4216 30340 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 00:14:35,345 soap_client 4216 30340 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 00:26:33,983 zip_generator 20740 1464 Creando ZIP para resumen: 20123456789-RC-20250628-1
+INFO 2025-07-04 00:26:33,983 zip_generator 20740 1464 ZIP resumen creado: 394 bytes
+INFO 2025-07-04 00:26:33,996 soap_client 20740 1464 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 00:26:33,996 soap_client 20740 1464 Probando conexión con SUNAT...
+INFO 2025-07-04 00:26:33,996 soap_client 20740 1464 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 00:26:34,355 soap_client 20740 1464 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 00:26:34,355 soap_client 20740 1464 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 00:28:04,973 zip_generator 31500 32388 Creando ZIP para resumen: 20123456789-RC-20250628-1
+INFO 2025-07-04 00:28:04,973 zip_generator 31500 32388 ZIP resumen creado: 394 bytes
+INFO 2025-07-04 00:28:04,983 soap_client 31500 32388 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 00:28:04,983 soap_client 31500 32388 Probando conexión con SUNAT...
+INFO 2025-07-04 00:28:04,983 soap_client 31500 32388 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 00:28:05,333 soap_client 31500 32388 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 00:28:05,333 soap_client 31500 32388 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:16:14,323 soap_client 28804 12724 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 10:16:14,325 soap_client 28804 12724 Probando conexión con SUNAT...
+INFO 2025-07-04 10:16:14,325 soap_client 28804 12724 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:16:15,342 soap_client 28804 12724 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService.xsd2.xsd
+ERROR 2025-07-04 10:16:15,343 soap_client 28804 12724 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService.xsd2.xsd
+INFO 2025-07-04 10:16:20,673 soap_client 28804 12724 Probando conexión con SUNAT...
+INFO 2025-07-04 10:16:20,673 soap_client 28804 12724 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:16:21,441 soap_client 28804 12724 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:16:21,442 soap_client 28804 12724 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:16:40,012 views_sunat 28804 12724 Error inesperado enviando documento: ['“{{documento_id}}” no es un UUID válido.']
+INFO 2025-07-04 10:16:45,327 views_sunat 28804 12724 Enviando resumen 20123456789-RC-20250704-1 a SUNAT
+INFO 2025-07-04 10:16:45,328 soap_client 28804 12724 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:16:46,138 soap_client 28804 12724 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService.xsd2.xsd
+INFO 2025-07-04 10:16:50,801 views_sunat 28804 12724 Consultando estado de ticket: {{ticket_sunat}}
+INFO 2025-07-04 10:16:50,801 soap_client 28804 12724 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:16:51,264 soap_client 28804 12724 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:17:18,589 views_sunat 28804 12724 Consultando CDR: 20123456789-01-F001-00001001
+INFO 2025-07-04 10:17:18,589 soap_client 28804 12724 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:17:19,009 soap_client 28804 12724 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:17:25,765 views_sunat 28804 12724 Error inesperado enviando documento: ['“COPIAR-DOCUMENTO-ID-AQUI” no es un UUID válido.']
+INFO 2025-07-04 10:20:32,713 soap_client 28804 35660 Probando conexión con SUNAT...
+INFO 2025-07-04 10:20:32,714 soap_client 28804 35660 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-04 10:20:33,732 soap_client 28804 35660 Cliente SOAP configurado exitosamente
+INFO 2025-07-04 10:20:33,732 soap_client 28804 35660 Conexión SUNAT exitosa
+INFO 2025-07-04 10:20:46,199 soap_client 28804 35660 Probando conexión con SUNAT...
+INFO 2025-07-04 10:20:46,200 soap_client 28804 35660 Conexión SUNAT exitosa
+ERROR 2025-07-04 10:20:53,334 views_sunat 28804 35660 Error inesperado enviando documento: ['“{{documento_id}}” no es un UUID válido.']
+INFO 2025-07-04 10:21:01,079 views_sunat 28804 35660 Enviando resumen 20123456789-RC-20250704-1 a SUNAT
+INFO 2025-07-04 10:21:01,080 soap_client 28804 35660 [SUNAT-20250704102101-6f5a84] Enviando resumen: 20123456789-RC-20250704-1
+INFO 2025-07-04 10:21:01,080 zip_generator 28804 35660 Creando ZIP para resumen: 20123456789-RC-20250704-1
+INFO 2025-07-04 10:21:01,081 zip_generator 28804 35660 ZIP resumen creado: 502 bytes
+ERROR 2025-07-04 10:21:01,190 soap_client 28804 35660 [SUNAT-20250704102101-6f5a84] Error enviando resumen: El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1751642509258 error: Validation File size error'
+INFO 2025-07-04 10:21:10,549 views_sunat 28804 35660 Consultando estado de ticket: {{ticket_sunat}}
+INFO 2025-07-04 10:21:10,550 soap_client 28804 35660 [SUNAT-20250704102110-4f6bc9] Consultando ticket: {{ticket_sunat}}
+ERROR 2025-07-04 10:21:11,692 soap_client 28804 35660 [SUNAT-20250704102110-4f6bc9] Error consultando ticket: Respuesta inesperada: {
+    'content': b'\x12[brG\xad\x9e\x87\xb1\x8a\xcb^',
+    'statusCode': '0127'
+}
+INFO 2025-07-04 10:21:24,961 views_sunat 28804 35660 Consultando CDR: 20123456789-01-F001-00001001
+INFO 2025-07-04 10:21:24,961 soap_client 28804 35660 [SUNAT-20250704102124-0f6157] Consultando CDR: 20123456789-01-F001-00001001
+ERROR 2025-07-04 10:21:24,962 soap_client 28804 35660 [SUNAT-20250704102124-0f6157] Error consultando CDR: Service has no operation 'getStatusCdr'
+ERROR 2025-07-04 10:21:39,368 views_sunat 28804 35660 Error inesperado enviando documento: ['“COPIAR-DOCUMENTO-ID-AQUI” no es un UUID válido.']
+INFO 2025-07-04 10:28:36,613 soap_client 2896 26060 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 10:28:36,613 soap_client 2896 26060 Probando conexión con SUNAT...
+INFO 2025-07-04 10:28:36,614 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:28:37,109 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:28:37,110 soap_client 2896 26060 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:28:41,506 soap_client 2896 26060 Probando conexión con SUNAT...
+INFO 2025-07-04 10:28:41,507 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:28:42,004 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:28:42,004 soap_client 2896 26060 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:28:48,584 views_sunat 2896 26060 Enviando documento 01-F001-00001001 a SUNAT
+INFO 2025-07-04 10:28:48,586 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:28:49,102 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:29:05,755 views_sunat 2896 26060 Enviando resumen 20548960771-RC-20250704-1 a SUNAT
+INFO 2025-07-04 10:29:05,756 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:29:06,252 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:29:10,491 views_sunat 2896 26060 Consultando estado de ticket: 202507041234567890
+INFO 2025-07-04 10:29:10,493 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:29:11,318 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:29:16,198 views_sunat 2896 26060 Consultando CDR: 20548960771-01-F001-00001001
+INFO 2025-07-04 10:29:16,198 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:29:17,041 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:30:30,379 soap_client 2896 26060 Probando conexión con SUNAT...
+INFO 2025-07-04 10:30:30,380 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 10:30:31,201 soap_client 2896 26060 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 10:30:31,201 soap_client 2896 26060 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 10:30:36,165 views_sunat 2896 26060 Enviando documento 01-F001-00002271 a SUNAT
+INFO 2025-07-04 10:30:36,166 soap_client 2896 26060 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-04 10:30:40,433 soap_client 2896 26060 Cliente SOAP configurado exitosamente
+INFO 2025-07-04 10:30:40,434 soap_client 2896 26060 [SUNAT-20250704103040-2e0a50] Enviando documento: 01-F001-00002271
+INFO 2025-07-04 10:30:40,434 zip_generator 2896 26060 Creando ZIP para documento: 01-F001-00002271
+INFO 2025-07-04 10:30:40,439 zip_generator 2896 26060 ZIP creado exitosamente: 2183 bytes
+ERROR 2025-07-04 10:30:40,721 soap_client 2896 26060 [SUNAT-20250704103040-2e0a50] Error SOAP: El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1751643088789 error: Validation File size error'
+INFO 2025-07-04 11:13:34,435 soap_client 19524 9584 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-04 11:13:34,435 soap_client 19524 9584 Probando conexión con SUNAT...
+INFO 2025-07-04 11:13:34,435 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:34,830 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 11:13:34,830 soap_client 19524 9584 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 11:13:34,830 soap_client 19524 9584 Probando conexión con SUNAT...
+INFO 2025-07-04 11:13:34,830 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:35,145 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-04 11:13:35,145 soap_client 19524 9584 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 11:13:35,235 views_sunat 19524 9584 Enviando documento 01-F001-00009999 a SUNAT
+INFO 2025-07-04 11:13:35,235 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:35,535 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 11:13:35,546 views_sunat 19524 9584 Enviando resumen 20548960771-RC-20250704-1 a SUNAT
+INFO 2025-07-04 11:13:35,546 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:35,855 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 11:13:35,865 views_sunat 19524 9584 Consultando estado de ticket: 202507041234567890
+INFO 2025-07-04 11:13:35,865 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:36,165 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-04 11:13:36,171 views_sunat 19524 9584 Consultando CDR: 20548960771-01-F001-00009999
+INFO 2025-07-04 11:13:36,171 soap_client 19524 9584 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-04 11:13:36,489 soap_client 19524 9584 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:36:58,792 views_sunat 1028 31224 Enviando resumen 10175778557-RC-20250704-1 a SUNAT
+INFO 2025-07-05 10:36:58,795 soap_client 1028 31224 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-05 10:36:58,795 soap_client 1028 31224 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:36:59,316 soap_client 1028 31224 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:37:05,309 views_sunat 1028 31224 Consultando CDR: 10175778557-01-F001-00001001
+INFO 2025-07-05 10:37:05,310 soap_client 1028 31224 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:37:05,779 soap_client 1028 31224 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-05 10:42:18,516 views_sunat 1028 30016 Error inesperado enviando documento: ['“{{documento_id}}” no es un UUID válido.']
+INFO 2025-07-05 10:42:26,055 soap_client 1028 30016 Probando conexión con SUNAT...
+INFO 2025-07-05 10:42:26,062 soap_client 1028 30016 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:42:26,492 soap_client 1028 30016 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-05 10:42:26,492 soap_client 1028 30016 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:42:31,251 views_sunat 1028 30016 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-05 10:42:31,251 soap_client 1028 30016 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:42:31,729 soap_client 1028 30016 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:46:42,162 soap_client 1028 28676 Probando conexión con SUNAT...
+INFO 2025-07-05 10:46:42,163 soap_client 1028 28676 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:46:42,946 soap_client 1028 28676 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-05 10:46:42,946 soap_client 1028 28676 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:46:46,942 views_sunat 1028 28676 Enviando documento 01-F001-00000139 a SUNAT
+INFO 2025-07-05 10:46:46,943 soap_client 1028 28676 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:46:47,664 soap_client 1028 28676 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 10:46:56,699 views_sunat 1028 28676 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-05 10:46:56,700 soap_client 1028 28676 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 10:46:57,509 soap_client 1028 28676 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 11:37:22,642 soap_client 28476 32028 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-05 11:37:22,644 soap_client 28476 32028 Probando conexión con SUNAT...
+INFO 2025-07-05 11:37:22,644 soap_client 28476 32028 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 11:37:23,012 soap_client 28476 32028 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+ERROR 2025-07-05 11:37:23,013 soap_client 28476 32028 Error probando conexión: Error conectando con SUNAT: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 11:37:26,867 views_sunat 28476 32028 Enviando documento 01-F001-00000371 a SUNAT
+INFO 2025-07-05 11:37:26,867 soap_client 28476 32028 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 11:37:27,174 soap_client 28476 32028 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 11:38:18,921 views_sunat 28476 32028 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-05 11:38:18,921 soap_client 28476 32028 Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-05 11:38:19,256 soap_client 28476 32028 Error inicializando cliente SOAP: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-05 11:38:53,833 soap_client 13088 35384 SUNATSoapClient creado: factura - beta (lazy=True)
+INFO 2025-07-05 11:38:53,833 views_sunat 13088 35384 Enviando documento 01-F001-00000371 a SUNAT
+INFO 2025-07-05 11:38:57,307 views_sunat 13088 35384 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-05 11:39:09,635 views_sunat 13088 35384 Enviando documento 01-F001-00000081 a SUNAT
+INFO 2025-07-05 11:39:27,831 views_sunat 13088 35384 Enviando documento 01-F001-00000081 a SUNAT
+INFO 2025-07-05 11:40:00,633 views_sunat 13088 35384 Consultando estado de ticket: 1
+INFO 2025-07-05 12:07:58,625 views_sunat 31120 7404 Enviando documento 01-F001-00000081 a SUNAT
+INFO 2025-07-05 12:08:02,410 views_sunat 31120 7404 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-06 22:44:34,539 soap_client 11972 14800 SUNATSoapClient inicializado:
+INFO 2025-07-06 22:44:34,541 soap_client 11972 14800   - Servicio: factura
+INFO 2025-07-06 22:44:34,541 soap_client 11972 14800   - Ambiente: beta
+INFO 2025-07-06 22:44:34,541 soap_client 11972 14800   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:44:34,542 soap_client 11972 14800   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 22:44:34,542 soap_client 11972 14800 [SUNAT-20250706224434-33d9fa] Probando conexión SUNAT...
+WARNING 2025-07-06 22:44:35,329 soap_client 11972 14800 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:44:35,329 soap_client 11972 14800 Intentando con WSDL local...
+ERROR 2025-07-06 22:44:35,409 soap_client 11972 14800 [SUNAT-20250706224434-33d9fa] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:44:41,238 views_sunat 11972 14800 Enviando documento 01-F001-00000113 a SUNAT
+INFO 2025-07-06 22:44:41,239 soap_client 11972 14800 [SUNAT-20250706224441-6294c5] Enviando documento: 01-F001-00000113
+WARNING 2025-07-06 22:44:41,681 soap_client 11972 14800 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:44:41,682 soap_client 11972 14800 Intentando con WSDL local...
+ERROR 2025-07-06 22:44:41,705 soap_client 11972 14800 [SUNAT-20250706224441-6294c5] Error enviando documento: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:44:45,203 views_sunat 11972 14800 Consultando estado de ticket: PONER-TICKET-AQUI
+INFO 2025-07-06 22:44:45,204 soap_client 11972 14800 [SUNAT-20250706224445-16bf7b] Consultando ticket: PONER-TICKET-AQUI
+WARNING 2025-07-06 22:44:45,640 soap_client 11972 14800 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:44:45,640 soap_client 11972 14800 Intentando con WSDL local...
+ERROR 2025-07-06 22:44:45,665 soap_client 11972 14800 [SUNAT-20250706224445-16bf7b] Error consultando ticket: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:55:25,190 soap_client 31972 35696 SUNATSoapClient inicializado:
+INFO 2025-07-06 22:55:25,190 soap_client 31972 35696   - Servicio: factura
+INFO 2025-07-06 22:55:25,190 soap_client 31972 35696   - Ambiente: beta
+INFO 2025-07-06 22:55:25,191 soap_client 31972 35696   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:55:25,191 soap_client 31972 35696   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 22:55:25,191 soap_client 31972 35696 [SUNAT-20250706225525-ef06bd] Probando conexión SUNAT...
+WARNING 2025-07-06 22:55:25,614 soap_client 31972 35696 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:55:25,614 soap_client 31972 35696 Intentando con WSDL local...
+ERROR 2025-07-06 22:55:25,641 soap_client 31972 35696 [SUNAT-20250706225525-ef06bd] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:56:30,852 soap_client 31972 18728 [SUNAT-20250706225630-aaad5f] Probando conexión SUNAT...
+WARNING 2025-07-06 22:56:31,263 soap_client 31972 18728 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:56:31,263 soap_client 31972 18728 Intentando con WSDL local...
+ERROR 2025-07-06 22:56:31,288 soap_client 31972 18728 [SUNAT-20250706225630-aaad5f] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:57:43,173 soap_client 17752 25568 SUNATSoapClient inicializado:
+INFO 2025-07-06 22:57:43,173 soap_client 17752 25568   - Servicio: factura
+INFO 2025-07-06 22:57:43,174 soap_client 17752 25568   - Ambiente: beta
+INFO 2025-07-06 22:57:43,174 soap_client 17752 25568   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:57:43,174 soap_client 17752 25568   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 22:57:43,175 soap_client 17752 25568 [SUNAT-20250706225743-dfd6f1] Probando conexión SUNAT...
+WARNING 2025-07-06 22:57:43,472 soap_client 17752 25568 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:57:43,472 soap_client 17752 25568 Intentando con WSDL local...
+ERROR 2025-07-06 22:57:43,498 soap_client 17752 25568 [SUNAT-20250706225743-dfd6f1] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:57:45,568 soap_client 15628 6812 SUNATSoapClient inicializado:
+INFO 2025-07-06 22:57:45,569 soap_client 15628 6812   - Servicio: factura
+INFO 2025-07-06 22:57:45,569 soap_client 15628 6812   - Ambiente: beta
+INFO 2025-07-06 22:57:45,569 soap_client 15628 6812   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 22:57:45,569 soap_client 15628 6812   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 22:57:45,569 soap_client 15628 6812 [SUNAT-20250706225745-ed584e] Probando conexión SUNAT...
+WARNING 2025-07-06 22:57:45,896 soap_client 15628 6812 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 22:57:45,896 soap_client 15628 6812 Intentando con WSDL local...
+ERROR 2025-07-06 22:57:45,929 soap_client 15628 6812 [SUNAT-20250706225745-ed584e] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:05:29,336 soap_client 38512 33556 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:05:29,339 soap_client 38512 33556   - Servicio: factura
+INFO 2025-07-06 23:05:29,339 soap_client 38512 33556   - Ambiente: beta
+INFO 2025-07-06 23:05:29,339 soap_client 38512 33556   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:05:29,339 soap_client 38512 33556   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:05:29,340 soap_client 38512 33556 [SUNAT-20250706230529-bc9a88] Probando conexión SUNAT...
+WARNING 2025-07-06 23:05:29,641 soap_client 38512 33556 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:05:29,642 soap_client 38512 33556 Intentando con WSDL local...
+ERROR 2025-07-06 23:05:29,666 soap_client 38512 33556 [SUNAT-20250706230529-bc9a88] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:05:31,747 soap_client 10016 11972 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:05:31,748 soap_client 10016 11972   - Servicio: factura
+INFO 2025-07-06 23:05:31,748 soap_client 10016 11972   - Ambiente: beta
+INFO 2025-07-06 23:05:31,748 soap_client 10016 11972   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:05:31,748 soap_client 10016 11972   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 23:05:31,748 soap_client 10016 11972 [SUNAT-20250706230531-8b709d] Probando conexión SUNAT...
+ERROR 2025-07-06 23:05:31,748 soap_client 10016 11972 [SUNAT-20250706230531-8b709d] Error en test de conexión: zeep no está disponible. Instalar con: pip install zeep
+INFO 2025-07-06 23:08:20,686 soap_client 18060 2124 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:08:20,686 soap_client 18060 2124   - Servicio: factura
+INFO 2025-07-06 23:08:20,686 soap_client 18060 2124   - Ambiente: beta
+INFO 2025-07-06 23:08:20,687 soap_client 18060 2124   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:08:20,687 soap_client 18060 2124   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:08:20,687 soap_client 18060 2124 [SUNAT-20250706230820-357005] Probando conexión SUNAT...
+WARNING 2025-07-06 23:08:21,006 soap_client 18060 2124 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:08:21,006 soap_client 18060 2124 Intentando con WSDL local...
+ERROR 2025-07-06 23:08:21,029 soap_client 18060 2124 [SUNAT-20250706230820-357005] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:08:23,082 soap_client 38236 20004 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:08:23,082 soap_client 38236 20004   - Servicio: factura
+INFO 2025-07-06 23:08:23,082 soap_client 38236 20004   - Ambiente: beta
+INFO 2025-07-06 23:08:23,083 soap_client 38236 20004   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:08:23,083 soap_client 38236 20004   - Usuario: 20123456789MODDATOS
+INFO 2025-07-06 23:08:23,083 soap_client 38236 20004 [SUNAT-20250706230823-3e34bb] Probando conexión SUNAT...
+WARNING 2025-07-06 23:08:23,439 soap_client 38236 20004 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:08:23,439 soap_client 38236 20004 Intentando con WSDL local...
+ERROR 2025-07-06 23:08:23,495 soap_client 38236 20004 [SUNAT-20250706230823-3e34bb] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:10:37,406 soap_client 17208 29772 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:10:37,407 soap_client 17208 29772   - Servicio: factura
+INFO 2025-07-06 23:10:37,407 soap_client 17208 29772   - Ambiente: beta
+INFO 2025-07-06 23:10:37,407 soap_client 17208 29772   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:10:37,407 soap_client 17208 29772   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:10:37,408 soap_client 17208 29772 [SUNAT-20250706231037-925c40] Probando conexión SUNAT...
+WARNING 2025-07-06 23:10:37,715 soap_client 17208 29772 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:10:37,715 soap_client 17208 29772 Intentando con WSDL local...
+ERROR 2025-07-06 23:10:37,743 soap_client 17208 29772 [SUNAT-20250706231037-925c40] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900   - Servicio: factura
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900   - Ambiente: beta
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:10:39,818 soap_client 2112 33900 [SUNAT-20250706231039-a65fb8] Probando conexión SUNAT...
+WARNING 2025-07-06 23:10:40,162 soap_client 2112 33900 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:10:40,162 soap_client 2112 33900 Intentando con WSDL local...
+ERROR 2025-07-06 23:10:40,194 soap_client 2112 33900 [SUNAT-20250706231039-a65fb8] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:10:46,767 soap_client 2112 17884 [SUNAT-20250706231046-d78565] Probando conexión SUNAT...
+WARNING 2025-07-06 23:10:47,079 soap_client 2112 17884 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:10:47,079 soap_client 2112 17884 Intentando con WSDL local...
+ERROR 2025-07-06 23:10:47,100 soap_client 2112 17884 [SUNAT-20250706231046-d78565] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:11:16,849 soap_client 33880 19792 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:11:16,850 soap_client 33880 19792   - Servicio: factura
+INFO 2025-07-06 23:11:16,850 soap_client 33880 19792   - Ambiente: beta
+INFO 2025-07-06 23:11:16,850 soap_client 33880 19792   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:11:16,851 soap_client 33880 19792   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:11:16,851 soap_client 33880 19792 [SUNAT-20250706231116-bab15e] Probando conexión SUNAT...
+WARNING 2025-07-06 23:11:17,158 soap_client 33880 19792 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:11:17,159 soap_client 33880 19792 Intentando con WSDL local...
+ERROR 2025-07-06 23:11:17,189 soap_client 33880 19792 [SUNAT-20250706231116-bab15e] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:11:19,246 soap_client 2112 34688 [SUNAT-20250706231119-65f42b] Probando conexión SUNAT...
+WARNING 2025-07-06 23:11:19,567 soap_client 2112 34688 Error con WSDL remoto: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:11:19,567 soap_client 2112 34688 Intentando con WSDL local...
+ERROR 2025-07-06 23:11:19,614 soap_client 2112 34688 [SUNAT-20250706231119-65f42b] Error en test de conexión: Error conectando con SUNAT: Error creando cliente con WSDL local: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:56:52,803 soap_client 37720 34016 SUNATSoapClient inicializado:
+INFO 2025-07-06 23:56:52,803 soap_client 37720 34016   - Servicio: factura
+INFO 2025-07-06 23:56:52,804 soap_client 37720 34016   - Ambiente: beta
+INFO 2025-07-06 23:56:52,804 soap_client 37720 34016   - WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:56:52,804 soap_client 37720 34016   - Usuario: 20103129061MODDATOS
+INFO 2025-07-06 23:56:52,804 soap_client 37720 34016 [SUNAT-20250706235652-505e74] Probando conexión SUNAT...
+WARNING 2025-07-06 23:56:53,423 soap_client 37720 34016 Error con WSDL completo: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:56:53,423 soap_client 37720 34016 Intentando con WSDL simplificado...
+WARNING 2025-07-06 23:56:53,441 soap_client 37720 34016 Error con WSDL corregido: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:56:53,441 soap_client 37720 34016 Creando WSDL mínimo funcional...
+ERROR 2025-07-06 23:56:53,513 soap_client 37720 34016 [SUNAT-20250706235652-505e74] Error en test de conexión: Error conectando con SUNAT: file: URLs with hostname components are not permitted
+INFO 2025-07-06 23:56:57,153 views_sunat 37720 34016 Enviando documento 01-F001-00000935 a SUNAT
+INFO 2025-07-06 23:56:57,153 soap_client 37720 34016 [SUNAT-20250706235657-d602eb] Enviando documento: 01-F001-00000935
+WARNING 2025-07-06 23:56:57,643 soap_client 37720 34016 Error con WSDL completo: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-06 23:56:57,644 soap_client 37720 34016 Intentando con WSDL simplificado...
+WARNING 2025-07-06 23:56:57,661 soap_client 37720 34016 Error con WSDL corregido: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-06 23:56:57,662 soap_client 37720 34016 Creando WSDL mínimo funcional...
+ERROR 2025-07-06 23:56:57,677 soap_client 37720 34016 [SUNAT-20250706235657-d602eb] Error enviando documento: Error conectando con SUNAT: file: URLs with hostname components are not permitted
+ERROR 2025-07-06 23:56:57,678 views_sunat 37720 34016 Error inesperado enviando documento: Error enviando documento: Error conectando con SUNAT: file: URLs with hostname components are not permitted

@@ -1,0 +1,15 @@
+REPORTE DE PRUEBAS - SISTEMA FACTURACIÓN ELECTRÓNICA
+============================================================
+Fecha: 2025-07-04 00:26:37
+
+RESULTADOS:
+------------------------------
+✅ EXITOSO - Verificación de Dependencias (0.7s)
+✅ EXITOSO - Prueba de Firma Digital (0.8s)
+❌ FALLÓ - Prueba de Conexión SUNAT (0.9s)
+❌ FALLÓ - Flujo Completo (XML → Firma → SUNAT) (0.7s)
+
+RESUMEN: 2/4 pruebas exitosas
+
+⚠️  2 pruebas fallaron
+Revisar errores antes de usar en producción

@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- FIRMA DIGITAL XML-DSig -->
+<!-- Generado: 2025-07-04T00:26:31.166956 -->
+<!-- ID Firma: test-document-001 -->
+<!-- Certificado: Certificado Test Empresa 1 -->
+<!-- RUC: 20123456789 -->
+<!-- Algoritmo: RSA-SHA256 -->
+<!-- Sistema: Facturación Electrónica UBL 2.1 Nivel 2 -->
+
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" Id="doc-test-document-001">
+    
+    <ext:UBLExtensions>
+        <ext:UBLExtension>
+            <ext:ExtensionContent Id="ext-test-document-001">
+                <!-- Aqu&#237; ir&#225; la firma digital -->
+            </ext:ExtensionContent>
+        </ext:UBLExtension>
+    </ext:UBLExtensions>
+    
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+    <cbc:CustomizationID>2.0</cbc:CustomizationID>
+    <cbc:ID>01-F001-00000001</cbc:ID>
+    <cbc:IssueDate>2025-06-28</cbc:IssueDate>
+    <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
+    <cbc:DocumentCurrencyCode>PEN</cbc:DocumentCurrencyCode>
+    
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cac:PartyIdentification>
+                <cbc:ID>20123456789</cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>Empresa Test 1 SAC</cbc:RegistrationName>
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    
+    <cac:LegalMonetaryTotal>
+        <cbc:PayableAmount currencyID="PEN">100.00</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2006/12/xml-c14n11"/><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><ds:Reference URI="#doc-test-document-001"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><ds:Transform Algorithm="http://www.w3.org/2006/12/xml-c14n11"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>CW/dSfLKjuhsoumJSSHWs/rw7bGB4H+iWZ8sJm+oIGg=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>lIuHUj7uV2VKX4kzzwdLvq/uyUTx0ubqWeja+0u2acg6+O1tJhZOzRC8igg4D7QvayoK2ewVjZRKL4vHddff6Ks4urv/quEwDxfOaMMxeUcAlQdBU1JlHaekOuxG6f7m49Yda42gyneAWm5eyzfnsxUa4BAyw4bIHiK98THxhcVFVrCPg1L0AKQa7tPAgzBIdhgg+iTOHAcJO3qitHypLHSzziHIX1Llk+gQMNKPbYNhSYthXNxM/F0mPFdnIxxhLzyLNt8iWBcY1wtoP66qb+ZXVBa2YoB88XROBCxhXBCzbibK4VeCSBddy0fhTh0b15tqndbU4P8pB8lfrW3rVQ==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIEpTCCA42gAwIBAgIUWl9FtN1n6zCs5LeHtoF5mszifREwDQYJKoZIhvcNAQEL
+BQAwgb4xCzAJBgNVBAYTAlBFMQ0wCwYDVQQIDARMaW1hMQ0wCwYDVQQHDARMaW1h
+MRswGQYDVQQKDBJFbXByZXNhIFRlc3QgMSBTQUMxFjAUBgNVBAsMDUlUIERlcGFy
+dG1lbnQxIzAhBgNVBAMMGkNlcnRpZmljYWRvIFRlc3QgRW1wcmVzYSAxMSEwHwYJ
+KoZIhvcNAQkBFhJ0ZXN0MUBlbXByZXNhMS5jb20xFDASBgNVBAUTCzIwMTIzNDU2
+Nzg5MB4XDTI1MDYyODA2NTI0MloXDTI2MDYyODA2NTI0Mlowgb4xCzAJBgNVBAYT
+AlBFMQ0wCwYDVQQIDARMaW1hMQ0wCwYDVQQHDARMaW1hMRswGQYDVQQKDBJFbXBy
+ZXNhIFRlc3QgMSBTQUMxFjAUBgNVBAsMDUlUIERlcGFydG1lbnQxIzAhBgNVBAMM
+GkNlcnRpZmljYWRvIFRlc3QgRW1wcmVzYSAxMSEwHwYJKoZIhvcNAQkBFhJ0ZXN0
+MUBlbXByZXNhMS5jb20xFDASBgNVBAUTCzIwMTIzNDU2Nzg5MIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAutUCpEVUmPB8u3aT7GZxDutVwGnZY1W1mdws
+3AWjQHpdEtGgF05DhCxPbF5sY1Oy2S03nMxywZbw0pqZSi/agf6caiDrM0/JKhKs
+TDumImar2rbmDYUaxEgYF5B/Ka7dKoH0/mt06CnX6XJwEtLJJBoA7dDUpq/cjhmw
+n5GpVrKTcJy2PXLXDXa/CdM7LA+6BaGmp7l3BrDxnKk9VNJuMj1u2WgoTbzAl4UX
+0Wnaz6weMwTjMot/dB7AEmMtV8sLt+8EQA5gV46aDt91x6HnRmuFLAljUhdS9lUR
+R9Zb/1N8QR2Tc4VmoLb/Sym+H4Q+9oKBabAmnM7ywVjuBklDGQIDAQABo4GYMIGV
+MEcGA1UdEQRAMD6CHTIwMTIzNDU2Nzg5LnRlc3Quc3VuYXQuZ29iLnBlgglsb2Nh
+bGhvc3SBEnRlc3QxQGVtcHJlc2ExLmNvbTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB
+/wQEAwIF4DAsBgNVHSUBAf8EIjAgBggrBgEFBQcDAgYIKwYBBQUHAwQGCisGAQQB
+gjcKAwwwDQYJKoZIhvcNAQELBQADggEBALONF2Hk9a4YLizt8cQX9tdJpm8NIEUf
+dMROK5SIR2fglvrJqZXmQ+P0GQ1EtdEI8Pq9z/GuJzX5NrMewzLXXnc0iFTwqZbm
+xSlaUiPcekX0ttt+Ev4F71inhcfbin/LRlX3NglPzQXOmY0HIzdedB3K8fIS+VFB
+aYkhSI2mdnJT+YHxjSmLmphcNJoclcmYtubup6z/sOrLkzIEfa3KYYWJ6e331O+K
+mPtilVj9LWqNDyaq8gaXqE05dAwYJo3K2+XZCoW5V8NeDXFWfNc7SKI4EqK/Q5Ob
+oLY/HzSWG+ik7ITo7/mRkIde7yzhH6g4KUZRysaTvPwfLYHZA8KHH0I=
+</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></Invoice>

@@ -338,10 +338,15 @@ class GenerarXMLView(APIView):
         """
         Obtiene certificado apropiado para la empresa
         Mapea RUC de empresa a certificado correspondiente
+        VERSIÓN CORREGIDA - Incluye tu RUC 20103129061
         """
         
-        # Mapeo de RUC a certificados de prueba
+        # Mapeo de RUC a certificados de prueba - CORREGIDO ✅
         ruc_to_cert = {
+            '20103129061': {  # ⭐ TU RUC AGREGADO
+                'path': 'certificados/test/test_cert_empresa1.pfx',
+                'password': 'test123'
+            },
             '20123456789': {
                 'path': 'certificados/test/test_cert_empresa1.pfx',
                 'password': 'test123'
@@ -362,6 +367,8 @@ class GenerarXMLView(APIView):
                 'password': 'test123'
             }
             print(f"⚠️ No hay certificado específico para RUC {empresa.ruc}, usando certificado por defecto")
+        else:
+            print(f"✅ Certificado específico encontrado para RUC {empresa.ruc}")
         
         # Cargar certificado usando certificate_manager
         try:
