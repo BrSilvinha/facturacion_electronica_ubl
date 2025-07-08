@@ -1,0 +1,937 @@
+"""
+Endpoints de API para integración con SUNAT - VERSIÓN COMPLETA CORREGIDA CON CDR
+Ubicación: api_rest/views_sunat.py
+CORREGIDO: Manejo completo de CDR, errores SOAP y diagnósticos detallados
+"""
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from decimal import Decimal
+import logging
+import uuid
+import json
+import base64
+import zipfile
+from io import BytesIO
+from datetime import datetime
+
+from documentos.models import DocumentoElectronico, LogOperacion
+
+# Imports seguros de SUNAT
+try:
+    from sunat_integration import (
+        get_sunat_client, create_sunat_client,
+        SUNATError, SUNATConnectionError, SUNATAuthenticationError, 
+        SUNATValidationError
+    )
+    SUNAT_AVAILABLE = True
+except ImportError as e:
+    SUNAT_AVAILABLE = False
+    SUNAT_ERROR = str(e)
+
+# Imports para cliente SOAP mejorado
+try:
+    from zeep import Client, Settings
+    from zeep.transports import Transport
+    from zeep.exceptions import Fault as ZeepFault
+    import requests
+    from requests.auth import HTTPBasicAuth
+    ZEEP_AVAILABLE = True
+except ImportError:
+    ZEEP_AVAILABLE = False
+
+logger = logging.getLogger('sunat')
+
+def sunat_required(func):
+    """Decorador para verificar que SUNAT esté disponible"""
+    def wrapper(*args, **kwargs):
+        if not SUNAT_AVAILABLE:
+            return Response({
+                'success': False,
+                'error': 'SUNAT integration no disponible',
+                'details': SUNAT_ERROR if 'SUNAT_ERROR' in globals() else 'Módulo no cargado',
+                'suggestion': 'Verificar instalación: pip install zeep requests lxml'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return func(*args, **kwargs)
+    return wrapper
+
+class SUNATClienteCorregido:
+    """Cliente SUNAT corregido con manejo completo de CDR"""
+    
+    def __init__(self, environment='beta'):
+        self.environment = environment
+        self.setup_configuration()
+        self.setup_logging()
+        
+    def setup_configuration(self):
+        """Configurar credenciales y URLs"""
+        from django.conf import settings
+        config = settings.SUNAT_CONFIG
+        
+        self.ruc = config['RUC']
+        if self.environment == 'beta':
+            self.username = f"{self.ruc}{config['BETA_USER']}"
+            self.password = config['BETA_PASSWORD']
+            self.service_url = "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService"
+            self.wsdl_url = f"{self.service_url}?wsdl"
+        else:
+            self.username = f"{self.ruc}{config['PROD_USER']}"
+            self.password = config['PROD_PASSWORD']
+            self.service_url = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"
+            self.wsdl_url = f"{self.service_url}?wsdl"
+            
+        logger.info(f"SUNAT Cliente configurado - Ambiente: {self.environment}")
+        logger.info(f"Usuario: {self.username}")
+        logger.info(f"URL: {self.service_url}")
+        
+    def setup_logging(self):
+        """Configurar logging detallado"""
+        logging.getLogger('zeep.transports').setLevel(logging.DEBUG)
+        logging.getLogger('requests.packages.urllib3').setLevel(logging.DEBUG)
+        
+    def test_connection(self):
+        """Prueba de conexión con diagnóstico detallado"""
+        correlation_id = f"TEST-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        start_time = datetime.now()
+        
+        logger.info(f"[{correlation_id}] Iniciando test de conexión SUNAT")
+        
+        try:
+            # 1. Verificar dependencias
+            if not ZEEP_AVAILABLE:
+                return {
+                    'success': False,
+                    'error': 'zeep no disponible',
+                    'suggestion': 'pip install zeep',
+                    'correlation_id': correlation_id
+                }
+            
+            # 2. Probar conectividad básica
+            logger.info(f"[{correlation_id}] Probando conectividad HTTP...")
+            session = requests.Session()
+            session.auth = HTTPBasicAuth(self.username, self.password)
+            session.verify = True
+            
+            http_response = session.get(self.service_url, timeout=30)
+            logger.info(f"[{correlation_id}] HTTP Status: {http_response.status_code}")
+            
+            # 3. Probar WSDL
+            logger.info(f"[{correlation_id}] Cargando WSDL: {self.wsdl_url}")
+            transport = Transport(session=session, timeout=60)
+            settings = Settings(strict=False, xml_huge_tree=True)
+            
+            client = Client(self.wsdl_url, transport=transport, settings=settings)
+            
+            # 4. Verificar operaciones
+            operations = [op for op in dir(client.service) if not op.startswith('_')]
+            logger.info(f"[{correlation_id}] Operaciones SOAP: {operations}")
+            
+            duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            
+            return {
+                'success': True,
+                'method': 'zeep_soap',
+                'environment': self.environment,
+                'service_url': self.service_url,
+                'operations': operations,
+                'authentication': 'OK',
+                'duration_ms': duration_ms,
+                'correlation_id': correlation_id
+            }
+            
+        except Exception as e:
+            duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            logger.error(f"[{correlation_id}] Error test conexión: {e}")
+            
+            return {
+                'success': False,
+                'error': str(e),
+                'error_type': type(e).__name__,
+                'duration_ms': duration_ms,
+                'correlation_id': correlation_id
+            }
+    
+    def send_bill(self, documento, xml_firmado):
+        """Enviar documento con manejo completo de CDR"""
+        correlation_id = f"SEND-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8]}"
+        start_time = datetime.now()
+        
+        logger.info(f"[{correlation_id}] Enviando documento: {documento.get_numero_completo()}")
+        
+        try:
+            # 1. Preparar ZIP según especificaciones SUNAT
+            zip_content = self._create_sunat_zip(documento, xml_firmado, correlation_id)
+            content_base64 = base64.b64encode(zip_content).decode('utf-8')
+            
+            # 2. Nombre de archivo según SUNAT
+            filename = f"{documento.empresa.ruc}-{documento.tipo_documento.codigo}-{documento.serie}-{documento.numero:08d}.zip"
+            
+            logger.info(f"[{correlation_id}] Archivo: {filename} ({len(zip_content)} bytes)")
+            
+            # 3. Configurar cliente SOAP
+            session = requests.Session()
+            session.auth = HTTPBasicAuth(self.username, self.password)
+            session.verify = True
+            
+            transport = Transport(session=session, timeout=120)
+            settings = Settings(strict=False, xml_huge_tree=True)
+            
+            client = Client(self.wsdl_url, transport=transport, settings=settings)
+            
+            # 4. Llamar servicio sendBill
+            logger.info(f"[{correlation_id}] Llamando sendBill...")
+            
+            response = client.service.sendBill(
+                fileName=filename,
+                contentFile=content_base64
+            )
+            
+            duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            logger.info(f"[{correlation_id}] Respuesta recibida en {duration_ms}ms")
+            
+            # 5. Procesar respuesta
+            return self._process_sunat_response(response, correlation_id, duration_ms, filename)
+            
+        except ZeepFault as soap_fault:
+            return self._handle_soap_fault(soap_fault, correlation_id, start_time)
+            
+        except Exception as e:
+            duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            logger.error(f"[{correlation_id}] Error general: {e}")
+            
+            return {
+                'success': False,
+                'error': str(e),
+                'error_type': 'GENERAL_ERROR',
+                'correlation_id': correlation_id,
+                'duration_ms': duration_ms
+            }
+    
+    def _create_sunat_zip(self, documento, xml_firmado, correlation_id):
+        """Crear ZIP según especificaciones exactas de SUNAT"""
+        
+        logger.info(f"[{correlation_id}] Creando ZIP SUNAT...")
+        
+        zip_buffer = BytesIO()
+        xml_filename = f"{documento.empresa.ruc}-{documento.tipo_documento.codigo}-{documento.serie}-{documento.numero:08d}.xml"
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zip_file:
+            # 1. Carpeta dummy (OBLIGATORIA por SUNAT)
+            zip_file.writestr('dummy/', '')
+            logger.debug(f"[{correlation_id}] Agregada carpeta dummy/")
+            
+            # 2. XML firmado con encoding UTF-8
+            xml_bytes = xml_firmado.encode('utf-8')
+            zip_file.writestr(xml_filename, xml_bytes)
+            logger.debug(f"[{correlation_id}] Agregado {xml_filename} ({len(xml_bytes)} bytes)")
+        
+        zip_content = zip_buffer.getvalue()
+        logger.info(f"[{correlation_id}] ZIP creado: {len(zip_content)} bytes")
+        
+        # Verificar contenido del ZIP
+        with zipfile.ZipFile(BytesIO(zip_content), 'r') as verify_zip:
+            files = verify_zip.namelist()
+            logger.debug(f"[{correlation_id}] Archivos en ZIP: {files}")
+            
+            if 'dummy/' not in files:
+                raise Exception("ZIP inválido: falta carpeta dummy/")
+            if xml_filename not in files:
+                raise Exception(f"ZIP inválido: falta {xml_filename}")
+        
+        return zip_content
+    
+    def _process_sunat_response(self, response, correlation_id, duration_ms, filename):
+        """Procesar respuesta de SUNAT y extraer CDR"""
+        
+        logger.info(f"[{correlation_id}] Procesando respuesta SUNAT...")
+        
+        # Verificar si hay applicationResponse (CDR)
+        if hasattr(response, 'applicationResponse') and response.applicationResponse:
+            logger.info(f"[{correlation_id}] CDR detectado en respuesta")
+            
+            # Decodificar CDR
+            cdr_base64 = response.applicationResponse
+            cdr_data = self._process_cdr(cdr_base64, correlation_id)
+            
+            return {
+                'success': True,
+                'method': 'sendBill_with_cdr',
+                'filename': filename,
+                'has_cdr': True,
+                'cdr_content': cdr_base64,
+                'cdr_data': cdr_data,
+                'correlation_id': correlation_id,
+                'duration_ms': duration_ms
+            }
+            
+        else:
+            logger.warning(f"[{correlation_id}] Respuesta sin CDR")
+            
+            return {
+                'success': True,
+                'method': 'sendBill_no_cdr',
+                'filename': filename,
+                'has_cdr': False,
+                'message': 'Documento enviado sin CDR inmediato',
+                'correlation_id': correlation_id,
+                'duration_ms': duration_ms,
+                'note': 'Puede requerir consulta posterior con getStatus'
+            }
+    
+    def _process_cdr(self, cdr_base64, correlation_id):
+        """Procesar CDR (Constancia de Recepción) de SUNAT"""
+        
+        logger.info(f"[{correlation_id}] Procesando CDR...")
+        
+        try:
+            # Decodificar base64
+            cdr_zip = base64.b64decode(cdr_base64)
+            logger.debug(f"[{correlation_id}] CDR ZIP: {len(cdr_zip)} bytes")
+            
+            # Extraer XML del ZIP
+            with zipfile.ZipFile(BytesIO(cdr_zip), 'r') as zip_file:
+                cdr_files = [f for f in zip_file.namelist() if f.startswith('R-') and f.endswith('.xml')]
+                
+                if not cdr_files:
+                    logger.warning(f"[{correlation_id}] No se encontró XML CDR en ZIP")
+                    return {
+                        'status': 'ERROR',
+                        'message': 'CDR ZIP sin XML válido',
+                        'has_xml': False
+                    }
+                
+                cdr_filename = cdr_files[0]
+                cdr_xml = zip_file.read(cdr_filename).decode('utf-8')
+                
+                logger.info(f"[{correlation_id}] CDR XML extraído: {cdr_filename}")
+                logger.debug(f"[{correlation_id}] CDR XML: {len(cdr_xml)} caracteres")
+                
+                # Analizar CDR XML
+                analysis = self._analyze_cdr_xml(cdr_xml, correlation_id)
+                
+                return {
+                    'cdr_filename': cdr_filename,
+                    'cdr_xml': cdr_xml,
+                    'analysis': analysis,
+                    'processed_at': datetime.now().isoformat(),
+                    'correlation_id': correlation_id
+                }
+                
+        except Exception as e:
+            logger.error(f"[{correlation_id}] Error procesando CDR: {e}")
+            return {
+                'status': 'ERROR',
+                'message': f'Error procesando CDR: {e}',
+                'has_xml': False,
+                'error': str(e)
+            }
+    
+    def _analyze_cdr_xml(self, cdr_xml, correlation_id):
+        """Analizar XML CDR para determinar estado del documento"""
+        
+        logger.info(f"[{correlation_id}] Analizando CDR XML...")
+        
+        try:
+            # Análisis por parsing de texto (sin lxml para evitar dependencias)
+            analysis = {
+                'status': 'UNKNOWN',
+                'message': 'Estado desconocido',
+                'response_code': None,
+                'response_description': None,
+                'is_accepted': False,
+                'is_rejected': False,
+                'has_observations': False,
+                'observations': []
+            }
+            
+            # Buscar ResponseCode
+            import re
+            
+            response_code_match = re.search(r'<cbc:ResponseCode[^>]*>([^<]+)</cbc:ResponseCode>', cdr_xml)
+            if response_code_match:
+                response_code = response_code_match.group(1).strip()
+                analysis['response_code'] = response_code
+                logger.debug(f"[{correlation_id}] ResponseCode: {response_code}")
+                
+                # Determinar estado según código
+                if response_code == '0':
+                    analysis['status'] = 'ACCEPTED'
+                    analysis['message'] = 'Documento aceptado por SUNAT'
+                    analysis['is_accepted'] = True
+                elif response_code.startswith('2') or response_code.startswith('3'):
+                    analysis['status'] = 'REJECTED'
+                    analysis['message'] = 'Documento rechazado por SUNAT'
+                    analysis['is_rejected'] = True
+                elif response_code.startswith('4'):
+                    analysis['status'] = 'ACCEPTED_WITH_OBSERVATIONS'
+                    analysis['message'] = 'Documento aceptado con observaciones'
+                    analysis['is_accepted'] = True
+                    analysis['has_observations'] = True
+            
+            # Buscar Description
+            desc_match = re.search(r'<cbc:Description[^>]*>([^<]+)</cbc:Description>', cdr_xml)
+            if desc_match:
+                analysis['response_description'] = desc_match.group(1).strip()
+            
+            # Buscar Notes (observaciones)
+            note_matches = re.findall(r'<cbc:Note[^>]*>([^<]+)</cbc:Note>', cdr_xml)
+            if note_matches:
+                analysis['observations'] = [note.strip() for note in note_matches]
+                analysis['has_observations'] = len(analysis['observations']) > 0
+            
+            logger.info(f"[{correlation_id}] CDR Análisis: {analysis['status']} - {analysis['message']}")
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"[{correlation_id}] Error analizando CDR XML: {e}")
+            return {
+                'status': 'ERROR',
+                'message': f'Error analizando CDR: {e}',
+                'error': str(e)
+            }
+    
+    def _handle_soap_fault(self, soap_fault, correlation_id, start_time):
+        """Manejar errores SOAP de forma detallada"""
+        
+        duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+        
+        fault_code = getattr(soap_fault, 'code', 'Unknown')
+        fault_string = getattr(soap_fault, 'message', str(soap_fault))
+        
+        logger.error(f"[{correlation_id}] SOAP Fault: {fault_code} - {fault_string}")
+        
+        # Mapeo de errores comunes
+        error_analysis = self._analyze_soap_error(fault_code, fault_string)
+        
+        return {
+            'success': False,
+            'error_type': 'SOAP_FAULT',
+            'error_code': fault_code,
+            'error_message': fault_string,
+            'error_analysis': error_analysis,
+            'correlation_id': correlation_id,
+            'duration_ms': duration_ms,
+            'suggested_action': error_analysis['suggested_action']
+        }
+    
+    def _analyze_soap_error(self, fault_code, fault_string):
+        """Analizar errores SOAP y proporcionar diagnóstico"""
+        
+        error_map = {
+            '0101': {
+                'description': 'Encabezado de seguridad incorrecto',
+                'category': 'AUTHENTICATION',
+                'action': 'Verificar configuración de seguridad SOAP'
+            },
+            '0102': {
+                'description': 'Usuario o contraseña incorrectos',
+                'category': 'AUTHENTICATION', 
+                'action': 'Verificar credenciales SUNAT (usuario/password)'
+            },
+            '0103': {
+                'description': 'El usuario no existe',
+                'category': 'AUTHENTICATION',
+                'action': 'Verificar que el usuario esté registrado en SUNAT'
+            },
+            '0111': {
+                'description': 'No tiene perfil para enviar comprobantes electrónicos',
+                'category': 'AUTHORIZATION',
+                'action': 'Crear usuario secundario con perfil de facturación electrónica'
+            },
+            '0154': {
+                'description': 'RUC no autorizado para enviar comprobantes',
+                'category': 'AUTHORIZATION',
+                'action': 'Verificar que el RUC esté autorizado para facturación electrónica'
+            },
+            'Internal Error': {
+                'description': 'Error interno de SUNAT',
+                'category': 'TECHNICAL',
+                'action': 'Reintentar en unos minutos - error temporal de SUNAT'
+            }
+        }
+        
+        # Buscar error específico
+        analysis = {
+            'category': 'UNKNOWN',
+            'description': 'Error desconocido',
+            'suggested_action': 'Contactar soporte técnico SUNAT',
+            'recoverable': False
+        }
+        
+        for error_key, error_info in error_map.items():
+            if error_key in fault_code or error_key in fault_string:
+                analysis.update(error_info)
+                analysis['recoverable'] = error_info['category'] in ['TECHNICAL']
+                break
+        
+        # Casos especiales
+        if 'env:Server' in fault_code:
+            analysis['recoverable'] = True
+            analysis['category'] = 'TECHNICAL'
+        
+        return analysis
+
+# Instancia global del cliente corregido
+_sunat_client_corregido = None
+
+def get_sunat_client_corregido(environment='beta'):
+    """Factory para obtener cliente SUNAT corregido"""
+    global _sunat_client_corregido
+    
+    if _sunat_client_corregido is None:
+        _sunat_client_corregido = SUNATClienteCorregido(environment)
+    
+    return _sunat_client_corregido
+
+class TestSUNATConnectionView(APIView):
+    """Prueba la conexión con SUNAT Beta con diagnóstico completo"""
+    
+    def get(self, request):
+        """Prueba conexión con diagnóstico detallado"""
+        try:
+            client = get_sunat_client_corregido()
+            result = client.test_connection()
+            
+            return Response({
+                'success': result['success'],
+                'diagnostic': result,
+                'zeep_available': ZEEP_AVAILABLE,
+                'sunat_integration_available': SUNAT_AVAILABLE,
+                'timestamp': timezone.now()
+            })
+            
+        except Exception as e:
+            logger.error(f"Error test conexión: {e}")
+            return Response({
+                'success': False,
+                'error': str(e),
+                'zeep_available': ZEEP_AVAILABLE,
+                'sunat_integration_available': SUNAT_AVAILABLE
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SendBillToSUNATView(APIView):
+    """Envía documento individual a SUNAT con manejo completo de CDR"""
+    
+    def post(self, request):
+        """Envía factura con procesamiento completo de CDR"""
+        
+        try:
+            # Validar datos
+            documento_id = request.data.get('documento_id')
+            if not documento_id:
+                return Response({
+                    'success': False,
+                    'error': 'documento_id es requerido'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Obtener documento
+            documento = get_object_or_404(DocumentoElectronico, id=documento_id)
+            
+            # Validar que esté firmado
+            if not documento.xml_firmado:
+                return Response({
+                    'success': False,
+                    'error': 'Documento no está firmado digitalmente'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validar estado
+            if documento.estado in ['ACEPTADO']:
+                return Response({
+                    'success': False,
+                    'error': f'Documento ya fue aceptado por SUNAT (estado: {documento.estado})'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            start_time = timezone.now()
+            
+            # Usar cliente corregido
+            client = get_sunat_client_corregido()
+            
+            logger.info(f"Enviando documento {documento.get_numero_completo()} a SUNAT")
+            
+            # Enviar a SUNAT
+            response = client.send_bill(documento, documento.xml_firmado)
+            
+            # Procesar respuesta
+            if response.get('success'):
+                # Actualizar estado del documento según CDR
+                if response.get('has_cdr') and response.get('cdr_data'):
+                    cdr_analysis = response['cdr_data'].get('analysis', {})
+                    
+                    if cdr_analysis.get('is_accepted'):
+                        if cdr_analysis.get('has_observations'):
+                            documento.estado = 'ACEPTADO_CON_OBSERVACIONES'
+                            log_message = f"Documento aceptado con observaciones: {len(cdr_analysis.get('observations', []))}"
+                        else:
+                            documento.estado = 'ACEPTADO'
+                            log_message = "Documento aceptado por SUNAT"
+                        log_estado = 'SUCCESS'
+                        
+                    elif cdr_analysis.get('is_rejected'):
+                        documento.estado = 'RECHAZADO'
+                        log_message = f"Documento rechazado: {cdr_analysis.get('response_description', 'Sin descripción')}"
+                        log_estado = 'ERROR'
+                        
+                    else:
+                        documento.estado = 'ENVIADO'
+                        log_message = f"Documento enviado, estado CDR: {cdr_analysis.get('status', 'UNKNOWN')}"
+                        log_estado = 'WARNING'
+                else:
+                    # Sin CDR inmediato
+                    documento.estado = 'ENVIADO'
+                    log_message = "Documento enviado sin CDR inmediato"
+                    log_estado = 'SUCCESS'
+                
+                documento.save()
+                
+                # Log de operación
+                duration_ms = int((timezone.now() - start_time).total_seconds() * 1000)
+                LogOperacion.objects.create(
+                    documento=documento,
+                    operacion='ENVIO',
+                    estado=log_estado,
+                    mensaje=log_message,
+                    duracion_ms=duration_ms
+                )
+                
+                # Preparar respuesta exitosa
+                result = {
+                    'success': True,
+                    'document_id': str(documento.id),
+                    'document_number': documento.get_numero_completo(),
+                    'document_status': documento.estado,
+                    'sunat_response': {
+                        'method': response.get('method', 'sendBill'),
+                        'duration_ms': response.get('duration_ms', duration_ms),
+                        'correlation_id': response.get('correlation_id'),
+                        'has_cdr': response.get('has_cdr', False)
+                    },
+                    'response_timestamp': timezone.now()
+                }
+                
+                # Agregar información del CDR si está disponible
+                if response.get('has_cdr') and response.get('cdr_data'):
+                    cdr_data = response['cdr_data']
+                    cdr_analysis = cdr_data.get('analysis', {})
+                    
+                    result['cdr_info'] = {
+                        'cdr_id': cdr_data.get('cdr_filename', 'N/A'),
+                        'is_accepted': cdr_analysis.get('is_accepted', False),
+                        'is_rejected': cdr_analysis.get('is_rejected', False),
+                        'response_code': cdr_analysis.get('response_code', 'N/A'),
+                        'response_description': cdr_analysis.get('response_description', 'N/A'),
+                        'has_observations': cdr_analysis.get('has_observations', False),
+                        'observations_count': len(cdr_analysis.get('observations', [])),
+                        'status_summary': cdr_analysis.get('status', 'UNKNOWN'),
+                        'processed_at': cdr_data.get('processed_at')
+                    }
+                    
+                    # Incluir observaciones si las hay
+                    if cdr_analysis.get('observations'):
+                        result['cdr_info']['observations'] = cdr_analysis['observations']
+                
+                return Response(result)
+                
+            else:
+                # Error en el envío
+                error_type = response.get('error_type', 'UNKNOWN_ERROR')
+                error_code = response.get('error_code', 'N/A')
+                error_message = response.get('error_message', response.get('error', 'Error desconocido'))
+                
+                # Actualizar estado según tipo de error
+                if error_type == 'SOAP_FAULT':
+                    if error_code in ['0102', '0103']:
+                        documento.estado = 'ERROR_AUTENTICACION'
+                    elif error_code in ['0111', '0154']:
+                        documento.estado = 'ERROR_AUTORIZACION'
+                    else:
+                        documento.estado = 'ERROR_SUNAT'
+                else:
+                    documento.estado = 'ERROR'
+                
+                documento.save()
+                
+                # Log del error
+                duration_ms = int((timezone.now() - start_time).total_seconds() * 1000)
+                LogOperacion.objects.create(
+                    documento=documento,
+                    operacion='ENVIO',
+                    estado='ERROR',
+                    mensaje=f'Error SUNAT: {error_code} - {error_message}',
+                    duracion_ms=duration_ms
+                )
+                
+                # Determinar código HTTP
+                if error_type == 'SOAP_FAULT':
+                    if error_code in ['0102', '0103']:
+                        http_status = status.HTTP_401_UNAUTHORIZED
+                    elif error_code in ['0111', '0154']:
+                        http_status = status.HTTP_403_FORBIDDEN
+                    else:
+                        http_status = status.HTTP_422_UNPROCESSABLE_ENTITY
+                else:
+                    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+                
+                return Response({
+                    'success': False,
+                    'error': error_message,
+                    'error_type': error_type,
+                    'error_code': error_code,
+                    'error_analysis': response.get('error_analysis', {}),
+                    'document_status': documento.estado,
+                    'correlation_id': response.get('correlation_id'),
+                    'suggested_action': response.get('suggested_action'),
+                    'response_timestamp': timezone.now()
+                }, status=http_status)
+                
+        except Exception as e:
+            logger.error(f"Error inesperado enviando documento: {e}")
+            return Response({
+                'success': False,
+                'error': f'Error interno: {str(e)}',
+                'error_type': 'INTERNAL_ERROR'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SendSummaryToSUNATView(APIView):
+    """Envía resumen diario a SUNAT (asíncrono)"""
+    
+    def post(self, request):
+        """Envía resumen diario de boletas"""
+        
+        return Response({
+            'success': False,
+            'error': 'Funcionalidad sendSummary no implementada aún',
+            'error_type': 'NOT_IMPLEMENTED',
+            'suggestion': 'Usar sendBill para documentos individuales'
+        }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+class GetStatusSUNATView(APIView):
+    """Consulta estado de procesamiento por ticket"""
+    
+    def post(self, request):
+        """Consulta estado por ticket"""
+        
+        return Response({
+            'success': False,
+            'error': 'Funcionalidad getStatus no implementada aún',
+            'error_type': 'NOT_IMPLEMENTED',
+            'suggestion': 'CDR se recibe directamente en sendBill'
+        }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+class GetStatusCDRView(APIView):
+    """Consulta CDR por datos del comprobante"""
+    
+    def post(self, request):
+        """Consulta CDR por datos del documento"""
+        
+        return Response({
+            'success': False,
+            'error': 'Funcionalidad getStatusCDR no implementada aún',
+            'error_type': 'NOT_IMPLEMENTED',
+            'suggestion': 'CDR se procesa automáticamente en sendBill'
+        }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+class SUNATStatusView(APIView):
+    """Información general del estado de integración SUNAT"""
+    
+    def get(self, request):
+        """Retorna estado general de la integración"""
+        
+        try:
+            from django.conf import settings
+            
+            config = settings.SUNAT_CONFIG
+            
+            # Probar conexión si está disponible
+            connection_status = False
+            connection_error = None
+            connection_details = {}
+            
+            try:
+                client = get_sunat_client_corregido()
+                conn_test = client.test_connection()
+                connection_status = conn_test['success']
+                connection_details = conn_test
+                if not connection_status:
+                    connection_error = conn_test.get('error')
+            except Exception as e:
+                connection_error = str(e)
+            
+            # Estadísticas de documentos
+            doc_stats = {
+                'total_documentos': DocumentoElectronico.objects.count(),
+                'documentos_firmados': DocumentoElectronico.objects.exclude(xml_firmado__isnull=True).count(),
+                'documentos_enviados': DocumentoElectronico.objects.filter(
+                    estado__in=['ENVIADO', 'ACEPTADO', 'ACEPTADO_CON_OBSERVACIONES']
+                ).count(),
+                'documentos_aceptados': DocumentoElectronico.objects.filter(estado='ACEPTADO').count(),
+                'documentos_aceptados_obs': DocumentoElectronico.objects.filter(estado='ACEPTADO_CON_OBSERVACIONES').count(),
+                'documentos_rechazados': DocumentoElectronico.objects.filter(estado='RECHAZADO').count(),
+                'documentos_error': DocumentoElectronico.objects.filter(
+                    estado__in=['ERROR', 'ERROR_SUNAT', 'ERROR_AUTENTICACION', 'ERROR_AUTORIZACION']
+                ).count(),
+            }
+            
+            return Response({
+                'success': True,
+                'sunat_integration': {
+                    'available': SUNAT_AVAILABLE,
+                    'zeep_available': ZEEP_AVAILABLE,
+                    'environment': config.get('ENVIRONMENT', 'N/A'),
+                    'ruc': config.get('RUC', 'N/A'),
+                    'connection_status': connection_status,
+                    'connection_error': connection_error,
+                    'connection_details': connection_details,
+                    'supported_operations': ['sendBill', 'test_connection']
+                },
+                'document_statistics': doc_stats,
+                'response_timestamp': timezone.now()
+            })
+            
+        except Exception as e:
+            logger.error(f"Error obteniendo estado SUNAT: {e}")
+            return Response({
+                'success': False,
+                'error': f'Error interno: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DiagnosticSUNATView(APIView):
+    """Diagnóstico completo del sistema SUNAT"""
+    
+    def get(self, request):
+        """Ejecuta diagnóstico completo"""
+        
+        diagnostic = {
+            'timestamp': timezone.now(),
+            'overall_status': 'UNKNOWN',
+            'checks': []
+        }
+        
+        try:
+            # 1. Verificar dependencias
+            dependencies_check = {
+                'name': 'Dependencias',
+                'status': 'OK',
+                'details': {
+                    'zeep': ZEEP_AVAILABLE,
+                    'sunat_integration': SUNAT_AVAILABLE,
+                    'requests': True,  # Always available if we get here
+                }
+            }
+            
+            if not ZEEP_AVAILABLE:
+                dependencies_check['status'] = 'ERROR'
+                dependencies_check['error'] = 'zeep no disponible'
+                dependencies_check['suggestion'] = 'pip install zeep'
+            
+            diagnostic['checks'].append(dependencies_check)
+            
+            # 2. Verificar configuración
+            config_check = {
+                'name': 'Configuración',
+                'status': 'OK',
+                'details': {}
+            }
+            
+            try:
+                from django.conf import settings
+                config = settings.SUNAT_CONFIG
+                
+                config_check['details'] = {
+                    'environment': config.get('ENVIRONMENT'),
+                    'ruc': config.get('RUC'),
+                    'has_beta_credentials': bool(config.get('BETA_USER') and config.get('BETA_PASSWORD')),
+                    'has_prod_credentials': bool(config.get('PROD_USER') and config.get('PROD_PASSWORD')),
+                    'wsdl_urls_configured': bool(config.get('WSDL_URLS'))
+                }
+                
+            except Exception as e:
+                config_check['status'] = 'ERROR'
+                config_check['error'] = str(e)
+            
+            diagnostic['checks'].append(config_check)
+            
+            # 3. Probar conexión SUNAT
+            connection_check = {
+                'name': 'Conexión SUNAT',
+                'status': 'UNKNOWN',
+                'details': {}
+            }
+            
+            if ZEEP_AVAILABLE:
+                try:
+                    client = get_sunat_client_corregido()
+                    conn_result = client.test_connection()
+                    
+                    if conn_result['success']:
+                        connection_check['status'] = 'OK'
+                        connection_check['details'] = conn_result
+                    else:
+                        connection_check['status'] = 'ERROR'
+                        connection_check['error'] = conn_result.get('error')
+                        connection_check['details'] = conn_result
+                        
+                except Exception as e:
+                    connection_check['status'] = 'ERROR'
+                    connection_check['error'] = str(e)
+            else:
+                connection_check['status'] = 'SKIPPED'
+                connection_check['error'] = 'zeep no disponible'
+            
+            diagnostic['checks'].append(connection_check)
+            
+            # 4. Verificar documentos de prueba
+            documents_check = {
+                'name': 'Documentos de Prueba',
+                'status': 'OK',
+                'details': {}
+            }
+            
+            try:
+                test_docs = DocumentoElectronico.objects.filter(
+                    xml_firmado__isnull=False
+                ).order_by('-created_at')[:5]
+                
+                documents_check['details'] = {
+                    'total_firmados': DocumentoElectronico.objects.exclude(xml_firmado__isnull=True).count(),
+                    'recent_documents': [
+                        {
+                            'number': doc.get_numero_completo(),
+                            'status': doc.estado,
+                            'created': doc.created_at.isoformat()
+                        } for doc in test_docs
+                    ]
+                }
+                
+            except Exception as e:
+                documents_check['status'] = 'ERROR'
+                documents_check['error'] = str(e)
+            
+            diagnostic['checks'].append(documents_check)
+            
+            # Determinar estado general
+            error_checks = [check for check in diagnostic['checks'] if check['status'] == 'ERROR']
+            if error_checks:
+                diagnostic['overall_status'] = 'ERROR'
+                diagnostic['critical_issues'] = [
+                    f"{check['name']}: {check.get('error', 'Error desconocido')}" 
+                    for check in error_checks
+                ]
+            else:
+                diagnostic['overall_status'] = 'OK'
+            
+            return Response({
+                'success': True,
+                'diagnostic': diagnostic
+            })
+            
+        except Exception as e:
+            logger.error(f"Error en diagnóstico: {e}")
+            return Response({
+                'success': False,
+                'error': f'Error ejecutando diagnóstico: {str(e)}',
+                'partial_diagnostic': diagnostic
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
