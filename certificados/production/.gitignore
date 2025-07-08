@@ -1,0 +1,5 @@
+# Proteger certificados reales
+*.pfx
+*.p12
+*password*
+*CONTRASEÑA*
