@@ -475,3 +475,150 @@ INFO 2025-07-07 00:15:22,609 xml_signer 7384 31392 Documento firmado exitosament
 INFO 2025-07-07 00:15:22,610 xml_signer 7384 31392   - ID Firma: a91bd942-0816-4750-9ba8-a9fc038eba63
 INFO 2025-07-07 00:15:22,610 xml_signer 7384 31392   - Certificado: Certificado Test Empresa 1
 INFO 2025-07-07 00:15:22,610 xml_signer 7384 31392   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 00:25:09,612 xml_signer 7384 18396 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 00:25:09,612 xml_signer 7384 18396 Iniciando firma digital del documento: b49d65d2-9833-4979-9d5a-35e9d9d013fb
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396 Validando fechas:
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396   - Ahora: 2025-07-07 00:25:09.614000
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 00:25:09,614 xml_signer 7384 18396 Certificado validado exitosamente
+INFO 2025-07-07 00:25:09,615 xml_signer 7384 18396 Firmador XML configurado exitosamente
+INFO 2025-07-07 00:25:09,682 xml_signer 7384 18396 Documento firmado exitosamente en 70ms
+INFO 2025-07-07 00:25:09,682 xml_signer 7384 18396   - ID Firma: b49d65d2-9833-4979-9d5a-35e9d9d013fb
+INFO 2025-07-07 00:25:09,683 xml_signer 7384 18396   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 00:25:09,683 xml_signer 7384 18396   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 00:30:36,532 xml_signer 7384 11900 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900 Iniciando firma digital del documento: dde08040-3f21-4f4f-aa89-cc401aa04516
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900 Validando fechas:
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900   - Ahora: 2025-07-07 00:30:36.533919
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 00:30:36,533 xml_signer 7384 11900 Certificado validado exitosamente
+INFO 2025-07-07 00:30:36,534 xml_signer 7384 11900 Firmador XML configurado exitosamente
+INFO 2025-07-07 00:30:36,569 xml_signer 7384 11900 Documento firmado exitosamente en 36ms
+INFO 2025-07-07 00:30:36,569 xml_signer 7384 11900   - ID Firma: dde08040-3f21-4f4f-aa89-cc401aa04516
+INFO 2025-07-07 00:30:36,570 xml_signer 7384 11900   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 00:30:36,570 xml_signer 7384 11900   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 00:31:11,240 xml_signer 7384 14620 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620 Iniciando firma digital del documento: cf835978-3d7a-4334-bd85-9a225c3c81fe
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620 Validando fechas:
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620   - Ahora: 2025-07-07 00:31:11.241626
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 00:31:11,241 xml_signer 7384 14620   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 00:31:11,242 xml_signer 7384 14620 Certificado validado exitosamente
+INFO 2025-07-07 00:31:11,242 xml_signer 7384 14620 Firmador XML configurado exitosamente
+INFO 2025-07-07 00:31:11,275 xml_signer 7384 14620 Documento firmado exitosamente en 34ms
+INFO 2025-07-07 00:31:11,275 xml_signer 7384 14620   - ID Firma: cf835978-3d7a-4334-bd85-9a225c3c81fe
+INFO 2025-07-07 00:31:11,276 xml_signer 7384 14620   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 00:31:11,276 xml_signer 7384 14620   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 00:39:37,132 xml_signer 7384 10252 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 00:39:37,134 xml_signer 7384 10252 Iniciando firma digital del documento: 62fcf94a-5cf5-449f-9542-1a346352e4db
+INFO 2025-07-07 00:39:37,136 xml_signer 7384 10252 Validando fechas:
+INFO 2025-07-07 00:39:37,136 xml_signer 7384 10252   - Ahora: 2025-07-07 00:39:37.136107
+INFO 2025-07-07 00:39:37,137 xml_signer 7384 10252   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 00:39:37,137 xml_signer 7384 10252   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 00:39:37,137 xml_signer 7384 10252   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 00:39:37,137 xml_signer 7384 10252 Certificado validado exitosamente
+INFO 2025-07-07 00:39:37,140 xml_signer 7384 10252 Firmador XML configurado exitosamente
+INFO 2025-07-07 00:39:37,272 xml_signer 7384 10252 Documento firmado exitosamente en 139ms
+INFO 2025-07-07 00:39:37,273 xml_signer 7384 10252   - ID Firma: 62fcf94a-5cf5-449f-9542-1a346352e4db
+INFO 2025-07-07 00:39:37,273 xml_signer 7384 10252   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 00:39:37,273 xml_signer 7384 10252   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 01:04:53,560 xml_signer 16168 13836 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 01:04:53,562 xml_signer 16168 13836 Cargando certificado desde: certificados/test/test_cert_empresa1.pfx
+INFO 2025-07-07 01:04:53,724 xml_signer 16168 13836 Certificado cargado exitosamente:
+INFO 2025-07-07 01:04:53,724 xml_signer 16168 13836   - Sujeto: Certificado Test Empresa 1
+INFO 2025-07-07 01:04:53,724 xml_signer 16168 13836   - RUC/Serial: 20123456789
+INFO 2025-07-07 01:04:53,725 xml_signer 16168 13836   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 01:04:53,725 xml_signer 16168 13836   - Tamaño clave: 2048 bits
+INFO 2025-07-07 01:04:53,725 xml_signer 16168 13836 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 01:04:53,726 xml_signer 16168 13836 Iniciando firma digital del documento: 2d70627a-bf31-4a93-90d7-eb64b284bc49
+INFO 2025-07-07 01:04:53,726 xml_signer 16168 13836 Validando fechas:
+INFO 2025-07-07 01:04:53,727 xml_signer 16168 13836   - Ahora: 2025-07-07 01:04:53.726123
+INFO 2025-07-07 01:04:53,727 xml_signer 16168 13836   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 01:04:53,727 xml_signer 16168 13836   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 01:04:53,728 xml_signer 16168 13836   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 01:04:53,728 xml_signer 16168 13836 Certificado validado exitosamente
+INFO 2025-07-07 01:04:53,746 xml_signer 16168 13836 Firmador XML configurado exitosamente
+INFO 2025-07-07 01:04:53,856 xml_signer 16168 13836 Documento firmado exitosamente en 130ms
+INFO 2025-07-07 01:04:53,857 xml_signer 16168 13836   - ID Firma: 2d70627a-bf31-4a93-90d7-eb64b284bc49
+INFO 2025-07-07 01:04:53,857 xml_signer 16168 13836   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 01:04:53,857 xml_signer 16168 13836   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 10:54:49,617 xml_signer 28864 27248 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 10:54:49,617 xml_signer 28864 27248 Cargando certificado desde: certificados/test/test_cert_empresa1.pfx
+INFO 2025-07-07 10:54:49,736 xml_signer 28864 27248 Certificado cargado exitosamente:
+INFO 2025-07-07 10:54:49,737 xml_signer 28864 27248   - Sujeto: Certificado Test Empresa 1
+INFO 2025-07-07 10:54:49,737 xml_signer 28864 27248   - RUC/Serial: 20123456789
+INFO 2025-07-07 10:54:49,737 xml_signer 28864 27248   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 10:54:49,737 xml_signer 28864 27248   - Tamaño clave: 2048 bits
+INFO 2025-07-07 10:54:49,738 xml_signer 28864 27248 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 10:54:49,738 xml_signer 28864 27248 Iniciando firma digital del documento: 6a2b4e47-7574-4116-adcd-9a1151d3ef21
+INFO 2025-07-07 10:54:49,738 xml_signer 28864 27248 Validando fechas:
+INFO 2025-07-07 10:54:49,738 xml_signer 28864 27248   - Ahora: 2025-07-07 10:54:49.738906
+INFO 2025-07-07 10:54:49,739 xml_signer 28864 27248   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 10:54:49,739 xml_signer 28864 27248   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 10:54:49,739 xml_signer 28864 27248   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 10:54:49,739 xml_signer 28864 27248 Certificado validado exitosamente
+INFO 2025-07-07 10:54:49,742 xml_signer 28864 27248 Firmador XML configurado exitosamente
+INFO 2025-07-07 10:54:49,810 xml_signer 28864 27248 Documento firmado exitosamente en 71ms
+INFO 2025-07-07 10:54:49,811 xml_signer 28864 27248   - ID Firma: 6a2b4e47-7574-4116-adcd-9a1151d3ef21
+INFO 2025-07-07 10:54:49,811 xml_signer 28864 27248   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 10:54:49,811 xml_signer 28864 27248   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 11:00:51,933 xml_signer 28864 4136 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 11:00:51,933 xml_signer 28864 4136 Iniciando firma digital del documento: cd10b778-0eb8-41b5-92fd-838af60ed093
+INFO 2025-07-07 11:00:51,935 xml_signer 28864 4136 Validando fechas:
+INFO 2025-07-07 11:00:51,935 xml_signer 28864 4136   - Ahora: 2025-07-07 11:00:51.933501
+INFO 2025-07-07 11:00:51,935 xml_signer 28864 4136   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 11:00:51,935 xml_signer 28864 4136   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 11:00:51,936 xml_signer 28864 4136   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 11:00:51,936 xml_signer 28864 4136 Certificado validado exitosamente
+INFO 2025-07-07 11:00:51,936 xml_signer 28864 4136 Firmador XML configurado exitosamente
+INFO 2025-07-07 11:00:51,994 xml_signer 28864 4136 Documento firmado exitosamente en 61ms
+INFO 2025-07-07 11:00:51,995 xml_signer 28864 4136   - ID Firma: cd10b778-0eb8-41b5-92fd-838af60ed093
+INFO 2025-07-07 11:00:51,995 xml_signer 28864 4136   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 11:00:51,995 xml_signer 28864 4136   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 11:26:27,598 xml_signer 35204 24772 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 11:26:27,599 xml_signer 35204 24772 Cargando certificado desde: certificados/test/test_cert_empresa1.pfx
+INFO 2025-07-07 11:26:27,678 xml_signer 35204 24772 Certificado cargado exitosamente:
+INFO 2025-07-07 11:26:27,678 xml_signer 35204 24772   - Sujeto: Certificado Test Empresa 1
+INFO 2025-07-07 11:26:27,678 xml_signer 35204 24772   - RUC/Serial: 20123456789
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772   - Tamaño clave: 2048 bits
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772 Iniciando firma digital del documento: 5bdce8bc-a459-4b62-8221-c2ab6da6f9a8
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772 Validando fechas:
+INFO 2025-07-07 11:26:27,679 xml_signer 35204 24772   - Ahora: 2025-07-07 11:26:27.679226
+INFO 2025-07-07 11:26:27,680 xml_signer 35204 24772   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 11:26:27,680 xml_signer 35204 24772   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 11:26:27,680 xml_signer 35204 24772   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 11:26:27,680 xml_signer 35204 24772 Certificado validado exitosamente
+INFO 2025-07-07 11:26:27,687 xml_signer 35204 24772 Firmador XML configurado exitosamente
+INFO 2025-07-07 11:26:27,736 xml_signer 35204 24772 Documento firmado exitosamente en 57ms
+INFO 2025-07-07 11:26:27,737 xml_signer 35204 24772   - ID Firma: 5bdce8bc-a459-4b62-8221-c2ab6da6f9a8
+INFO 2025-07-07 11:26:27,737 xml_signer 35204 24772   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 11:26:27,737 xml_signer 35204 24772   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 18:48:38,013 xml_signer 35204 3692 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 18:48:38,013 xml_signer 35204 3692 Cargando certificado desde: certificados/test/test_cert_empresa1.pfx
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692 Certificado cargado exitosamente:
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692   - Sujeto: Certificado Test Empresa 1
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692   - RUC/Serial: 20123456789
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692   - Tamaño clave: 2048 bits
+INFO 2025-07-07 18:48:38,190 xml_signer 35204 3692 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 18:48:38,195 xml_signer 35204 3692 Iniciando firma digital del documento: 8dbc1aa1-a167-4615-98f6-8935ed744d28
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692 Validando fechas:
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692   - Ahora: 2025-07-07 18:48:38.196654
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692   - Válido desde: 2025-07-07 05:14:20
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692   - Válido hasta: 2026-07-07 05:14:20
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692   - Tolerancia aplicada: ±12:00:00
+INFO 2025-07-07 18:48:38,196 xml_signer 35204 3692 Certificado validado exitosamente
+INFO 2025-07-07 18:48:38,222 xml_signer 35204 3692 Firmador XML configurado exitosamente
+INFO 2025-07-07 18:48:38,301 xml_signer 35204 3692 Documento firmado exitosamente en 105ms
+INFO 2025-07-07 18:48:38,301 xml_signer 35204 3692   - ID Firma: 8dbc1aa1-a167-4615-98f6-8935ed744d28
+INFO 2025-07-07 18:48:38,301 xml_signer 35204 3692   - Certificado: Certificado Test Empresa 1
+INFO 2025-07-07 18:48:38,301 xml_signer 35204 3692   - Algoritmo: RSA-SHA256
+INFO 2025-07-07 18:48:38,330 xml_signer 15444 38988 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-07 18:59:59,252 xml_signer 24368 13368 XMLSigner inicializado - Firma disponible: True
