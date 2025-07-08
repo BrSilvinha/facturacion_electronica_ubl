@@ -13,6 +13,9 @@ urlpatterns = [
     path('empresas/', views.EmpresasView.as_view(), name='empresas'),
     path('validar-ruc/', views.ValidarRUCView.as_view(), name='validar-ruc'),
     
+    # === NUEVO: ENDPOINT DE CERTIFICADOS ===
+    path('certificate-info/', views.CertificateInfoView.as_view(), name='certificate-info'),
+    
     # === ENDPOINTS SUNAT - NIVEL 3 ===
     # Pruebas y estado
     path('sunat/test-connection/', views_sunat.TestSUNATConnectionView.as_view(), name='sunat-test-connection'),
