@@ -475,3 +475,7 @@ INFO 2025-07-07 20:35:10,693 soap_client 38052 28620 [SUNAT-20250707203510-6a9c5
 INFO 2025-07-07 20:35:10,693 soap_client 38052 28620 Usando requests como fallback...
 INFO 2025-07-07 20:37:29,768 views_sunat 38052 38376 Enviando documento 01-F001-250707011 a SUNAT
 INFO 2025-07-07 20:37:29,773 soap_client 38052 38376 [SUNAT-20250707203729-e09903] Enviando: 20103129061-01-F001-250707011.zip
+INFO 2025-07-08 01:25:00,058 views_sunat 9756 27324 [SEND-20250708012500] Enviando documento 01-F001-00000999
+INFO 2025-07-08 01:25:00,131 views_sunat 9756 27324 [SEND-20250708012500] Intentando envío real a SUNAT
+ERROR 2025-07-08 01:25:00,286 views_sunat 9756 27324 [SEND-20250708012500] Error envío real: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-08 01:25:00,286 views_sunat 9756 27324 [SEND-20250708012500] Usando simulación de envío SUNAT

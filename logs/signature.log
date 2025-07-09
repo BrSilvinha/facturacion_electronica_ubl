@@ -712,3 +712,16 @@ INFO 2025-07-07 20:33:42,168 xml_signer 38052 8428 Documento firmado exitosament
 INFO 2025-07-07 20:33:42,168 xml_signer 38052 8428   - ID Firma: fb65da19-a6b0-4204-95ff-585d385de771
 INFO 2025-07-07 20:33:42,168 xml_signer 38052 8428   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
 INFO 2025-07-07 20:33:42,168 xml_signer 38052 8428   - Algoritmo: RSA-SHA256
+WARNING 2025-07-08 01:24:57,788 xml_signer 9756 36844 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-08 01:24:57,789 xml_signer 9756 36844 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-08 01:24:57,789 xml_signer 9756 36844 Cargando certificado desde: certificados/production/cert_20103129061.pfx
+INFO 2025-07-08 01:24:57,831 xml_signer 9756 36844 Certificado cargado exitosamente:
+INFO 2025-07-08 01:24:57,831 xml_signer 9756 36844   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-08 01:24:57,831 xml_signer 9756 36844   - RUC/Serial: N/A
+INFO 2025-07-08 01:24:57,831 xml_signer 9756 36844   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-08 01:24:57,832 xml_signer 9756 36844   - Tamaño clave: 2048 bits
+WARNING 2025-07-08 01:24:57,832 xml_signer 9756 36844 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-08 01:24:57,832 xml_signer 9756 36844 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-08 01:24:57,832 xml_signer 9756 36844 Iniciando firma digital del documento: 736ebb85-bb04-491f-b0af-fc4698bb6c60
+WARNING 2025-07-08 01:24:57,833 xml_signer 9756 36844 Firma digital real no disponible, usando simulación
+INFO 2025-07-08 01:24:57,833 xml_signer 9756 36844 Generando firma simulada para documento: 736ebb85-bb04-491f-b0af-fc4698bb6c60

@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.utils import timezone
 from decimal import Decimal
 import uuid
@@ -20,6 +22,7 @@ from conversion.utils.calculations import TributaryCalculator
 from firma_digital import XMLSigner, certificate_manager
 from firma_digital.exceptions import DigitalSignatureError, CertificateError, SignatureError
 
+@method_decorator(csrf_exempt, name="dispatch")
 class TestAPIView(APIView):
     """Endpoint de prueba para verificar que la API funciona"""
     
@@ -40,6 +43,7 @@ class TestAPIView(APIView):
             ]
         })
 
+@method_decorator(csrf_exempt, name="dispatch")
 class TiposDocumentoView(APIView):
     """Lista todos los tipos de documento disponibles"""
     
@@ -63,6 +67,7 @@ class TiposDocumentoView(APIView):
             'total_count': len(data)
         })
 
+@method_decorator(csrf_exempt, name="dispatch")
 class EmpresasView(APIView):
     """Lista todas las empresas activas"""
     
@@ -113,6 +118,7 @@ class EmpresasView(APIView):
             'is_real': False
         })
 
+@method_decorator(csrf_exempt, name="dispatch")
 class ValidarRUCView(APIView):
     """Valida un RUC peruano con dígito verificador"""
     
@@ -177,6 +183,7 @@ class ValidarRUCView(APIView):
         """Obtiene información rápida del certificado"""
         return EmpresasView()._get_certificate_info_quick(empresa)
 
+@method_decorator(csrf_exempt, name="dispatch")
 class CertificateInfoView(APIView):
     """Endpoint para verificar información de certificados"""
     
@@ -298,6 +305,7 @@ class CertificateInfoView(APIView):
                 'password_protected': True
             }
 
+@method_decorator(csrf_exempt, name="dispatch")
 class GenerarXMLView(APIView):
     """
     Endpoint principal del reto: Genera XML UBL 2.1 profesional firmado
@@ -705,5 +713,63 @@ class GenerarXMLView(APIView):
 <!-- Timestamp: {timestamp} -->
 <!-- Signature ID: {signature_id} -->
 <!-- RECOMENDACIÓN: Verificar configuración de certificado real -->
+
+class CDRInfoView(APIView):
+    """Endpoint para obtener información del CDR"""
+    
+    def get(self, request, documento_id):
+        """Obtener información CDR de un documento"""
+        
+        try:
+            documento = get_object_or_404(DocumentoElectronico, id=documento_id)
+            
+            cdr_info = {
+                'documento_id': str(documento.id),
+                'numero_completo': documento.get_numero_completo(),
+                'estado_documento': documento.estado,
+                'tiene_cdr': bool(documento.cdr_xml),
+                'cdr_info': None
+            }
+            
+            if documento.cdr_xml:
+                cdr_info['cdr_info'] = {
+                    'estado': documento.cdr_estado,
+                    'codigo_respuesta': documento.cdr_codigo_respuesta,
+                    'descripcion': documento.cdr_descripcion,
+                    'observaciones': documento.cdr_observaciones,
+                    'fecha_recepcion': documento.cdr_fecha_recepcion,
+                    'ticket_sunat': documento.ticket_sunat,
+                    'xml_cdr': documento.cdr_xml,
+                    'resumen': self._generar_resumen_cdr(documento)
+                }
+            
+            return Response({
+                'success': True,
+                'data': cdr_info
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _generar_resumen_cdr(self, documento):
+        """Generar resumen del CDR"""
+        
+        if not documento.cdr_codigo_respuesta:
+            return "CDR sin procesar"
+        
+        codigo = documento.cdr_codigo_respuesta
+        
+        if codigo == '0':
+            return "✅ ACEPTADO - Documento válido"
+        elif codigo.startswith('2') or codigo.startswith('3'):
+            return f"❌ RECHAZADO - Código {codigo}"
+        elif codigo.startswith('4'):
+            return f"⚠️ ACEPTADO CON OBSERVACIONES - Código {codigo}"
+        else:
+            return f"❓ ESTADO DESCONOCIDO - Código {codigo}"
+
 {xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
 <!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
