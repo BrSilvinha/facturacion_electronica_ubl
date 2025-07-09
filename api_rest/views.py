@@ -714,6 +714,10 @@ class GenerarXMLView(APIView):
 <!-- Signature ID: {signature_id} -->
 <!-- RECOMENDACIÓN: Verificar configuración de certificado real -->
 
+{xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
+<!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
+
+
 class CDRInfoView(APIView):
     """Endpoint para obtener información del CDR"""
     
@@ -760,16 +764,13 @@ class CDRInfoView(APIView):
         if not documento.cdr_codigo_respuesta:
             return "CDR sin procesar"
         
-        codigo = documento.cdr_codigo_respuesta
+        response_code = documento.cdr_codigo_respuesta  # ✅ Corregido: usar 'response_code' en lugar de 'codigo'
         
-        if codigo == '0':
+        if response_code == '0':
             return "✅ ACEPTADO - Documento válido"
-        elif codigo.startswith('2') or codigo.startswith('3'):
-            return f"❌ RECHAZADO - Código {codigo}"
-        elif codigo.startswith('4'):
-            return f"⚠️ ACEPTADO CON OBSERVACIONES - Código {codigo}"
+        elif response_code.startswith('2') or response_code.startswith('3'):
+            return f"❌ RECHAZADO - Código {response_code}"
+        elif response_code.startswith('4'):
+            return f"⚠️ ACEPTADO CON OBSERVACIONES - Código {response_code}"
         else:
-            return f"❓ ESTADO DESCONOCIDO - Código {codigo}"
-
-{xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
-<!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
+            return f"❓ ESTADO DESCONOCIDO - Código {response_code}"

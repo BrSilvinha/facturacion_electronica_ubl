@@ -18,17 +18,11 @@ class Empresa(models.Model):
     direccion = models.TextField()
     ubigeo = models.CharField(max_length=6, blank=True, null=True)
     activo = models.BooleanField(default=True)
-
-    # CDR - Constancia de Recepción SUNAT
-    cdr_xml = models.TextField(blank=True, null=True, help_text="XML de Constancia de Recepción de SUNAT")
-    cdr_estado = models.CharField(max_length=50, blank=True, null=True, help_text="Estado del CDR: ACEPTADO, ACEPTADO_CON_OBSERVACIONES, RECHAZADO")
-    cdr_codigo_respuesta = models.CharField(max_length=10, blank=True, null=True, help_text="Código de respuesta SUNAT (0=aceptado)")
-    cdr_descripcion = models.TextField(blank=True, null=True, help_text="Descripción de la respuesta SUNAT")
-    cdr_observaciones = models.JSONField(blank=True, null=True, help_text="Observaciones del CDR")
-    cdr_fecha_recepcion = models.DateTimeField(blank=True, null=True, help_text="Fecha de recepción del CDR")
-    ticket_sunat = models.CharField(max_length=100, blank=True, null=True, help_text="Ticket de SUNAT para consultas")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # ❌ REMOVER TODOS LOS CAMPOS CDR DE AQUÍ
+    # Los campos CDR YA NO van aquí, van en DocumentoElectronico
     
     class Meta:
         db_table = 'empresas'
@@ -103,6 +97,16 @@ class DocumentoElectronico(models.Model):
     xml_content = models.TextField(blank=True, null=True)  # XML UBL 2.1 generado
     xml_firmado = models.TextField(blank=True, null=True)  # XML con firma digital
     hash_digest = models.CharField(max_length=255, blank=True, null=True)
+    
+    # ✅ CAMPOS CDR AHORA VAN AQUÍ (coinciden con la BD)
+    # CDR - Constancia de Recepción SUNAT
+    cdr_xml = models.TextField(blank=True, null=True, help_text="XML de Constancia de Recepción de SUNAT")
+    cdr_estado = models.CharField(max_length=50, blank=True, null=True, help_text="Estado del CDR: ACEPTADO, ACEPTADO_CON_OBSERVACIONES, RECHAZADO")
+    cdr_codigo_respuesta = models.CharField(max_length=10, blank=True, null=True, help_text="Código de respuesta SUNAT (0=aceptado)")
+    cdr_descripcion = models.TextField(blank=True, null=True, help_text="Descripción de la respuesta SUNAT")
+    cdr_observaciones = models.JSONField(blank=True, null=True, help_text="Observaciones del CDR")
+    cdr_fecha_recepcion = models.DateTimeField(blank=True, null=True, help_text="Fecha de recepción del CDR")
+    ticket_sunat = models.CharField(max_length=100, blank=True, null=True, help_text="Ticket de SUNAT para consultas")
     
     # Estado y auditoría
     estado = models.CharField(max_length=20, choices=ESTADOS, default='BORRADOR')
