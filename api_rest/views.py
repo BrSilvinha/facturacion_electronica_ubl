@@ -29,17 +29,17 @@ class TestAPIView(APIView):
     def get(self, request):
         return Response({
             'message': 'API de Facturación Electrónica UBL 2.1 funcionando correctamente',
-            'version': '2.0 - Professional UBL con Certificado Real',
+            'version': '2.0 - Professional UBL con Certificado Real C23022479065',
             'timestamp': timezone.now(),
             'supported_documents': UBLGeneratorFactory.get_supported_document_types(),
-            'certificate_status': 'Real SUNAT Certificate Integrated',
+            'certificate_status': 'Real SUNAT Certificate C23022479065 Integrated',
             'endpoints': [
                 '/api/test/',
                 '/api/generar-xml/',
                 '/api/tipos-documento/',
                 '/api/empresas/',
                 '/api/validar-ruc/',
-                '/api/certificate-info/',  # Nuevo endpoint
+                '/api/certificate-info/',
             ]
         })
 
@@ -98,25 +98,11 @@ class EmpresasView(APIView):
     
     def _get_certificate_info_quick(self, empresa):
         """Obtiene información rápida del certificado sin cargarlo"""
-        ruc_to_cert = {
-            '20103129061': {  # TU RUC REAL
-                'certificate_type': 'REAL_PRODUCTION',
-                'is_real': True
-            },
-            '20123456789': {
-                'certificate_type': 'TEST',
-                'is_real': False
-            },
-            '20987654321': {
-                'certificate_type': 'TEST',
-                'is_real': False
-            }
+        # TODOS usan certificado real ahora
+        return {
+            'certificate_type': 'REAL_PRODUCTION_C23022479065',
+            'is_real': True
         }
-        
-        return ruc_to_cert.get(empresa.ruc, {
-            'certificate_type': 'DEFAULT_TEST',
-            'is_real': False
-        })
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ValidarRUCView(APIView):
@@ -181,7 +167,11 @@ class ValidarRUCView(APIView):
     
     def _get_certificate_info_quick(self, empresa):
         """Obtiene información rápida del certificado"""
-        return EmpresasView()._get_certificate_info_quick(empresa)
+        # TODOS usan certificado real ahora
+        return {
+            'certificate_type': 'REAL_PRODUCTION_C23022479065',
+            'is_real': True
+        }
 
 @method_decorator(csrf_exempt, name="dispatch")
 class CertificateInfoView(APIView):
@@ -201,8 +191,9 @@ class CertificateInfoView(APIView):
             return Response({
                 'success': True,
                 'certificates': certificates_info,
-                'total_real_certificates': sum(1 for c in certificates_info if c['is_real']),
-                'total_test_certificates': sum(1 for c in certificates_info if c['is_test']),
+                'total_real_certificates': len(certificates_info),
+                'total_test_certificates': 0,
+                'certificate_used': 'C23022479065.pfx',
                 'timestamp': timezone.now()
             })
             
@@ -259,57 +250,23 @@ class CertificateInfoView(APIView):
     def _get_certificate_info(self, empresa):
         """Obtiene información detallada del certificado"""
         
-        ruc_to_cert = {
-            '20103129061': {  # TU CERTIFICADO REAL
-                'path': 'certificados/production/cert_20103129061.pfx',
-                'type': 'REAL_PRODUCTION',
-                'description': 'Certificado digital real de SUNAT',
-                'password_protected': True
-            },
-            '20123456789': {
-                'path': 'certificados/test/test_cert_empresa1.pfx',
-                'type': 'TEST',
-                'description': 'Certificado de prueba autofirmado',
-                'password_protected': True
-            },
-            '20987654321': {
-                'path': 'certificados/test/test_cert_empresa2.pfx',
-                'type': 'TEST', 
-                'description': 'Certificado de prueba autofirmado',
-                'password_protected': True
-            }
+        # TODOS usan el mismo certificado real
+        return {
+            'ruc': empresa.ruc,
+            'empresa': empresa.razon_social,
+            'certificate_type': 'REAL_PRODUCTION',
+            'certificate_path': 'certificados/production/C23022479065.pfx',
+            'description': 'Certificado digital real C23022479065 del profesor',
+            'is_real': True,
+            'is_test': False,
+            'password_protected': True
         }
-        
-        cert_config = ruc_to_cert.get(empresa.ruc)
-        
-        if cert_config:
-            return {
-                'ruc': empresa.ruc,
-                'empresa': empresa.razon_social,
-                'certificate_type': cert_config['type'],
-                'certificate_path': cert_config['path'],
-                'description': cert_config['description'],
-                'is_real': cert_config['type'] == 'REAL_PRODUCTION',
-                'is_test': cert_config['type'] == 'TEST',
-                'password_protected': cert_config['password_protected']
-            }
-        else:
-            return {
-                'ruc': empresa.ruc,
-                'empresa': empresa.razon_social,
-                'certificate_type': 'DEFAULT_TEST',
-                'certificate_path': 'certificados/test/test_cert_empresa1.pfx',
-                'description': 'Certificado por defecto (prueba)',
-                'is_real': False,
-                'is_test': True,
-                'password_protected': True
-            }
 
 @method_decorator(csrf_exempt, name="dispatch")
 class GenerarXMLView(APIView):
     """
     Endpoint principal del reto: Genera XML UBL 2.1 profesional firmado
-    VERSIÓN ACTUALIZADA CON CERTIFICADO REAL
+    VERSIÓN FINAL CON CERTIFICADO REAL C23022479065
     """
     
     def post(self, request):
@@ -401,17 +358,11 @@ class GenerarXMLView(APIView):
                     'error': f'Error generando XML UBL 2.1: {str(xml_error)}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-            # 8. FIRMA DIGITAL REAL - VERSIÓN MEJORADA
+            # 8. FIRMA DIGITAL REAL - CERTIFICADO C23022479065
             try:
-                print("🔐 Iniciando firma digital con certificado real...")
+                print("🔐 Iniciando firma digital con certificado real C23022479065...")
                 
-                # Verificar tipo de certificado
-                cert_info_quick = self._get_certificate_info_quick(empresa)
-                cert_type = "REAL" if cert_info_quick['is_real'] else "PRUEBA"
-                
-                print(f"📜 Tipo de certificado: {cert_type}")
-                
-                # Seleccionar certificado según RUC de empresa
+                # Seleccionar certificado real
                 cert_info = self._get_certificate_for_empresa(empresa)
                 
                 # Firmar con XML-DSig
@@ -420,7 +371,7 @@ class GenerarXMLView(APIView):
                 
                 # Verificar que la firma es válida
                 if '<ds:Signature' in xml_firmado and 'ds:SignatureValue' in xml_firmado:
-                    print(f"✅ XML firmado digitalmente con certificado {cert_type}")
+                    print(f"✅ XML firmado digitalmente con certificado REAL")
                     print(f"📜 Certificado: {cert_info['metadata']['subject_cn']}")
                     
                     documento.estado = 'FIRMADO'
@@ -470,7 +421,7 @@ class GenerarXMLView(APIView):
                 documento=documento,
                 operacion='CONVERSION',
                 estado='SUCCESS',
-                mensaje=f'XML UBL 2.1 generado y firmado con certificado {cert_type}',
+                mensaje=f'XML UBL 2.1 generado y firmado con certificado REAL C23022479065',
                 duracion_ms=duration_ms
             )
             
@@ -482,12 +433,13 @@ class GenerarXMLView(APIView):
                 'xml_firmado': xml_firmado,
                 'hash': documento.hash_digest,
                 'estado': documento.estado,
-                'signature_type': cert_type,
+                'signature_type': 'REAL',
                 'certificate_info': {
                     'subject': cert_info['metadata']['subject_cn'],
                     'expires': cert_info['metadata']['not_after'].isoformat(),
                     'key_size': cert_info['metadata']['key_size'],
-                    'is_real': cert_info_quick['is_real']
+                    'is_real': True,
+                    'certificate_file': 'C23022479065.pfx'
                 },
                 'totales': {
                     'subtotal_gravado': float(document_totals['subtotal_gravado']),
@@ -500,7 +452,7 @@ class GenerarXMLView(APIView):
                     'total_precio_venta': float(document_totals['total_precio_venta'])
                 },
                 'processing_time_ms': duration_ms,
-                'generator_version': '2.0-Professional-Real-Certificate',
+                'generator_version': '2.0-Professional-Real-Certificate-C23022479065',
                 'ubl_version': '2.1'
             })
             
@@ -522,40 +474,16 @@ class GenerarXMLView(APIView):
     def _get_certificate_for_empresa(self, empresa):
         """
         Obtiene certificado apropiado para la empresa
-        VERSIÓN ACTUALIZADA - Incluye certificado real
+        VERSIÓN FINAL - USA CERTIFICADO REAL C23022479065 PARA TODOS
         """
         
-        # Mapeo de RUC a certificados - ACTUALIZADO CON CERTIFICADO REAL
-        ruc_to_cert = {
-            '20103129061': {  # ⭐ TU CERTIFICADO REAL DE PRODUCCIÓN
-                'path': 'certificados/production/cert_20103129061.pfx',
-                'password': 'Ch14pp32023'  # Tu contraseña real
-            },
-            '20123456789': {  # Certificado de prueba 1
-                'path': 'certificados/test/test_cert_empresa1.pfx',
-                'password': 'test123'
-            },
-            '20987654321': {  # Certificado de prueba 2
-                'path': 'certificados/test/test_cert_empresa2.pfx', 
-                'password': 'test456'
-            }
+        # CONFIGURACIÓN SIMPLIFICADA - CERTIFICADO REAL PARA TODOS
+        cert_config = {
+            'path': 'certificados/production/C23022479065.pfx',
+            'password': 'Ch14pp32023'  # Password del certificado real del profesor
         }
         
-        # Obtener configuración del certificado
-        cert_config = ruc_to_cert.get(empresa.ruc)
-        
-        if not cert_config:
-            # Usar certificado por defecto si no hay mapeo específico
-            cert_config = {
-                'path': 'certificados/test/test_cert_empresa1.pfx',
-                'password': 'test123'
-            }
-            print(f"⚠️ No hay certificado específico para RUC {empresa.ruc}, usando certificado por defecto")
-        else:
-            # Verificar si es certificado real
-            is_real_cert = 'production' in cert_config['path']
-            cert_type = "REAL DE PRODUCCIÓN" if is_real_cert else "PRUEBA"
-            print(f"✅ Certificado {cert_type} encontrado para RUC {empresa.ruc}")
+        print(f"⭐ Usando certificado REAL C23022479065 para empresa {empresa.razon_social} (RUC: {empresa.ruc})")
         
         # Cargar certificado usando certificate_manager
         try:
@@ -564,41 +492,26 @@ class GenerarXMLView(APIView):
                 cert_config['password']
             )
             
-            # Verificar validez del certificado
-            is_real = 'production' in cert_config['path']
-            cert_status = "REAL" if is_real else "PRUEBA"
-            
-            print(f"📜 Certificado {cert_status} cargado para {empresa.ruc}:")
+            print(f"📜 Certificado REAL cargado exitosamente:")
+            print(f"    - Archivo: C23022479065.pfx")
             print(f"    - Sujeto: {cert_info['metadata']['subject_cn']}")
             print(f"    - Válido hasta: {cert_info['metadata']['not_after']}")
-            print(f"    - Tipo: {cert_status}")
+            print(f"    - Tamaño clave: {cert_info['metadata']['key_size']} bits")
+            print(f"    - Tipo: CERTIFICADO REAL DE PRODUCCIÓN")
             
             return cert_info
             
         except Exception as e:
-            raise CertificateError(f"Error cargando certificado para {empresa.ruc}: {e}")
+            print(f"❌ Error cargando certificado real C23022479065: {e}")
+            raise CertificateError(f"Error cargando certificado real para {empresa.ruc}: {e}")
     
     def _get_certificate_info_quick(self, empresa):
         """Obtiene información rápida del certificado sin cargarlo"""
-        ruc_to_cert = {
-            '20103129061': {  # TU RUC REAL
-                'certificate_type': 'REAL_PRODUCTION',
-                'is_real': True
-            },
-            '20123456789': {
-                'certificate_type': 'TEST',
-                'is_real': False
-            },
-            '20987654321': {
-                'certificate_type': 'TEST',
-                'is_real': False
-            }
+        # TODOS usan certificado real ahora
+        return {
+            'certificate_type': 'REAL_PRODUCTION_C23022479065',
+            'is_real': True
         }
-        
-        return ruc_to_cert.get(empresa.ruc, {
-            'certificate_type': 'DEFAULT_TEST',
-            'is_real': False
-        })
     
     def _validate_input_data(self, data):
         """Valida datos de entrada de forma robusta"""
@@ -708,11 +621,11 @@ class GenerarXMLView(APIView):
         return f'''<?xml version="1.0" encoding="UTF-8"?>
 <!-- XML UBL 2.1 CON FIRMA SIMULADA - FALLBACK -->
 <!-- ADVERTENCIA: Esta es una firma simulada, no válida para producción -->
-<!-- Razón: Error cargando certificado real -->
+<!-- Razón: Error cargando certificado real C23022479065 -->
 <!-- Generador: Professional UBL Generator v2.0 con Certificado Real -->
 <!-- Timestamp: {timestamp} -->
 <!-- Signature ID: {signature_id} -->
-<!-- RECOMENDACIÓN: Verificar configuración de certificado real -->
+<!-- RECOMENDACIÓN: Verificar que C23022479065.pfx esté en certificados/production/ -->
 
 {xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
 <!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
@@ -764,7 +677,7 @@ class CDRInfoView(APIView):
         if not documento.cdr_codigo_respuesta:
             return "CDR sin procesar"
         
-        response_code = documento.cdr_codigo_respuesta  # ✅ Corregido: usar 'response_code' en lugar de 'codigo'
+        response_code = documento.cdr_codigo_respuesta
         
         if response_code == '0':
             return "✅ ACEPTADO - Documento válido"
