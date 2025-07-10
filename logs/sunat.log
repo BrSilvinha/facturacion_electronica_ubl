@@ -67,3 +67,37 @@ INFO 2025-07-09 19:20:16,491 views_sunat 19144 29216 [SEND-20250709192016] Inici
 ERROR 2025-07-09 19:20:16,965 views_sunat 19144 29216 [SEND-20250709192016] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
 WARNING 2025-07-09 19:20:16,965 views_sunat 19144 29216 [SEND-20250709192016] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
 INFO 2025-07-09 19:20:16,966 views_sunat 19144 29216 [SEND-20250709192016] Usando simulación - zeep no disponible
+INFO 2025-07-09 19:40:46,940 views_sunat 27876 12600 [FIXED-20250709194046] Enviando con credenciales corregidas:
+INFO 2025-07-09 19:40:46,941 views_sunat 27876 12600   RUC: 20103129061
+INFO 2025-07-09 19:40:46,941 views_sunat 27876 12600   Usuario completo: 20103129061MODDATOS
+INFO 2025-07-09 19:40:46,941 views_sunat 27876 12600   Password: MODDATOS
+INFO 2025-07-09 19:40:46,946 views_sunat 27876 12600 [FIXED-20250709194046] ZIP creado: 20103129061-01-F001-00194042.zip (4211 bytes)
+INFO 2025-07-09 19:40:46,946 views_sunat 27876 12600 [FIXED-20250709194046] Conectando a: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+ERROR 2025-07-09 19:40:47,096 views_sunat 27876 12600 [FIXED-20250709194046] Error inesperado: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 19:43:56,924 views_sunat 26296 17844 [FIX401-20250709194356] === INICIANDO SOLUCIÓN ERROR 401 ===
+INFO 2025-07-09 19:43:56,924 views_sunat 26296 17844 [FIX401-20250709194356] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 19:43:56,925 views_sunat 26296 17844 [FIX401-20250709194356] Método 1: SOAP Manual con headers WSSE
+INFO 2025-07-09 19:43:56,931 views_sunat 26296 17844 [FIX401-20250709194356] Enviando SOAP manual a: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 19:43:56,931 views_sunat 26296 17844 [FIX401-20250709194356] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-Fix401/1.0', 'Content-Length': '6548', 'Host': 'e-beta.sunat.gob.pe'}
+INFO 2025-07-09 19:43:57,020 views_sunat 26296 17844 [FIX401-20250709194356] Response status: 500
+INFO 2025-07-09 19:43:57,021 views_sunat 26296 17844 [FIX401-20250709194356] Response headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 00:43:56 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'FAIL FAIL'}
+INFO 2025-07-09 19:43:57,021 views_sunat 26296 17844 [FIX401-20250709194356] Método 2: Zeep con configuración especial
+INFO 2025-07-09 19:43:57,022 views_sunat 26296 17844 [FIX401-20250709194356] Creando cliente zeep con WSSE...
+ERROR 2025-07-09 19:43:57,088 views_sunat 26296 17844 [FIX401-20250709194356] Zeep exception: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+INFO 2025-07-09 19:43:57,089 views_sunat 26296 17844 [FIX401-20250709194356] Método 3: Requests puro con SOAP completo
+INFO 2025-07-09 19:50:59,958 views_sunat 28492 27028 [FINAL-20250709195059] === VERSIÓN FINAL CDR GARANTIZADO ===
+INFO 2025-07-09 19:50:59,958 views_sunat 28492 27028 [FINAL-20250709195059] Credenciales finales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 19:50:59,961 views_sunat 28492 27028 [FINAL-20250709195059] ZIP perfecto: 20103129061-01-F001-00195055.zip (4213 bytes)
+INFO 2025-07-09 19:50:59,962 views_sunat 28492 27028 [FINAL-20250709195059] Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-09 19:51:00,099 views_sunat 28492 27028 [FINAL-20250709195059] Error inesperado: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 19:51:00,099 views_sunat 28492 27028 [FINAL-20250709195059] Actualizando documento en BD...
+INFO 2025-07-09 19:51:00,100 views_sunat 28492 27028 [FINAL-20250709195059] Documento marcado con error
+ERROR 2025-07-09 19:51:00,105 views_sunat 28492 27028 [FINAL-20250709195059] Error actualizando documento: ['“FINAL-20250709195059” no es un UUID válido.']
+INFO 2025-07-09 19:51:35,404 views_sunat 28492 26968 [FINAL-20250709195135] === VERSIÓN FINAL CDR GARANTIZADO ===
+INFO 2025-07-09 19:51:35,407 views_sunat 28492 26968 [FINAL-20250709195135] Credenciales finales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 19:51:35,409 views_sunat 28492 26968 [FINAL-20250709195135] ZIP perfecto: 20103129061-01-F001-00195131.zip (4212 bytes)
+INFO 2025-07-09 19:51:35,410 views_sunat 28492 26968 [FINAL-20250709195135] Conectando a WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-09 19:51:35,530 views_sunat 28492 26968 [FINAL-20250709195135] Error inesperado: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 19:51:35,531 views_sunat 28492 26968 [FINAL-20250709195135] Actualizando documento en BD...
+INFO 2025-07-09 19:51:35,531 views_sunat 28492 26968 [FINAL-20250709195135] Documento marcado con error
+ERROR 2025-07-09 19:51:35,538 views_sunat 28492 26968 [FINAL-20250709195135] Error actualizando documento: ['“FINAL-20250709195135” no es un UUID válido.']
