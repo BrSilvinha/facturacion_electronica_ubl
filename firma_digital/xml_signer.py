@@ -2,6 +2,7 @@
 XMLSigner - Implementación de firma digital XML-DSig para documentos UBL 2.1
 Ubicación: firma_digital/xml_signer.py
 Versión con imports seguros para evitar conflictos de OpenSSL
+🔧 INCLUYE FIX DEFINITIVO PARA ERROR 0160 SUNAT
 """
 
 import logging
@@ -58,6 +59,7 @@ class XMLSigner:
     Implementa firma digital XML-DSig para documentos UBL 2.1
     Compatible con especificaciones SUNAT y estándares W3C
     Versión con manejo seguro de dependencias
+    🔧 INCLUYE FIX DEFINITIVO PARA ERROR 0160 SUNAT
     """
     
     def __init__(self):
@@ -338,7 +340,17 @@ class XMLSigner:
         else:
             lines.insert(0, signature_comment)
         
-        return '\n'.join(lines)
+        # 🔧 FIX CRÍTICO: Corregir comillas simples en declaración XML
+        final_xml = '\n'.join(lines)
+        
+        # SUNAT requiere comillas dobles, no simples
+        if final_xml.startswith("<?xml version='1.0' encoding='UTF-8'?>"):
+            final_xml = final_xml.replace(
+                "<?xml version='1.0' encoding='UTF-8'?>",
+                '<?xml version="1.0" encoding="UTF-8"?>'
+            )
+        
+        return final_xml
     
     def _is_valid_ubl_document(self, root: etree.Element) -> bool:
         """Verifica si es un documento UBL válido"""
@@ -370,7 +382,10 @@ class XMLSigner:
     
     def _add_signature_metadata(self, signed_xml: str, cert_info: Dict[str, Any], 
                                signature_id: str) -> str:
-        """Agrega metadatos de firma como comentarios XML"""
+        """
+        Agrega metadatos de firma como comentarios XML
+        🔧 INCLUYE FIX DEFINITIVO PARA ERROR 0160 SUNAT
+        """
         
         metadata_comment = f"""
 <!-- FIRMA DIGITAL XML-DSig -->
@@ -389,7 +404,18 @@ class XMLSigner:
         else:
             lines.insert(0, metadata_comment)
         
-        return '\n'.join(lines)
+        # 🔧 FIX CRÍTICO: Corregir comillas simples en declaración XML
+        final_xml = '\n'.join(lines)
+        
+        # SUNAT requiere comillas dobles, no simples
+        if final_xml.startswith("<?xml version='1.0' encoding='UTF-8'?>"):
+            final_xml = final_xml.replace(
+                "<?xml version='1.0' encoding='UTF-8'?>",
+                '<?xml version="1.0" encoding="UTF-8"?>'
+            )
+            self.logger.info("🔧 Fix aplicado: Comillas simples → dobles en declaración XML")
+        
+        return final_xml
 
 class CertificateManager:
     """Gestor de certificados con cache y validación"""

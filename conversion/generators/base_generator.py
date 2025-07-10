@@ -45,6 +45,30 @@ class BaseUBLGenerator(ABC):
         # Generar XML
         xml_content = template.render(context)
         
+        # 🔧 FIX CRÍTICO: Corregir declaración XML para SUNAT
+        xml_content = self._fix_xml_declaration(xml_content)
+        
+        return xml_content
+    
+    def _fix_xml_declaration(self, xml_content):
+        """
+        🔧 FIX CRÍTICO: Corrige la declaración XML para SUNAT
+        SUNAT requiere comillas dobles, no simples en la declaración XML
+        """
+        
+        # Corregir comillas simples por dobles (SUNAT las rechaza)
+        if xml_content.startswith("<?xml version='1.0' encoding='UTF-8'?>"):
+            xml_content = xml_content.replace(
+                "<?xml version='1.0' encoding='UTF-8'?>",
+                '<?xml version="1.0" encoding="UTF-8"?>'
+            )
+        
+        # También corregir otras variantes posibles
+        xml_content = xml_content.replace(
+            "<?xml version='1.0'",
+            '<?xml version="1.0"'
+        )
+        
         return xml_content
     
     def _prepare_context(self, documento):
