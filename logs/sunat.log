@@ -101,3 +101,118 @@ ERROR 2025-07-09 19:51:35,530 views_sunat 28492 26968 [FINAL-20250709195135] Err
 INFO 2025-07-09 19:51:35,531 views_sunat 28492 26968 [FINAL-20250709195135] Actualizando documento en BD...
 INFO 2025-07-09 19:51:35,531 views_sunat 28492 26968 [FINAL-20250709195135] Documento marcado con error
 ERROR 2025-07-09 19:51:35,538 views_sunat 28492 26968 [FINAL-20250709195135] Error actualizando documento: ['“FINAL-20250709195135” no es un UUID válido.']
+INFO 2025-07-09 19:55:38,688 views_sunat 13688 27296 [CDR-FINAL-20250709195538] === CDR REAL FINAL - AUTENTICACIÓN CORREGIDA ===
+INFO 2025-07-09 19:55:38,689 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Usando método REQUESTS directo (sin WSDL)
+INFO 2025-07-09 19:55:38,689 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 19:55:38,691 views_sunat 13688 27296 [CDR-FINAL-20250709195538] ZIP: 20103129061-01-F001-00195534.zip (4214 bytes)
+INFO 2025-07-09 19:55:38,691 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Enviando SOAP directo a: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 19:55:39,073 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Respuesta HTTP: 200
+INFO 2025-07-09 19:55:39,074 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 00:55:38 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '701082097'}
+INFO 2025-07-09 19:55:39,074 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Procesando respuesta SOAP exitosa...
+INFO 2025-07-09 19:55:39,074 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Actualizando documento en BD...
+INFO 2025-07-09 19:55:39,075 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Documento marcado como enviado
+ERROR 2025-07-09 19:55:39,082 views_sunat 13688 27296 [CDR-FINAL-20250709195538] Error actualizando documento: ['“CDR-FINAL-20250709195538” no es un UUID válido.']
+INFO 2025-07-09 20:00:41,451 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] === CDR COMPLETO FINAL - PROCESAMIENTO SOAP MEJORADO ===
+INFO 2025-07-09 20:00:41,451 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Método SOAP completo - procesamiento mejorado
+INFO 2025-07-09 20:00:41,451 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 20:00:41,454 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] ZIP: 20103129061-01-F001-00200037.zip (4231 bytes)
+INFO 2025-07-09 20:00:41,454 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Base64: 5644 chars
+INFO 2025-07-09 20:00:41,454 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] === ENVIANDO A SUNAT ===
+INFO 2025-07-09 20:00:41,454 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 20:00:41,455 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-CDR-Complete/1.0', 'Accept': 'text/xml, multipart/related, application/soap+xml', 'Accept-Encoding': 'gzip, deflate', 'Cache-Control': 'no-cache', 'Connection': 'Keep-Alive', 'Content-Length': '6398'}
+INFO 2025-07-09 20:00:41,455 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Envelope size: 6398 chars
+INFO 2025-07-09 20:00:41,556 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] === RESPUESTA RECIBIDA ===
+INFO 2025-07-09 20:00:41,557 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Status Code: 200
+INFO 2025-07-09 20:00:41,557 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 01:00:41 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '701206241'}
+INFO 2025-07-09 20:00:41,557 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Content-Type: text/xml
+INFO 2025-07-09 20:00:41,557 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] Response size: 605 chars
+INFO 2025-07-09 20:00:41,558 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] === PROCESANDO RESPUESTA SOAP COMPLETA ===
+ERROR 2025-07-09 20:00:41,559 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] SOAP Fault detectado: {'fault_code': 'soap-env:Client.0160', 'fault_string': "El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1752109294325 error: Validation File size error'"}
+INFO 2025-07-09 20:00:41,559 views_sunat 15132 15184 [CDR-COMPLETO-20250709200041] === ACTUALIZANDO DOCUMENTO EN BD ===
+INFO 2025-07-09 20:03:08,015 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] === CDR COMPLETO FINAL - PROCESAMIENTO SOAP MEJORADO ===
+INFO 2025-07-09 20:03:08,015 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Método SOAP completo - procesamiento mejorado
+INFO 2025-07-09 20:03:08,015 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 20:03:08,018 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] ZIP: 20103129061-01-F001-00000303.zip (4160 bytes)
+INFO 2025-07-09 20:03:08,018 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Base64: 5548 chars
+INFO 2025-07-09 20:03:08,018 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] === ENVIANDO A SUNAT ===
+INFO 2025-07-09 20:03:08,019 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 20:03:08,019 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-CDR-Complete/1.0', 'Accept': 'text/xml, multipart/related, application/soap+xml', 'Accept-Encoding': 'gzip, deflate', 'Cache-Control': 'no-cache', 'Connection': 'Keep-Alive', 'Content-Length': '6302'}
+INFO 2025-07-09 20:03:08,019 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Envelope size: 6302 chars
+INFO 2025-07-09 20:03:08,409 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] === RESPUESTA RECIBIDA ===
+INFO 2025-07-09 20:03:08,410 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Status Code: 200
+INFO 2025-07-09 20:03:08,410 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 01:03:08 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '702551600'}
+INFO 2025-07-09 20:03:08,410 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Content-Type: text/xml
+INFO 2025-07-09 20:03:08,410 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] Response size: 605 chars
+INFO 2025-07-09 20:03:08,410 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] === PROCESANDO RESPUESTA SOAP COMPLETA ===
+ERROR 2025-07-09 20:03:08,411 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] SOAP Fault detectado: {'fault_code': 'soap-env:Client.0160', 'fault_string': "El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1752109441176 error: Validation File size error'"}
+INFO 2025-07-09 20:03:08,411 views_sunat 15132 13852 [CDR-COMPLETO-20250709200308] === ACTUALIZANDO DOCUMENTO EN BD ===
+INFO 2025-07-09 20:04:35,137 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] === CDR COMPLETO FINAL - PROCESAMIENTO SOAP MEJORADO ===
+INFO 2025-07-09 20:04:35,138 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Método SOAP completo - procesamiento mejorado
+INFO 2025-07-09 20:04:35,138 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] ZIP: 20103129061-01-F001-00200430.zip (4230 bytes)
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Base64: 5640 chars
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] === ENVIANDO A SUNAT ===
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-CDR-Complete/1.0', 'Accept': 'text/xml, multipart/related, application/soap+xml', 'Accept-Encoding': 'gzip, deflate', 'Cache-Control': 'no-cache', 'Connection': 'Keep-Alive', 'Content-Length': '6394'}
+INFO 2025-07-09 20:04:35,141 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Envelope size: 6394 chars
+INFO 2025-07-09 20:04:35,508 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] === RESPUESTA RECIBIDA ===
+INFO 2025-07-09 20:04:35,509 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Status Code: 200
+INFO 2025-07-09 20:04:35,509 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 01:04:35 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '702585728'}
+INFO 2025-07-09 20:04:35,509 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Content-Type: text/xml
+INFO 2025-07-09 20:04:35,509 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] Response size: 605 chars
+INFO 2025-07-09 20:04:35,510 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] === PROCESANDO RESPUESTA SOAP COMPLETA ===
+ERROR 2025-07-09 20:04:35,510 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] SOAP Fault detectado: {'fault_code': 'soap-env:Client.0160', 'fault_string': "El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1752109528280 error: Validation File size error'"}
+INFO 2025-07-09 20:04:35,511 views_sunat 15132 7196 [CDR-COMPLETO-20250709200435] === ACTUALIZANDO DOCUMENTO EN BD ===
+INFO 2025-07-10 00:06:19,590 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] === CDR COMPLETO FINAL - PROCESAMIENTO SOAP MEJORADO ===
+INFO 2025-07-10 00:06:19,591 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Método SOAP completo - procesamiento mejorado
+INFO 2025-07-10 00:06:19,591 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-10 00:06:19,597 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] ZIP: 20103129061-01-F001-00000615.zip (4158 bytes)
+INFO 2025-07-10 00:06:19,597 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Base64: 5544 chars
+INFO 2025-07-10 00:06:19,597 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] === ENVIANDO A SUNAT ===
+INFO 2025-07-10 00:06:19,598 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-10 00:06:19,598 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-CDR-Complete/1.0', 'Accept': 'text/xml, multipart/related, application/soap+xml', 'Accept-Encoding': 'gzip, deflate', 'Cache-Control': 'no-cache', 'Connection': 'Keep-Alive', 'Content-Length': '6298'}
+INFO 2025-07-10 00:06:19,598 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Envelope size: 6298 chars
+INFO 2025-07-10 00:06:19,982 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] === RESPUESTA RECIBIDA ===
+INFO 2025-07-10 00:06:19,983 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Status Code: 200
+INFO 2025-07-10 00:06:19,983 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 05:06:19 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '708626176'}
+INFO 2025-07-10 00:06:19,984 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Content-Type: text/xml
+INFO 2025-07-10 00:06:19,984 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] Response size: 605 chars
+INFO 2025-07-10 00:06:19,985 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] === PROCESANDO RESPUESTA SOAP COMPLETA ===
+ERROR 2025-07-10 00:06:19,985 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] SOAP Fault detectado: {'fault_code': 'soap-env:Client.0160', 'fault_string': "El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1752124032856 error: Validation File size error'"}
+INFO 2025-07-10 00:06:19,988 views_sunat 15132 10036 [CDR-COMPLETO-20250710000619] === ACTUALIZANDO DOCUMENTO EN BD ===
+INFO 2025-07-10 00:06:43,533 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] === CDR COMPLETO FINAL - PROCESAMIENTO SOAP MEJORADO ===
+INFO 2025-07-10 00:06:43,534 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Método SOAP completo - procesamiento mejorado
+INFO 2025-07-10 00:06:43,534 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] ZIP: 20103129061-01-F001-00000639.zip (4231 bytes)
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Base64: 5644 chars
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] === ENVIANDO A SUNAT ===
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Headers: {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': 'urn:sendBill', 'User-Agent': 'Python-SUNAT-CDR-Complete/1.0', 'Accept': 'text/xml, multipart/related, application/soap+xml', 'Accept-Encoding': 'gzip, deflate', 'Cache-Control': 'no-cache', 'Connection': 'Keep-Alive', 'Content-Length': '6398'}
+INFO 2025-07-10 00:06:43,537 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Envelope size: 6398 chars
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] === RESPUESTA RECIBIDA ===
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Status Code: 200
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Headers: {'Server': 'nginx/1.17.3', 'Date': 'Thu, 10 Jul 2025 05:06:43 GMT', 'Content-Type': 'text/xml', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'X-Backside-Transport': 'OK OK,FAIL FAIL', 'X-Global-Transaction-ID': '707343089'}
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Content-Type: text/xml
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] Response size: 605 chars
+INFO 2025-07-10 00:06:43,898 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] === PROCESANDO RESPUESTA SOAP COMPLETA ===
+ERROR 2025-07-10 00:06:43,899 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] SOAP Fault detectado: {'fault_code': 'soap-env:Client.0160', 'fault_string': "El archivo XML esta vacio - Detalle: xxx.xxx.xxx value='ticket: 1752124056773 error: Validation File size error'"}
+INFO 2025-07-10 00:06:43,899 views_sunat 15132 19572 [CDR-COMPLETO-20250710000643] === ACTUALIZANDO DOCUMENTO EN BD ===
+INFO 2025-07-10 00:20:47,419 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === CDR FINAL COMPLETO - SIN ERRORES ===
+INFO 2025-07-10 00:20:47,420 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === MÉTODO COMPLETAMENTE CORREGIDO ===
+INFO 2025-07-10 00:20:47,420 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Credenciales: 20103129061MODDATOS/MODDATOS
+INFO 2025-07-10 00:20:47,422 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Documento: 01-F001-00002043
+INFO 2025-07-10 00:20:47,422 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === VERIFICACIÓN COMPLETA DE XML ===
+INFO 2025-07-10 00:20:47,425 views_sunat 7368 28720 [CDR-FINAL-20250710002047] XML actualizado en BD
+INFO 2025-07-10 00:20:47,576 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === CREACIÓN DE ZIP MEJORADA ===
+INFO 2025-07-10 00:20:47,577 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Preparando ZIP:
+INFO 2025-07-10 00:20:47,608 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Verificación final del ZIP...
+INFO 2025-07-10 00:20:47,652 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Archivo final:
+INFO 2025-07-10 00:20:47,661 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === CREANDO SOAP ENVELOPE PERFECTO ===
+INFO 2025-07-10 00:20:47,661 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Envelope params:
+INFO 2025-07-10 00:20:47,678 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === ENVIANDO A SUNAT ===
+INFO 2025-07-10 00:20:48,073 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === RESPUESTA RECIBIDA ===
+INFO 2025-07-10 00:20:48,097 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === PROCESANDO RESPUESTA EXITOSA ===
+INFO 2025-07-10 00:20:48,097 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Buscando applicationResponse...
+INFO 2025-07-10 00:20:48,103 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Buscando ticket...
+INFO 2025-07-10 00:20:48,107 views_sunat 7368 28720 [CDR-FINAL-20250710002047] Respuesta exitosa pero sin CDR/ticket reconocible
+INFO 2025-07-10 00:20:48,108 views_sunat 7368 28720 [CDR-FINAL-20250710002047] === ACTUALIZANDO DOCUMENTO EN BD ===
