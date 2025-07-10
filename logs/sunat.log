@@ -1,0 +1,69 @@
+INFO 2025-07-09 18:51:49,347 views_sunat 24412 25212 [SEND-20250709185149] Enviando documento 01-F001-00001001 con certificado real
+INFO 2025-07-09 18:51:49,350 views_sunat 24412 25212 [SEND-20250709185149] Configuración SUNAT Beta:
+INFO 2025-07-09 18:51:49,351 views_sunat 24412 25212   - RUC: 20103129061
+INFO 2025-07-09 18:51:49,351 views_sunat 24412 25212   - Usuario: 20103129061MODDATOS
+INFO 2025-07-09 18:51:49,351 views_sunat 24412 25212   - URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 18:51:49,351 views_sunat 24412 25212   - Certificado: C23022479065.pfx (REAL)
+INFO 2025-07-09 18:51:49,354 views_sunat 24412 25212 [SEND-20250709185149] Archivo: 20103129061-01-F001-00001001.zip (4341 bytes)
+INFO 2025-07-09 18:51:49,355 views_sunat 24412 25212 [SEND-20250709185149] Inicializando cliente zeep...
+ERROR 2025-07-09 18:51:49,502 views_sunat 24412 25212 [SEND-20250709185149] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+WARNING 2025-07-09 18:51:49,502 views_sunat 24412 25212 [SEND-20250709185149] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 18:51:49,502 views_sunat 24412 25212 [SEND-20250709185149] Usando simulación - zeep no disponible
+INFO 2025-07-09 18:55:00,113 views_sunat 24412 27212 [SEND-20250709185500] Enviando documento 01-F001-00001001 con certificado real
+INFO 2025-07-09 18:55:00,115 views_sunat 24412 27212 [SEND-20250709185500] Configuración SUNAT Beta:
+INFO 2025-07-09 18:55:00,115 views_sunat 24412 27212   - RUC: 20103129061
+INFO 2025-07-09 18:55:00,116 views_sunat 24412 27212   - Usuario: 20103129061MODDATOS
+INFO 2025-07-09 18:55:00,116 views_sunat 24412 27212   - URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 18:55:00,116 views_sunat 24412 27212   - Certificado: C23022479065.pfx (REAL)
+INFO 2025-07-09 18:55:00,117 views_sunat 24412 27212 [SEND-20250709185500] Archivo: 20103129061-01-F001-00001001.zip (4341 bytes)
+INFO 2025-07-09 18:55:00,117 views_sunat 24412 27212 [SEND-20250709185500] Inicializando cliente zeep...
+ERROR 2025-07-09 18:55:00,248 views_sunat 24412 27212 [SEND-20250709185500] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+WARNING 2025-07-09 18:55:00,249 views_sunat 24412 27212 [SEND-20250709185500] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 18:55:00,249 views_sunat 24412 27212 [SEND-20250709185500] Usando simulación - zeep no disponible
+INFO 2025-07-09 18:55:08,493 views_sunat 24412 27212 [SEND-20250709185508] Enviando documento 01-F001-00001001 con certificado real
+INFO 2025-07-09 18:55:08,496 views_sunat 24412 27212 [SEND-20250709185508] Configuración SUNAT Beta:
+INFO 2025-07-09 18:55:08,497 views_sunat 24412 27212   - RUC: 20103129061
+INFO 2025-07-09 18:55:08,497 views_sunat 24412 27212   - Usuario: 20103129061MODDATOS
+INFO 2025-07-09 18:55:08,497 views_sunat 24412 27212   - URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 18:55:08,497 views_sunat 24412 27212   - Certificado: C23022479065.pfx (REAL)
+INFO 2025-07-09 18:55:08,498 views_sunat 24412 27212 [SEND-20250709185508] Archivo: 20103129061-01-F001-00001001.zip (4341 bytes)
+INFO 2025-07-09 18:55:08,499 views_sunat 24412 27212 [SEND-20250709185508] Inicializando cliente zeep...
+ERROR 2025-07-09 18:55:08,606 views_sunat 24412 27212 [SEND-20250709185508] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+WARNING 2025-07-09 18:55:08,607 views_sunat 24412 27212 [SEND-20250709185508] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 18:55:08,607 views_sunat 24412 27212 [SEND-20250709185508] Usando simulación - zeep no disponible
+INFO 2025-07-09 18:57:52,982 views_sunat 13552 2936 [SEND-20250709185752] Enviando documento 01-F001-00001001 con certificado real
+INFO 2025-07-09 18:57:52,985 views_sunat 13552 2936 [SEND-20250709185752] Configuración SUNAT Beta:
+INFO 2025-07-09 18:57:52,986 views_sunat 13552 2936   - RUC: 20103129061
+INFO 2025-07-09 18:57:52,986 views_sunat 13552 2936   - Usuario: 20103129061MODDATOS
+INFO 2025-07-09 18:57:52,986 views_sunat 13552 2936   - URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 18:57:52,986 views_sunat 13552 2936   - Certificado: C23022479065.pfx (REAL)
+INFO 2025-07-09 18:57:52,987 views_sunat 13552 2936 [SEND-20250709185752] Archivo: 20103129061-01-F001-00001001.zip (4341 bytes)
+INFO 2025-07-09 18:57:52,988 views_sunat 13552 2936 [SEND-20250709185752] Inicializando cliente zeep...
+ERROR 2025-07-09 18:57:53,102 views_sunat 13552 2936 [SEND-20250709185752] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+WARNING 2025-07-09 18:57:53,103 views_sunat 13552 2936 [SEND-20250709185752] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 18:57:53,103 views_sunat 13552 2936 [SEND-20250709185752] Usando simulación - zeep no disponible
+INFO 2025-07-09 18:58:54,738 soap_client 27400 22552 SUNATSoapClient corregido: beta
+INFO 2025-07-09 18:58:54,739 soap_client 27400 22552 Usuario: 20103129061MODDATOS
+INFO 2025-07-09 18:58:54,739 soap_client 27400 22552 URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 18:58:54,739 soap_client 27400 22552 [SUNAT-20250709185854-6daabb] Test de conexión SUNAT...
+INFO 2025-07-09 18:58:54,739 soap_client 27400 22552 Inicializando zeep con WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-09 18:58:55,198 soap_client 27400 22552 Error inicializando zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 18:58:55,198 soap_client 27400 22552 Usando requests como fallback...
+INFO 2025-07-09 19:03:17,383 soap_client 25648 1464 SUNATSoapClient corregido: beta
+INFO 2025-07-09 19:03:17,383 soap_client 25648 1464 Usuario: 20103129061MODDATOS
+INFO 2025-07-09 19:03:17,383 soap_client 25648 1464 URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 19:03:17,384 soap_client 25648 1464 [SUNAT-20250709190317-806769] Test de conexión SUNAT...
+INFO 2025-07-09 19:03:17,384 soap_client 25648 1464 Inicializando zeep con WSDL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl
+ERROR 2025-07-09 19:03:17,499 soap_client 25648 1464 Error inicializando zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 19:03:17,499 soap_client 25648 1464 Usando requests como fallback...
+INFO 2025-07-09 19:20:16,486 views_sunat 19144 29216 [SEND-20250709192016] Enviando documento 01-F001-00001002 con certificado real
+INFO 2025-07-09 19:20:16,489 views_sunat 19144 29216 [SEND-20250709192016] Configuración SUNAT Beta:
+INFO 2025-07-09 19:20:16,489 views_sunat 19144 29216   - RUC: 20103129061
+INFO 2025-07-09 19:20:16,489 views_sunat 19144 29216   - Usuario: 20103129061MODDATOS
+INFO 2025-07-09 19:20:16,489 views_sunat 19144 29216   - URL: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+INFO 2025-07-09 19:20:16,489 views_sunat 19144 29216   - Certificado: C23022479065.pfx (REAL)
+INFO 2025-07-09 19:20:16,490 views_sunat 19144 29216 [SEND-20250709192016] Archivo: 20103129061-01-F001-00001002.zip (4158 bytes)
+INFO 2025-07-09 19:20:16,491 views_sunat 19144 29216 [SEND-20250709192016] Inicializando cliente zeep...
+ERROR 2025-07-09 19:20:16,965 views_sunat 19144 29216 [SEND-20250709192016] Error zeep: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+WARNING 2025-07-09 19:20:16,965 views_sunat 19144 29216 [SEND-20250709192016] Fallback a simulación por error: 401 Client Error: Unauthorized for url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?ns1.wsdl
+INFO 2025-07-09 19:20:16,966 views_sunat 19144 29216 [SEND-20250709192016] Usando simulación - zeep no disponible

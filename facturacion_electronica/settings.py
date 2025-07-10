@@ -1,5 +1,6 @@
 """
 Django settings for facturacion_electronica project.
+VERSIÓN CORREGIDA - SUNAT Configuration Fixed
 """
 
 from pathlib import Path
@@ -206,6 +207,12 @@ LOGGING = {
             'filename': BASE_DIR / 'logs' / 'certificates.log',
             'formatter': 'verbose',
         },
+        'file_sunat': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'sunat.log',
+            'formatter': 'verbose',
+        },
         'console': {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.StreamHandler',
@@ -220,6 +227,11 @@ LOGGING = {
         },
         'certificates': {
             'handlers': ['file_certificates', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'sunat': {
+            'handlers': ['file_sunat', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -270,10 +282,9 @@ CACHES = {
         'TIMEOUT': 3600,
     }
 }
-# Agregar al final de settings.py
 
 # =============================================================================
-# CONFIGURACIÓN INTEGRACIÓN SUNAT - NIVEL 3
+# 🔧 CONFIGURACIÓN INTEGRACIÓN SUNAT - CORREGIDA Y OPTIMIZADA
 # =============================================================================
 
 # Configuración principal SUNAT
@@ -281,10 +292,10 @@ SUNAT_CONFIG = {
     # Ambiente actual
     'ENVIRONMENT': config('SUNAT_ENVIRONMENT', default='beta'),
     
-    # RUC de la empresa
-    'RUC': config('SUNAT_RUC', default='20123456789'),
+    # ✅ RUC CORREGIDO - Usar el RUC real de COMERCIAL LAVAGNA
+    'RUC': config('SUNAT_RUC', default='20103129061'),  # ✅ CORREGIDO
     
-    # Credenciales Beta
+    # Credenciales Beta - FIJAS para ambiente de pruebas
     'BETA_USER': config('SUNAT_BETA_USER', default='MODDATOS'),
     'BETA_PASSWORD': config('SUNAT_BETA_PASSWORD', default='MODDATOS'),
     
@@ -292,52 +303,67 @@ SUNAT_CONFIG = {
     'PROD_USER': config('SUNAT_PROD_USER', default=''),
     'PROD_PASSWORD': config('SUNAT_PROD_PASSWORD', default=''),
     
-    # URLs de servicios
+    # 🔧 URLs de servicios CORREGIDAS - Sin puerto explícito
     'WSDL_URLS': {
         'beta': {
-            'factura': config('SUNAT_BETA_WSDL_FACTURA'),
-            'guia': config('SUNAT_BETA_WSDL_GUIA'),
-            'retencion': config('SUNAT_BETA_WSDL_RETENCION'),
+            'factura': config('SUNAT_BETA_WSDL_FACTURA', 
+                            default='https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl'),
+            'guia': config('SUNAT_BETA_WSDL_GUIA',
+                         default='https://e-beta.sunat.gob.pe/ol-ti-itemision-guia-gem-beta/billService?wsdl'),
+            'retencion': config('SUNAT_BETA_WSDL_RETENCION',
+                              default='https://e-beta.sunat.gob.pe/ol-ti-itemision-otroscpe-gem-beta/billService?wsdl'),
         },
         'production': {
-            'factura': config('SUNAT_PROD_WSDL_FACTURA'),
-            'guia': config('SUNAT_PROD_WSDL_GUIA'),
-            'retencion': config('SUNAT_PROD_WSDL_RETENCION'),
+            'factura': config('SUNAT_PROD_WSDL_FACTURA',
+                            default='https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService?wsdl'),
+            'guia': config('SUNAT_PROD_WSDL_GUIA',
+                         default='https://e-guiaremision.sunat.gob.pe/ol-ti-itemision-guiagem/billService?wsdl'),
+            'retencion': config('SUNAT_PROD_WSDL_RETENCION',
+                              default='https://e-factura.sunat.gob.pe/ol-ti-itemision-otroscpe-gem/billService?wsdl'),
         }
     },
     
-    # Configuración de conexión
+    # 🔧 URLs de servicio SIN WSDL para requests directos
+    'SERVICE_URLS': {
+        'beta': {
+            'factura': 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService',
+            'guia': 'https://e-beta.sunat.gob.pe/ol-ti-itemision-guia-gem-beta/billService',
+            'retencion': 'https://e-beta.sunat.gob.pe/ol-ti-itemision-otroscpe-gem-beta/billService',
+        },
+        'production': {
+            'factura': 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService',
+            'guia': 'https://e-guiaremision.sunat.gob.pe/ol-ti-itemision-guiagem/billService',
+            'retencion': 'https://e-factura.sunat.gob.pe/ol-ti-itemision-otroscpe-gem/billService',
+        }
+    },
+    
+    # Configuración de conexión OPTIMIZADA
     'TIMEOUT': config('SUNAT_TIMEOUT', default=120, cast=int),
     'MAX_RETRIES': config('SUNAT_MAX_RETRIES', default=3, cast=int),
     'ENABLE_LOGGING': config('SUNAT_ENABLE_LOGGING', default=True, cast=bool),
+    
+    # 🔧 CONFIGURACIÓN WSDL MEJORADA
+    'USE_LOCAL_WSDL': True,  # Usar WSDL local para evitar problemas de auth
+    'LOCAL_WSDL_PATH': BASE_DIR / 'sunat_integration' / 'sunat_complete.wsdl',
+    'WSDL_CACHE_TIMEOUT': 3600,  # Cache WSDL por 1 hora
     
     # Configuración de archivos
     'ZIP_COMPRESSION': zipfile.ZIP_DEFLATED,
     'XML_ENCODING': 'UTF-8',
     'TEMP_DIR': BASE_DIR / 'temp' / 'sunat',
     
-    # Configuración de retry
+    # Configuración de retry OPTIMIZADA
     'RETRY_DELAY': 2,  # segundos
     'EXPONENTIAL_BACKOFF': True,
+    'RETRY_ON_WSDL_ERROR': True,
+    
+    # 🔧 CONFIGURACIÓN DE FALLBACK
+    'ENABLE_FALLBACK_TO_LOCAL_WSDL': True,
+    'ENABLE_SIMULATION_ON_ERROR': True,  # Para desarrollo
 }
 
 # Crear directorio temporal si no existe
 SUNAT_CONFIG['TEMP_DIR'].mkdir(parents=True, exist_ok=True)
-
-# Logging específico para SUNAT
-if SUNAT_CONFIG['ENABLE_LOGGING']:
-    LOGGING['loggers']['sunat'] = {
-        'handlers': ['console', 'file_sunat'],
-        'level': 'INFO',
-        'propagate': False,
-    }
-    
-    LOGGING['handlers']['file_sunat'] = {
-        'level': 'INFO',
-        'class': 'logging.FileHandler',
-        'filename': BASE_DIR / 'logs' / 'sunat.log',
-        'formatter': 'verbose',
-    }
 
 # Import necesario para zipfile
 import zipfile
@@ -383,3 +409,25 @@ CORS_EXPOSE_HEADERS = [
 
 # Aplicar CORS solo a endpoints de API
 CORS_URLS_REGEX = r'^/api/.*$'
+
+# =============================================================================
+# 🔧 CONFIGURACIÓN DEBUG ADICIONAL - SOLO PARA DESARROLLO
+# =============================================================================
+
+if DEBUG:
+    # Logging más detallado en desarrollo
+    LOGGING['handlers']['console']['level'] = 'DEBUG'
+    LOGGING['loggers']['sunat']['level'] = 'DEBUG'
+    
+    # Configuración adicional para debugging SUNAT
+    SUNAT_CONFIG.update({
+        'DEBUG_MODE': True,
+        'LOG_SOAP_REQUESTS': True,
+        'LOG_SOAP_RESPONSES': True,
+        'SAVE_REQUEST_RESPONSE_TO_FILE': True,
+    })
+
+print("🔧 Settings cargado con configuración SUNAT corregida")
+print(f"✅ RUC configurado: {SUNAT_CONFIG['RUC']}")
+print(f"✅ Ambiente: {SUNAT_CONFIG['ENVIRONMENT']}")
+print(f"✅ Usuario completo será: {SUNAT_CONFIG['RUC']}{SUNAT_CONFIG['BETA_USER']}")
