@@ -1,7 +1,7 @@
 """
 VERSIÓN FINAL INTEGRADA - Error 0160 Fix Integrado Directamente
-Archivo: api_rest/views_sunat.py (REEMPLAZAR COMPLETAMENTE)
-✅ Error 0160 solucionado sin archivos externos ✅ CDR real garantizado ✅ Todo en un solo archivo
+Archivo: api_rest/views_sunat.py (VERSIÓN SIN ERRORES UNICODE)
+Corrección Error 0160 solucionado sin archivos externos + CDR real garantizado + Todo en un solo archivo
 """
 
 import logging
@@ -183,7 +183,7 @@ class IntegratedError0160Fix:
             except etree.XMLSyntaxError as e:
                 return {'valid': False, 'error': f'XML syntax error: {str(e)[:100]}'}
         
-        logger.info(f"[{correlation_id}] ✅ XML verificado: {len(xml_content)} chars")
+        logger.info(f"[{correlation_id}] XML verificado: {len(xml_content)} chars")
         return {'valid': True, 'xml': xml_content}
     
     def _create_bulletproof_zip_integrated(self, documento, xml_content: str, correlation_id: str) -> bytes:
@@ -227,7 +227,7 @@ class IntegratedError0160Fix:
         if len(zip_content) < 2000:
             raise Exception(f"ZIP final too small: {len(zip_content)} bytes")
         
-        logger.info(f"[{correlation_id}] ✅ ZIP creado: {len(zip_content)} bytes")
+        logger.info(f"[{correlation_id}] ZIP creado: {len(zip_content)} bytes")
         return zip_content
     
     def _verify_zip_integrity_integrated(self, zip_content: bytes, correlation_id: str) -> bool:
@@ -260,7 +260,7 @@ class IntegratedError0160Fix:
                     logger.error(f"[{correlation_id}] XML in ZIP too short: {len(xml_content)}")
                     return False
             
-            logger.info(f"[{correlation_id}] ✅ ZIP integrity verified")
+            logger.info(f"[{correlation_id}] ZIP integrity verified")
             return True
             
         except Exception as e:
@@ -286,7 +286,7 @@ class IntegratedError0160Fix:
         except Exception as e:
             raise Exception(f"Base64 verification failed: {e}")
         
-        logger.info(f"[{correlation_id}] ✅ Base64 verified: {len(content_base64)} chars")
+        logger.info(f"[{correlation_id}] Base64 verified: {len(content_base64)} chars")
         return content_base64
     
     def _create_perfect_soap_envelope_integrated(self, filename: str, content_base64: str, correlation_id: str) -> str:
@@ -330,7 +330,7 @@ class IntegratedError0160Fix:
             if element not in envelope:
                 raise Exception(f"Missing element in SOAP envelope")
         
-        logger.info(f"[{correlation_id}] ✅ SOAP envelope created: {len(envelope)} chars")
+        logger.info(f"[{correlation_id}] SOAP envelope created: {len(envelope)} chars")
         return envelope
     
     def _send_with_verification_integrated(self, soap_envelope: str, correlation_id: str, start_time: datetime) -> Dict[str, Any]:
@@ -379,7 +379,7 @@ class IntegratedError0160Fix:
             if response.status_code == 200:
                 # Verificar que NO hay Error 0160
                 if 'Client.0160' in response.text or '0160' in response.text:
-                    logger.error(f"[{correlation_id}] ❌ ERROR 0160 TODAVÍA PRESENTE!")
+                    logger.error(f"[{correlation_id}] ERROR 0160 TODAVÍA PRESENTE!")
                     
                     return {
                         'success': False,
@@ -434,19 +434,19 @@ class IntegratedError0160Fix:
         """
         Procesa respuesta exitosa - Versión integrada
         """
-        logger.info(f"[{correlation_id}] 🎉 ERROR 0160 SOLUCIONADO!")
+        logger.info(f"[{correlation_id}] ERROR 0160 SOLUCIONADO!")
         
         # Buscar CDR
         cdr_content = self._extract_cdr_integrated(response_text)
         
         if cdr_content:
-            logger.info(f"[{correlation_id}] 📋 CDR REAL recibido!")
+            logger.info(f"[{correlation_id}] CDR REAL recibido!")
             
             cdr_info = self._process_cdr_integrated(cdr_content, correlation_id)
             
             return {
                 'success': True,
-                'message': '🎉 ERROR 0160 SOLUCIONADO! CDR recibido',
+                'message': 'ERROR 0160 SOLUCIONADO! CDR recibido',
                 'has_cdr': True,
                 'cdr_content': cdr_content,
                 'cdr_info': cdr_info,
@@ -455,11 +455,11 @@ class IntegratedError0160Fix:
                 'method': 'integrated_fix_success_with_cdr'
             }
         else:
-            logger.info(f"[{correlation_id}] ✅ ERROR 0160 SOLUCIONADO! Enviado exitosamente")
+            logger.info(f"[{correlation_id}] ERROR 0160 SOLUCIONADO! Enviado exitosamente")
             
             return {
                 'success': True,
-                'message': '✅ ERROR 0160 SOLUCIONADO - Documento enviado exitosamente',
+                'message': 'ERROR 0160 SOLUCIONADO - Documento enviado exitosamente',
                 'has_cdr': False,
                 'correlation_id': correlation_id,
                 'duration_ms': duration_ms,
@@ -532,7 +532,7 @@ class IntegratedError0160Fix:
             debug_file = debug_dir / f"response_{correlation_id}.xml"
             with open(debug_file, 'w', encoding='utf-8') as f:
                 f.write(response_text)
-            logger.info(f"[{correlation_id}] 💾 Response saved: {debug_file}")
+            logger.info(f"[{correlation_id}] Response saved: {debug_file}")
         except Exception as e:
             logger.warning(f"[{correlation_id}] Could not save response: {e}")
 
@@ -647,7 +647,7 @@ class SendBillToSUNATView(APIView):
                 duracion_ms=result.get('duration_ms', 0)
             )
             
-            logger.info(f"[{correlation_id}] ✅ Documento actualizado: {documento.estado}")
+            logger.info(f"[{correlation_id}] Documento actualizado: {documento.estado}")
             
         except Exception as e:
             logger.error(f"[{correlation_id}] Error actualizando documento: {e}")
@@ -715,17 +715,17 @@ class SUNATStatusView(APIView):
             
             # Features
             'features': [
-                '✅ Error 0160 solucionado - INTEGRADO DIRECTAMENTE',
-                '✅ CDR real de SUNAT garantizado',
-                '✅ Sin archivos externos requeridos',
-                '✅ Validación XML super estricta',
-                '✅ ZIP bulletproof para SUNAT',
-                '✅ Base64 con verificación round-trip',
-                '✅ SOAP envelope perfecto',
-                '✅ Manejo robusto de errores',
-                '✅ Logging detallado con correlation IDs',
-                '✅ Debug automático',
-                '✅ Todo en un solo archivo'
+                'Error 0160 solucionado - INTEGRADO DIRECTAMENTE',
+                'CDR real de SUNAT garantizado',
+                'Sin archivos externos requeridos',
+                'Validación XML super estricta',
+                'ZIP bulletproof para SUNAT',
+                'Base64 con verificación round-trip',
+                'SOAP envelope perfecto',
+                'Manejo robusto de errores',
+                'Logging detallado con correlation IDs',
+                'Debug automático',
+                'Todo en un solo archivo'
             ],
             
             # Endpoints
@@ -763,7 +763,7 @@ class SUNATStatusView(APIView):
             recommendations.append({
                 'priority': 'INFO',
                 'category': 'SYSTEM_READY',
-                'message': '🎉 Sistema completamente listo',
+                'message': 'Sistema completamente listo',
                 'note': 'Error 0160 fix integrado y activo - No requiere archivos externos'
             })
         
@@ -959,26 +959,26 @@ class IntegratedSystemTest:
 
 
 # ==============================================================================
-# MENSAJE DE CONFIRMACIÓN
+# MENSAJE DE CONFIRMACIÓN (SIN EMOJIS)
 # ==============================================================================
 
-logger.info("🎉 views_sunat.py CARGADO CON ERROR 0160 FIX INTEGRADO")
-logger.info("✅ Sin archivos externos requeridos")
-logger.info("✅ Corrección Error 0160 activa")
-logger.info("✅ CDR real garantizado")
-logger.info("✅ Sistema listo para uso")
+logger.info("views_sunat.py CARGADO CON ERROR 0160 FIX INTEGRADO")
+logger.info("Sin archivos externos requeridos")
+logger.info("Corrección Error 0160 activa")
+logger.info("CDR real garantizado")
+logger.info("Sistema listo para uso")
 
 # Test automático al cargar
 try:
     quick_test = IntegratedSystemTest.run_quick_test()
-    logger.info(f"🔍 Quick test: {quick_test['overall_status']}")
+    logger.info(f"Quick test: {quick_test['overall_status']}")
     if quick_test['critical_issues']:
-        logger.warning(f"⚠️ Issues: {quick_test['critical_issues']}")
+        logger.warning(f"Issues: {quick_test['critical_issues']}")
     else:
-        logger.info("🎯 Sistema completamente listo")
+        logger.info("Sistema completamente listo")
 except Exception as e:
-    logger.warning(f"⚠️ Quick test error: {e}")
+    logger.warning(f"Quick test error: {e}")
 
-print("🚀 ERROR 0160 FIX INTEGRADO CARGADO EXITOSAMENTE")
-print("📋 No se requieren archivos externos")
-print("✅ Listo para enviar documentos a SUNAT")
+print("ERROR 0160 FIX INTEGRADO CARGADO EXITOSAMENTE")
+print("No se requieren archivos externos")
+print("Listo para enviar documentos a SUNAT")
