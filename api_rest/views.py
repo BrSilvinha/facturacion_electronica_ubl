@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
 from decimal import Decimal
 import uuid
 import json
@@ -40,6 +42,8 @@ class TestAPIView(APIView):
                 '/api/empresas/',
                 '/api/validar-ruc/',
                 '/api/certificate-info/',
+                '/api/documentos/',
+                '/api/documentos/stats/',
             ]
         })
 
@@ -630,6 +634,344 @@ class GenerarXMLView(APIView):
 {xml_content[xml_content.find('<Invoice'):] if '<Invoice' in xml_content else xml_content}
 <!-- FIRMA DIGITAL SIMULADA - HASH: {signature_id} -->'''
 
+# =============================================================================
+# NUEVOS ENDPOINTS PARA LISTA DE DOCUMENTOS
+# =============================================================================
+
+@method_decorator(csrf_exempt, name="dispatch")
+class DocumentosListView(APIView):
+    """
+    Lista todos los documentos electrónicos con paginación y filtros
+    """
+    
+    def get(self, request):
+        """Lista documentos con filtros opcionales"""
+        try:
+            # Parámetros de consulta
+            page = int(request.GET.get('page', 1))
+            limit = int(request.GET.get('limit', 20))
+            estado = request.GET.get('estado')
+            tipo_documento = request.GET.get('tipo_documento')
+            search = request.GET.get('search')
+            
+            # Query base
+            queryset = DocumentoElectronico.objects.select_related(
+                'empresa', 'tipo_documento'
+            ).order_by('-created_at')
+            
+            # Aplicar filtros
+            if estado:
+                queryset = queryset.filter(estado=estado)
+            
+            if tipo_documento:
+                queryset = queryset.filter(tipo_documento__codigo=tipo_documento)
+            
+            if search:
+                queryset = queryset.filter(
+                    Q(serie__icontains=search) |
+                    Q(numero__icontains=search) |
+                    Q(receptor_razon_social__icontains=search) |
+                    Q(receptor_numero_doc__icontains=search)
+                )
+            
+            # Paginación
+            paginator = Paginator(queryset, limit)
+            documentos_page = paginator.get_page(page)
+            
+            # Serializar documentos
+            documentos_data = []
+            for doc in documentos_page:
+                doc_data = {
+                    'id': str(doc.id),
+                    'numero_completo': doc.get_numero_completo(),
+                    'tipo_documento': {
+                        'codigo': doc.tipo_documento.codigo,
+                        'descripcion': doc.tipo_documento.descripcion
+                    },
+                    'serie': doc.serie,
+                    'numero': doc.numero,
+                    'fecha_emision': doc.fecha_emision.strftime('%Y-%m-%d'),
+                    'fecha_vencimiento': doc.fecha_vencimiento.strftime('%Y-%m-%d') if doc.fecha_vencimiento else None,
+                    'empresa': {
+                        'ruc': doc.empresa.ruc,
+                        'razon_social': doc.empresa.razon_social
+                    },
+                    'receptor': {
+                        'tipo_doc': doc.receptor_tipo_doc,
+                        'numero_doc': doc.receptor_numero_doc,
+                        'razon_social': doc.receptor_razon_social
+                    },
+                    'moneda': doc.moneda,
+                    'total': float(doc.total),
+                    'estado': doc.estado,
+                    'estado_badge': self._get_estado_badge(doc.estado),
+                    'tiene_cdr': bool(doc.cdr_xml),
+                    'cdr_info': {
+                        'estado': doc.cdr_estado,
+                        'codigo': doc.cdr_codigo_respuesta,
+                        'descripcion': doc.cdr_descripcion
+                    } if doc.cdr_xml else None,
+                    'created_at': doc.created_at.strftime('%d/%m/%Y %H:%M'),
+                    'updated_at': doc.updated_at.strftime('%d/%m/%Y %H:%M')
+                }
+                documentos_data.append(doc_data)
+            
+            # Estadísticas
+            stats = self._get_documentos_stats()
+            
+            return Response({
+                'success': True,
+                'data': {
+                    'documentos': documentos_data,
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': paginator.num_pages,
+                        'total_documents': paginator.count,
+                        'has_next': documentos_page.has_next(),
+                        'has_previous': documentos_page.has_previous()
+                    },
+                    'stats': stats,
+                    'filters_applied': {
+                        'estado': estado,
+                        'tipo_documento': tipo_documento,
+                        'search': search
+                    }
+                }
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _get_estado_badge(self, estado):
+        """Retorna información del badge para el estado"""
+        badge_map = {
+            'BORRADOR': {'class': 'bg-secondary', 'text': 'Borrador'},
+            'PENDIENTE': {'class': 'bg-warning', 'text': 'Pendiente'},
+            'FIRMADO': {'class': 'bg-info', 'text': 'Firmado'},
+            'FIRMADO_SIMULADO': {'class': 'bg-info', 'text': 'Firmado (Sim)'},
+            'ENVIADO': {'class': 'bg-primary', 'text': 'Enviado'},
+            'ACEPTADO': {'class': 'bg-success', 'text': 'Aceptado'},
+            'RECHAZADO': {'class': 'bg-danger', 'text': 'Rechazado'},
+            'ERROR': {'class': 'bg-danger', 'text': 'Error'},
+            'ERROR_ENVIO': {'class': 'bg-danger', 'text': 'Error Envío'}
+        }
+        return badge_map.get(estado, {'class': 'bg-secondary', 'text': estado})
+    
+    def _get_documentos_stats(self):
+        """Obtiene estadísticas de documentos"""
+        total = DocumentoElectronico.objects.count()
+        enviados = DocumentoElectronico.objects.filter(
+            estado__in=['ENVIADO', 'ACEPTADO']
+        ).count()
+        con_cdr = DocumentoElectronico.objects.filter(
+            cdr_xml__isnull=False
+        ).count()
+        procesando = DocumentoElectronico.objects.filter(
+            estado__in=['PENDIENTE', 'FIRMADO', 'ENVIADO']
+        ).count()
+        errores = DocumentoElectronico.objects.filter(
+            estado__in=['ERROR', 'ERROR_ENVIO', 'RECHAZADO']
+        ).count()
+        
+        return {
+            'total': total,
+            'enviados': enviados,
+            'con_cdr': con_cdr,
+            'procesando': procesando,
+            'errores': errores,
+            'error_0160': 0  # Siempre 0 porque lo eliminamos
+        }
+
+@method_decorator(csrf_exempt, name="dispatch")
+class DocumentoDetailView(APIView):
+    """
+    Detalle completo de un documento específico
+    """
+    
+    def get(self, request, documento_id):
+        """Obtiene detalles completos de un documento"""
+        try:
+            documento = get_object_or_404(
+                DocumentoElectronico.objects.select_related('empresa', 'tipo_documento'),
+                id=documento_id
+            )
+            
+            # Obtener líneas del documento
+            lineas = []
+            for linea in documento.lineas.all().order_by('numero_linea'):
+                linea_data = {
+                    'numero_linea': linea.numero_linea,
+                    'codigo_producto': linea.codigo_producto,
+                    'descripcion': linea.descripcion,
+                    'cantidad': float(linea.cantidad),
+                    'unidad_medida': linea.unidad_medida,
+                    'valor_unitario': float(linea.valor_unitario),
+                    'valor_venta': float(linea.valor_venta),
+                    'afectacion_igv': linea.afectacion_igv,
+                    'igv_linea': float(linea.igv_linea),
+                    'isc_linea': float(linea.isc_linea),
+                    'icbper_linea': float(linea.icbper_linea)
+                }
+                lineas.append(linea_data)
+            
+            # Obtener logs de operaciones
+            logs = []
+            for log in documento.logs.all().order_by('-timestamp')[:10]:
+                log_data = {
+                    'operacion': log.operacion,
+                    'estado': log.estado,
+                    'mensaje': log.mensaje,
+                    'timestamp': log.timestamp.strftime('%d/%m/%Y %H:%M:%S'),
+                    'duracion_ms': log.duracion_ms,
+                    'correlation_id': str(log.correlation_id) if log.correlation_id else None
+                }
+                logs.append(log_data)
+            
+            # Documento completo
+            documento_data = {
+                'id': str(documento.id),
+                'numero_completo': documento.get_numero_completo(),
+                'tipo_documento': {
+                    'codigo': documento.tipo_documento.codigo,
+                    'descripcion': documento.tipo_documento.descripcion
+                },
+                'serie': documento.serie,
+                'numero': documento.numero,
+                'fecha_emision': documento.fecha_emision.strftime('%Y-%m-%d'),
+                'fecha_vencimiento': documento.fecha_vencimiento.strftime('%Y-%m-%d') if documento.fecha_vencimiento else None,
+                'empresa': {
+                    'id': str(documento.empresa.id),
+                    'ruc': documento.empresa.ruc,
+                    'razon_social': documento.empresa.razon_social,
+                    'nombre_comercial': documento.empresa.nombre_comercial,
+                    'direccion': documento.empresa.direccion
+                },
+                'receptor': {
+                    'tipo_doc': documento.receptor_tipo_doc,
+                    'numero_doc': documento.receptor_numero_doc,
+                    'razon_social': documento.receptor_razon_social,
+                    'direccion': documento.receptor_direccion
+                },
+                'montos': {
+                    'moneda': documento.moneda,
+                    'subtotal': float(documento.subtotal),
+                    'igv': float(documento.igv),
+                    'isc': float(documento.isc),
+                    'icbper': float(documento.icbper),
+                    'total': float(documento.total)
+                },
+                'estado': documento.estado,
+                'estado_badge': self._get_estado_badge(documento.estado),
+                'xml_disponible': bool(documento.xml_content),
+                'xml_firmado_disponible': bool(documento.xml_firmado),
+                'hash_digest': documento.hash_digest,
+                'cdr': {
+                    'disponible': bool(documento.cdr_xml),
+                    'estado': documento.cdr_estado,
+                    'codigo_respuesta': documento.cdr_codigo_respuesta,
+                    'descripcion': documento.cdr_descripcion,
+                    'fecha_recepcion': documento.cdr_fecha_recepcion.strftime('%d/%m/%Y %H:%M:%S') if documento.cdr_fecha_recepcion else None,
+                    'ticket_sunat': documento.ticket_sunat,
+                    'xml_cdr': documento.cdr_xml  # Agregar el XML del CDR
+                } if documento.cdr_xml else None,
+                'lineas': lineas,
+                'logs': logs,
+                'metadatos': {
+                    'created_at': documento.created_at.strftime('%d/%m/%Y %H:%M:%S'),
+                    'updated_at': documento.updated_at.strftime('%d/%m/%Y %H:%M:%S'),
+                    'correlation_id': documento.correlation_id,
+                    'datos_json_disponible': bool(documento.datos_json)
+                }
+            }
+            
+            return Response({
+                'success': True,
+                'data': documento_data
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _get_estado_badge(self, estado):
+        """Retorna información del badge para el estado"""
+        badge_map = {
+            'BORRADOR': {'class': 'bg-secondary', 'text': 'Borrador'},
+            'PENDIENTE': {'class': 'bg-warning', 'text': 'Pendiente'},
+            'FIRMADO': {'class': 'bg-info', 'text': 'Firmado'},
+            'FIRMADO_SIMULADO': {'class': 'bg-info', 'text': 'Firmado (Sim)'},
+            'ENVIADO': {'class': 'bg-primary', 'text': 'Enviado'},
+            'ACEPTADO': {'class': 'bg-success', 'text': 'Aceptado'},
+            'RECHAZADO': {'class': 'bg-danger', 'text': 'Rechazado'},
+            'ERROR': {'class': 'bg-danger', 'text': 'Error'},
+            'ERROR_ENVIO': {'class': 'bg-danger', 'text': 'Error Envío'}
+        }
+        return badge_map.get(estado, {'class': 'bg-secondary', 'text': estado})
+
+@method_decorator(csrf_exempt, name="dispatch")
+class DocumentosStatsView(APIView):
+    """
+    Estadísticas resumidas de documentos
+    """
+    
+    def get(self, request):
+        """Obtiene estadísticas actualizadas"""
+        try:
+            # Estadísticas generales
+            stats = DocumentosListView()._get_documentos_stats()
+            
+            # Estadísticas por tipo de documento
+            tipos_stats = {}
+            for tipo in TipoDocumento.objects.filter(activo=True):
+                count = DocumentoElectronico.objects.filter(tipo_documento=tipo).count()
+                tipos_stats[tipo.codigo] = {
+                    'descripcion': tipo.descripcion,
+                    'count': count
+                }
+            
+            # Estadísticas por estado
+            estados_stats = {}
+            for estado_choice in DocumentoElectronico.ESTADOS:
+                estado_code = estado_choice[0]
+                estado_name = estado_choice[1]
+                count = DocumentoElectronico.objects.filter(estado=estado_code).count()
+                estados_stats[estado_code] = {
+                    'nombre': estado_name,
+                    'count': count
+                }
+            
+            # Últimos documentos
+            ultimos_docs = []
+            for doc in DocumentoElectronico.objects.select_related('tipo_documento').order_by('-created_at')[:5]:
+                ultimos_docs.append({
+                    'id': str(doc.id),
+                    'numero_completo': doc.get_numero_completo(),
+                    'estado': doc.estado,
+                    'total': float(doc.total),
+                    'created_at': doc.created_at.strftime('%d/%m/%Y %H:%M')
+                })
+            
+            return Response({
+                'success': True,
+                'data': {
+                    'stats_generales': stats,
+                    'stats_por_tipo': tipos_stats,
+                    'stats_por_estado': estados_stats,
+                    'ultimos_documentos': ultimos_docs,
+                    'timestamp': timezone.now().strftime('%d/%m/%Y %H:%M:%S')
+                }
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CDRInfoView(APIView):
     """Endpoint para obtener información del CDR"""

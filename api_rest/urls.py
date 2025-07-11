@@ -1,6 +1,8 @@
-# api_rest/urls.py
+# api_rest/urls.py - VERSIÓN COMPLETA ACTUALIZADA
+
 """
 URLs para la API REST de Facturación Electrónica
+VERSIÓN COMPLETA con endpoints de documentos
 """
 
 from django.urls import path
@@ -15,6 +17,11 @@ urlpatterns = [
     path('empresas/', views.EmpresasView.as_view(), name='empresas'),
     path('validar-ruc/', views.ValidarRUCView.as_view(), name='validar-ruc'),
     path('certificate-info/', views.CertificateInfoView.as_view(), name='certificate-info'),
+    
+    # 🆕 NUEVOS ENDPOINTS DE DOCUMENTOS
+    path('documentos/', views.DocumentosListView.as_view(), name='documentos-list'),
+    path('documentos/<uuid:documento_id>/', views.DocumentoDetailView.as_view(), name='documento-detail'),
+    path('documentos/stats/', views.DocumentosStatsView.as_view(), name='documentos-stats'),
     
     # Endpoints SUNAT con Error 0160 fix garantizado
     path('sunat/test-connection/', views_sunat.TestSUNATConnectionView.as_view(), name='sunat-test-connection'),
