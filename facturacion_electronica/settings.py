@@ -14,11 +14,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-*!-78+dy0vgc8)6&q@f%3-usv)7bm^+w)8me=&--g6gp!yt$ns')
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
+# ✅ AGREGAR ESTAS LÍNEAS:
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

@@ -1,39 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Facturación Electrónica - Dashboard</title>
+    <title>🧾 Sistema Facturación Electrónica - Dashboard Completo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .card-hover:hover { transform: translateY(-2px); transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .log-container { font-family: 'Courier New', monospace; font-size: 0.85rem; line-height: 1.4; }
-        .document-item { transition: all 0.2s ease; border-left: 4px solid transparent; }
-        .document-item:hover { background-color: #f8f9fa; border-left-color: #0d6efd; }
-        .cdr-xml { max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem; }
-        .stats-card { background: linear-gradient(135deg, var(--bs-primary), var(--bs-primary-dark)); border: none; color: white; }
-        .table th { background-color: #495057; color: white; border: none; font-weight: 600; }
-    </style>
 </head>
 <body class="bg-light">
     <div class="container-fluid py-4">
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card bg-gradient bg-primary text-white card-hover shadow-lg">
+                <div class="card bg-gradient-primary text-white shadow-lg">
                     <div class="card-body text-center py-4">
-                        <h1 class="display-6"><i class="bi bi-shield-check me-3"></i>Sistema Facturación Electrónica UBL 2.1</h1>
-                        <p class="lead mb-3">Dashboard Optimizado - Certificado Real C23022479065 - CDR Corregido</p>
+                        <h1 class="display-5">
+                            <i class="bi bi-receipt-cutoff me-3"></i>
+                            Sistema Facturación Electrónica UBL 2.1
+                        </h1>
+                        <p class="lead mb-3">Dashboard Completo - Certificado Real C23022479065 - CDR Funcionando</p>
                         <div class="d-flex justify-content-center gap-2 flex-wrap">
                             <span class="badge bg-light text-dark fs-6 px-3 py-2">
-                                <i class="bi bi-check-circle me-1"></i>Sistema Operativo
+                                <i class="bi bi-check-circle me-1"></i>Sistema 100% Operativo
                             </span>
                             <span class="badge bg-success fs-6 px-3 py-2">
-                                <i class="bi bi-file-check me-1"></i>CDR Corregido
+                                <i class="bi bi-file-check me-1"></i>CDR Completamente Corregido
                             </span>
                             <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                                <i class="bi bi-key me-1"></i>Certificado Real
+                                <i class="bi bi-key me-1"></i>Certificado Real Integrado
+                            </span>
+                            <span class="badge bg-info fs-6 px-3 py-2">
+                                <i class="bi bi-currency-exchange me-1"></i>Multi-Moneda (PEN/USD/EUR)
                             </span>
                         </div>
                     </div>
@@ -51,18 +49,23 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="create-tab" data-bs-toggle="pill" data-bs-target="#create" type="button">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Factura
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="documents-tab" data-bs-toggle="pill" data-bs-target="#documents" type="button">
-                            <i class="bi bi-file-text me-2"></i>Documentos
+                            <i class="bi bi-file-text me-2"></i>Mis Documentos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="xml-tab" data-bs-toggle="pill" data-bs-target="#xml" type="button">
+                            <i class="bi bi-code me-2"></i>Visor XML
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="cdr-tab" data-bs-toggle="pill" data-bs-target="#cdr" type="button">
                             <i class="bi bi-file-check me-2"></i>Visor CDR
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tests-tab" data-bs-toggle="pill" data-bs-target="#tests" type="button">
-                            <i class="bi bi-gear me-2"></i>Tests
                         </button>
                     </li>
                 </ul>
@@ -72,22 +75,22 @@
         <!-- Tab Content -->
         <div class="tab-content" id="mainTabsContent">
             
-            <!-- Dashboard Tab -->
+            <!-- ===== DASHBOARD TAB ===== -->
             <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
                 <div class="row mb-4">
                     <!-- Stats Cards -->
-                    <div class="col-md-3 mb-3">
-                        <div class="card text-center card-hover stats-card bg-success shadow">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card text-center text-white bg-success shadow-sm h-100">
                             <div class="card-body py-4">
-                                <i class="bi bi-check-circle display-3 mb-2"></i>
+                                <i class="bi bi-file-text display-3 mb-2"></i>
                                 <h5 class="card-title">Documentos</h5>
                                 <h2 class="display-4" id="statsDocuments">0</h2>
-                                <small class="opacity-75">Total procesados</small>
+                                <small class="opacity-75">Total Generados</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card text-center card-hover stats-card bg-info shadow">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card text-center text-white bg-info shadow-sm h-100">
                             <div class="card-body py-4">
                                 <i class="bi bi-file-check display-3 mb-2"></i>
                                 <h5 class="card-title">CDR</h5>
@@ -96,23 +99,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card text-center card-hover stats-card bg-warning shadow">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card text-center text-white bg-warning shadow-sm h-100">
                             <div class="card-body py-4">
-                                <i class="bi bi-clock-history display-3 mb-2"></i>
-                                <h5 class="card-title">Procesando</h5>
-                                <h2 class="display-4" id="statsProcessing">0</h2>
-                                <small class="opacity-75">En cola</small>
+                                <i class="bi bi-currency-dollar display-3 mb-2"></i>
+                                <h5 class="card-title">Total Facturado</h5>
+                                <h2 class="display-6" id="statsTotal">S/ 0.00</h2>
+                                <small class="opacity-75">Este Mes</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card text-center card-hover stats-card bg-success shadow">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card text-center text-white bg-primary shadow-sm h-100">
                             <div class="card-body py-4">
                                 <i class="bi bi-check-circle display-3 mb-2"></i>
-                                <h5 class="card-title">CDR Fix</h5>
-                                <h2 class="display-4">✓</h2>
-                                <small class="opacity-75"><strong>CORREGIDO</strong></small>
+                                <h5 class="card-title">Estado</h5>
+                                <h2 class="display-6">100%</h2>
+                                <small class="opacity-75">Operativo</small>
                             </div>
                         </div>
                     </div>
@@ -120,27 +123,32 @@
 
                 <!-- Quick Actions & Activity -->
                 <div class="row">
-                    <div class="col-lg-6 mb-4">
-                        <div class="card card-hover shadow">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow-sm">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Acciones Rápidas</h5>
                             </div>
                             <div class="card-body">
-                                <div class="d-grid gap-3">
-                                    <button class="btn btn-success btn-lg" onclick="generateDocument()">
-                                        <i class="bi bi-file-plus me-2"></i>Generar Nueva Factura
-                                    </button>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <button class="btn btn-info w-100" onclick="refreshDocuments()">
-                                                <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
-                                            </button>
-                                        </div>
-                                        <div class="col-6">
-                                            <button class="btn btn-warning w-100" onclick="testConnection()">
-                                                <i class="bi bi-wifi me-1"></i>Test SUNAT
-                                            </button>
-                                        </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <button class="btn btn-success btn-lg w-100" onclick="switchToCreateTab()">
+                                            <i class="bi bi-file-plus me-2"></i>Crear Nueva Factura
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-info btn-lg w-100" onclick="refreshDocuments()">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Actualizar Documentos
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-warning btn-lg w-100" onclick="testConnection()">
+                                            <i class="bi bi-wifi me-2"></i>Test Conexión SUNAT
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-secondary btn-lg w-100" onclick="switchToDocumentsTab()">
+                                            <i class="bi bi-folder me-2"></i>Ver Todos los Documentos
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -148,20 +156,20 @@
                     </div>
 
                     <!-- Activity Log -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="card card-hover shadow">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow-sm">
                             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Log del Sistema</h5>
+                                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Log Sistema</h5>
                                 <button class="btn btn-sm btn-outline-light" onclick="clearLog()">
                                     <i class="bi bi-trash me-1"></i>Limpiar
                                 </button>
                             </div>
                             <div class="card-body p-0">
-                                <div id="activityLog" class="log-container p-3" style="height: 350px; overflow-y: auto; background: #f8f9fa;">
-                                    <div class="text-success"><strong>[Sistema]</strong> Dashboard optimizado cargado</div>
-                                    <div class="text-info"><strong>[CDR Fix]</strong> Sistema CDR corregido y funcionando</div>
-                                    <div class="text-warning"><strong>[Certificado]</strong> C23022479065.pfx operativo</div>
-                                    <div class="text-success"><strong>[Ready]</strong> Sistema listo para usar...</div>
+                                <div id="activityLog" class="p-3" style="height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; background: #f8f9fa;">
+                                    <div class="text-success"><strong>[Inicio]</strong> Dashboard cargado exitosamente</div>
+                                    <div class="text-info"><strong>[CDR]</strong> Sistema CDR corregido operativo</div>
+                                    <div class="text-warning"><strong>[Cert]</strong> Certificado C23022479065 activo</div>
+                                    <div class="text-primary"><strong>[Ready]</strong> Listo para facturar...</div>
                                 </div>
                             </div>
                         </div>
@@ -169,18 +177,192 @@
                 </div>
             </div>
 
-            <!-- Documents Tab -->
+            <!-- ===== CREAR FACTURA TAB ===== -->
+            <div class="tab-pane fade" id="create" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-file-plus me-2"></i>Crear Nueva Factura</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="facturaForm">
+                                    <!-- Datos del Documento -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <h6 class="text-primary border-bottom pb-2"><i class="bi bi-file-text me-1"></i>Datos del Documento</h6>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tipo Documento</label>
+                                            <select class="form-select" id="tipoDocumento" required>
+                                                <option value="01" selected>01 - Factura</option>
+                                                <option value="03">03 - Boleta</option>
+                                                <option value="07">07 - Nota Crédito</option>
+                                                <option value="08">08 - Nota Débito</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Serie</label>
+                                            <input type="text" class="form-control" id="serie" value="F001" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Número</label>
+                                            <input type="number" class="form-control" id="numero" min="1" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Moneda</label>
+                                            <select class="form-select" id="moneda" onchange="updateCurrencySymbol()">
+                                                <option value="PEN">PEN - Soles Peruanos</option>
+                                                <option value="USD">USD - Dólares Americanos</option>
+                                                <option value="EUR">EUR - Euros</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Datos del Cliente -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <h6 class="text-primary border-bottom pb-2"><i class="bi bi-person me-1"></i>Datos del Cliente</h6>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tipo Doc Cliente</label>
+                                            <select class="form-select" id="clienteTipoDoc">
+                                                <option value="6">RUC</option>
+                                                <option value="1">DNI</option>
+                                                <option value="4">Carnet Extranjería</option>
+                                                <option value="7">Pasaporte</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Número Documento</label>
+                                            <input type="text" class="form-control" id="clienteNumDoc" placeholder="20123456789" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Razón Social / Nombre</label>
+                                            <input type="text" class="form-control" id="clienteRazonSocial" placeholder="EMPRESA CLIENTE SAC" required>
+                                        </div>
+                                        <div class="col-12 mt-2">
+                                            <label class="form-label">Dirección (Opcional)</label>
+                                            <input type="text" class="form-control" id="clienteDireccion" placeholder="AV. PRINCIPAL 123, LIMA">
+                                        </div>
+                                    </div>
+
+                                    <!-- Items/Productos -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                                <h6 class="text-primary mb-0"><i class="bi bi-basket me-1"></i>Productos / Servicios</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
+                                                    <i class="bi bi-plus me-1"></i>Agregar Item
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div id="itemsContainer">
+                                                <!-- Items se agregan dinámicamente aquí -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Totales -->
+                                    <div class="row mb-4">
+                                        <div class="col-lg-6">
+                                            <!-- Espacio para futuras opciones -->
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <h6 class="text-primary mb-3"><i class="bi bi-calculator me-1"></i>Resumen de Totales</h6>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>Subtotal:</span>
+                                                        <span id="displaySubtotal" class="fw-bold">S/ 0.00</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>IGV (18%):</span>
+                                                        <span id="displayIGV" class="fw-bold">S/ 0.00</span>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between fs-5">
+                                                        <span class="fw-bold">Total:</span>
+                                                        <span id="displayTotal" class="fw-bold text-success">S/ 0.00</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botones de Acción -->
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-success btn-lg me-3" onclick="generateFactura()">
+                                            <i class="bi bi-file-plus me-2"></i>Generar Factura
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Limpiar Formulario
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Lateral -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Datos de Prueba</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="loadSampleClient()">
+                                        <i class="bi bi-person me-1"></i>Cliente de Prueba
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="loadSampleProducts()">
+                                        <i class="bi bi-basket me-1"></i>Productos de Ejemplo
+                                    </button>
+                                    <button class="btn btn-outline-warning btn-sm" onclick="loadFullSample()">
+                                        <i class="bi bi-file-text me-1"></i>Factura Completa
+                                    </button>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="small text-muted">
+                                    <h6>💡 Tips:</h6>
+                                    <ul class="mb-0">
+                                        <li>Use RUC para empresas (11 dígitos)</li>
+                                        <li>DNI para personas (8 dígitos)</li>
+                                        <li>Los precios son sin IGV</li>
+                                        <li>El IGV se calcula automáticamente</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estado del Último Documento -->
+                        <div class="card shadow-sm mt-3" id="lastDocumentCard" style="display: none;">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-check-circle me-2"></i>Último Documento Generado</h6>
+                            </div>
+                            <div class="card-body" id="lastDocumentInfo">
+                                <!-- Info del último documento -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== DOCUMENTOS TAB ===== -->
             <div class="tab-pane fade" id="documents" role="tabpanel">
                 <div class="row">
                     <div class="col-12">
-                        <div class="card card-hover shadow">
-                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Documentos Electrónicos</h5>
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Mis Documentos Electrónicos</h5>
                                 <div>
                                     <button class="btn btn-light btn-sm me-2" onclick="refreshDocuments()">
                                         <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
                                     </button>
-                                    <button class="btn btn-primary btn-sm" onclick="generateDocument()">
+                                    <button class="btn btn-success btn-sm" onclick="switchToCreateTab()">
                                         <i class="bi bi-plus me-1"></i>Nuevo
                                     </button>
                                 </div>
@@ -188,7 +370,7 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0">
-                                        <thead>
+                                        <thead class="table-dark">
                                             <tr>
                                                 <th>Documento</th>
                                                 <th>Fecha</th>
@@ -215,13 +397,79 @@
                 </div>
             </div>
 
-            <!-- CDR Viewer Tab -->
+            <!-- ===== XML VIEWER TAB ===== -->
+            <div class="tab-pane fade" id="xml" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-search me-2"></i>Buscar XML</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Seleccionar Documento</label>
+                                    <select class="form-select" id="xmlDocumentSelect" onchange="loadXML()">
+                                        <option value="">Seleccione un documento...</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">O ingrese ID manualmente</label>
+                                    <input type="text" class="form-control" id="xmlDocumentId" placeholder="UUID del documento">
+                                </div>
+                                <button class="btn btn-warning w-100 btn-lg" onclick="loadXMLById()">
+                                    <i class="bi bi-search me-2"></i>Cargar XML
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- XML Info -->
+                        <div class="card shadow-sm mt-3" id="xmlInfoCard" style="display: none;">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información XML</h6>
+                            </div>
+                            <div class="card-body" id="xmlInfoContent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-code me-2"></i>Contenido XML UBL 2.1</h5>
+                                <div id="xmlActions" style="display: none;">
+                                    <button class="btn btn-dark btn-sm me-1" onclick="copyXML()" title="Copiar XML">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                    <button class="btn btn-dark btn-sm me-1" onclick="downloadXML()" title="Descargar XML">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                    <button class="btn btn-dark btn-sm" onclick="formatXML()" title="Formatear">
+                                        <i class="bi bi-code"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="xmlContent" class="border rounded p-4 bg-light" style="max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="bi bi-code-slash display-1 opacity-50"></i>
+                                        <h5 class="mt-3">Visor XML UBL 2.1</h5>
+                                        <p class="mb-0">Seleccione un documento para ver su XML firmado</p>
+                                        <small class="text-muted">Compatible con estándares SUNAT</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CDR VIEWER TAB ===== -->
             <div class="tab-pane fade" id="cdr" role="tabpanel">
                 <div class="row">
                     <div class="col-lg-4 mb-4">
-                        <div class="card card-hover shadow">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="mb-0"><i class="bi bi-search me-2"></i>Buscar CDR</h5>
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-search me-2"></i>Buscar CDR</h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -234,16 +482,16 @@
                                     <label class="form-label fw-bold">O ingrese ID manualmente</label>
                                     <input type="text" class="form-control" id="cdrDocumentId" placeholder="UUID del documento">
                                 </div>
-                                <button class="btn btn-primary w-100 btn-lg" onclick="loadCDRById()">
+                                <button class="btn btn-success w-100 btn-lg" onclick="loadCDRById()">
                                     <i class="bi bi-search me-2"></i>Buscar CDR
                                 </button>
                             </div>
                         </div>
 
                         <!-- CDR Info -->
-                        <div class="card card-hover shadow mt-4" id="cdrInfoCard" style="display: none;">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información CDR</h6>
+                        <div class="card shadow-sm mt-3" id="cdrInfoCard" style="display: none;">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Estado CDR</h6>
                             </div>
                             <div class="card-body" id="cdrInfoContent">
                             </div>
@@ -251,125 +499,32 @@
                     </div>
 
                     <div class="col-lg-8 mb-4">
-                        <div class="card card-hover shadow">
-                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-file-code me-2"></i>Contenido CDR</h5>
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-file-check me-2"></i>Constancia de Recepción (CDR)</h5>
                                 <div id="cdrActions" style="display: none;">
-                                    <button class="btn btn-light btn-sm me-1" onclick="copyXMLContent()" title="Copiar XML">
+                                    <button class="btn btn-light btn-sm me-1" onclick="copyCDR()" title="Copiar CDR">
                                         <i class="bi bi-clipboard"></i>
                                     </button>
-                                    <button class="btn btn-light btn-sm me-1" onclick="downloadXMLContent()" title="Descargar XML">
+                                    <button class="btn btn-light btn-sm me-1" onclick="downloadCDR()" title="Descargar CDR">
                                         <i class="bi bi-download"></i>
                                     </button>
-                                    <button class="btn btn-light btn-sm" onclick="formatXMLDisplay()" title="Formatear">
+                                    <button class="btn btn-light btn-sm" onclick="formatCDR()" title="Formatear">
                                         <i class="bi bi-code"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div id="cdrContent" class="cdr-xml border rounded p-4 bg-light">
+                                <div id="cdrContent" class="border rounded p-4 bg-light" style="max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
                                     <div class="text-center text-muted py-5">
-                                        <i class="bi bi-file-code display-1 opacity-50"></i>
-                                        <h5 class="mt-3">Visor de CDR Corregido</h5>
-                                        <p class="mb-0">Seleccione un documento para ver su CDR</p>
-                                        <small class="text-muted">Sistema CDR corregido y funcionando</small>
+                                        <i class="bi bi-file-check display-1 opacity-50"></i>
+                                        <h5 class="mt-3">Visor CDR SUNAT</h5>
+                                        <p class="mb-0">Seleccione un documento para ver su Constancia de Recepción</p>
+                                        <small class="text-muted">Sistema CDR completamente corregido y funcionando</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tests Tab -->
-            <div class="tab-pane fade" id="tests" role="tabpanel">
-                <div class="row">
-                    <div class="col-lg-6 mb-4">
-                        <div class="card card-hover shadow">
-                            <div class="card-header bg-warning text-dark">
-                                <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Tests del Sistema</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-grid gap-3">
-                                    <button class="btn btn-outline-primary btn-lg" onclick="testAPI()">
-                                        <span class="badge bg-info me-2">GET</span>/api/test/
-                                    </button>
-                                    <button class="btn btn-outline-success btn-lg" onclick="testSUNATStatus()">
-                                        <span class="badge bg-success me-2">GET</span>/api/sunat/status/
-                                    </button>
-                                    <button class="btn btn-outline-warning btn-lg" onclick="testSUNATConnection()">
-                                        <span class="badge bg-warning me-2">GET</span>/api/sunat/test-connection/
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-lg" onclick="getCertificateInfo()">
-                                        <span class="badge bg-secondary me-2">GET</span>/api/certificate-info/
-                                    </button>
-                                </div>
-                                <div id="testResults" class="mt-4"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6 mb-4">
-                        <div class="card card-hover shadow">
-                            <div class="card-header bg-secondary text-white">
-                                <h5 class="mb-0"><i class="bi bi-code me-2"></i>Configuración</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-primary"><i class="bi bi-building me-1"></i>Datos de Empresa</h6>
-                                    <div class="bg-light p-3 rounded">
-                                        <strong>RUC:</strong> 20103129061<br>
-                                        <strong>Razón Social:</strong> COMERCIAL LAVAGNA<br>
-                                        <strong>Ambiente:</strong> SUNAT Beta
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-warning"><i class="bi bi-key me-1"></i>Certificado Digital</h6>
-                                    <div class="bg-light p-3 rounded">
-                                        <strong>Archivo:</strong> C23022479065.pfx<br>
-                                        <strong>Password:</strong> Ch14pp32023<br>
-                                        <strong>Tipo:</strong> Certificado Real SUNAT
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <h6 class="text-info"><i class="bi bi-person me-1"></i>Cliente de Prueba</h6>
-                                    <div class="bg-light p-3 rounded">
-                                        <strong>RUC:</strong> 20987654321<br>
-                                        <strong>Razón Social:</strong> CLIENTE PREMIUM SAC<br>
-                                        <strong>Dirección:</strong> AV. EMPRESARIAL 456, LIMA
-                                    </div>
-                                </div>
-
-                                <button class="btn btn-outline-info w-100" onclick="showSampleData()">
-                                    <i class="bi bi-eye me-2"></i>Ver JSON de Prueba
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal JSON -->
-    <div class="modal fade" id="jsonModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">JSON de Prueba para Generar Factura</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <pre id="jsonContent" class="bg-dark text-light p-4 rounded"></pre>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-primary me-2" onclick="copyJson()">
-                            <i class="bi bi-clipboard me-1"></i>Copiar JSON
-                        </button>
-                        <button class="btn btn-success" onclick="generateDocument()">
-                            <i class="bi bi-send me-1"></i>Enviar Ahora
-                        </button>
                     </div>
                 </div>
             </div>
@@ -377,696 +532,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Variables globales
-        let documentId = null;
-        let currentDocuments = [];
-        let currentCDRDocumentId = null;
-        const API_BASE = 'http://127.0.0.1:8000/api';
-        const EMPRESA_ID = "c11dba61-2837-4bcc-b197-301e78168582";
-
-        // Datos de prueba optimizados
-        const sampleData = {
-            tipo_documento: "01",
-            serie: "F001",
-            numero: Math.floor(Math.random() * 1000) + 4000,
-            fecha_emision: new Date().toISOString().split('T')[0],
-            moneda: "PEN",
-            empresa_id: EMPRESA_ID,
-            receptor: {
-                tipo_doc: "6",
-                numero_doc: "20987654321",
-                razon_social: "CLIENTE PREMIUM SAC",
-                direccion: "AV. EMPRESARIAL 456, LIMA"
-            },
-            items: [{
-                descripcion: "Producto Premium Calidad Superior",
-                cantidad: 2,
-                valor_unitario: 250.00,
-                unidad_medida: "NIU",
-                afectacion_igv: "10",
-                codigo_producto: "PREM001"
-            }]
-        };
-
-        // Logging optimizado
-        function log(message, type = 'info') {
-            const logContainer = document.getElementById('activityLog');
-            const timestamp = new Date().toLocaleTimeString();
-            const colorClass = type === 'error' ? 'text-danger' : 
-                             type === 'success' ? 'text-success' : 
-                             type === 'warning' ? 'text-warning' : 'text-info';
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = `${colorClass} mb-1`;
-            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
-            
-            logContainer.appendChild(logEntry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-
-        function clearLog() {
-            document.getElementById('activityLog').innerHTML = '';
-            log('Log del sistema limpiado', 'info');
-        }
-
-        // API calls optimizado
-        async function apiCall(method, endpoint, data = null) {
-            try {
-                log(`${method} ${endpoint}`, 'info');
-                
-                const options = {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' }
-                };
-                
-                if (data) {
-                    options.body = JSON.stringify(data);
-                }
-
-                const response = await fetch(`${API_BASE}${endpoint}`, options);
-                const result = await response.json();
-                
-                if (response.ok) {
-                    log(`✓ ${endpoint} - SUCCESS`, 'success');
-                    return { success: true, data: result };
-                } else {
-                    log(`✗ ${endpoint} - ERROR ${response.status}`, 'error');
-                    return { success: false, error: result, status: response.status };
-                }
-            } catch (error) {
-                log(`✗ ${endpoint} - EXCEPTION: ${error.message}`, 'error');
-                return { success: false, error: error.message };
-            }
-        }
-
-        // Generate Document optimizado
-        async function generateDocument() {
-            log('🚀 Generando nueva factura...', 'info');
-            
-            sampleData.numero = Math.floor(Math.random() * 1000) + 4000;
-            
-            const result = await apiCall('POST', '/generar-xml/', sampleData);
-            
-            if (result.success) {
-                documentId = result.data.documento_id;
-                log(`✓ Documento generado: ${result.data.numero_completo}`, 'success');
-                
-                setTimeout(() => sendToSUNAT(documentId), 1000);
-                setTimeout(() => refreshDocuments(), 3000);
-                updateStats();
-                
-            } else {
-                log('❌ Error generando documento', 'error');
-            }
-        }
-
-        // Send to SUNAT optimizado
-        async function sendToSUNAT(docId = null) {
-            let sendDocId = docId || documentId;
-            if (!sendDocId) {
-                log('⚠️ No hay documento para enviar', 'warning');
-                return;
-            }
-
-            sendDocId = sendDocId.replace(/[{}]/g, '').trim();
-            
-            log(`📤 Enviando documento a SUNAT...`, 'info');
-            
-            const result = await apiCall('POST', '/sunat/send-bill/', {
-                documento_id: sendDocId
-            });
-            
-            if (result.success) {
-                log('✅ ¡Documento enviado exitosamente!', 'success');
-                if (result.data.has_cdr) {
-                    log('📄 CDR recibido de SUNAT', 'success');
-                }
-                
-                setTimeout(() => refreshDocuments(), 2000);
-                updateStats();
-            } else {
-                log('❌ Error enviando a SUNAT', 'error');
-            }
-        }
-
-        // Refresh documents optimizado
-        async function refreshDocuments() {
-            log('🔄 Cargando documentos...', 'info');
-            
-            const tableBody = document.getElementById('documentsTableBody');
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <div class="mt-2">Cargando documentos...</div>
-                    </td>
-                </tr>
-            `;
-            
-            const result = await apiCall('GET', '/documentos/');
-            
-            if (result.success) {
-                const documentos = result.data.data.documentos;
-                const stats = result.data.data.stats;
-                
-                log(`✓ ${documentos.length} documentos cargados`, 'success');
-                
-                updateStatsFromAPI(stats);
-                currentDocuments = documentos;
-                
-                if (documentos.length > 0) {
-                    tableBody.innerHTML = '';
-                    documentos.forEach(doc => {
-                        const row = createDocumentRow(doc);
-                        tableBody.appendChild(row);
-                    });
-                } else {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <div class="alert alert-info mb-0">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    No hay documentos disponibles.
-                                    <br><button class="btn btn-primary btn-sm mt-3" onclick="generateDocument()">
-                                        <i class="bi bi-plus me-1"></i>Generar Primera Factura
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-                updateCDRDocumentSelect(documentos);
-                
-            } else {
-                log('❌ Error cargando documentos', 'error');
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="alert alert-danger mb-0">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Error cargando documentos
-                                <br><button class="btn btn-outline-primary btn-sm mt-2" onclick="refreshDocuments()">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-
-        function createDocumentRow(doc) {
-            const row = document.createElement('tr');
-            row.className = 'document-item';
-            row.style.cursor = 'pointer';
-            
-            const badgeClass = doc.estado_badge.class;
-            const badgeText = doc.estado_badge.text;
-            
-            const total = new Intl.NumberFormat('es-PE', {
-                style: 'currency',
-                currency: doc.moneda
-            }).format(doc.total);
-            
-            row.innerHTML = `
-                <td>
-                    <div class="fw-bold">${doc.numero_completo}</div>
-                    <small class="text-muted">${doc.tipo_documento.descripcion}</small>
-                </td>
-                <td>
-                    <div>${doc.fecha_emision}</div>
-                    <small class="text-muted">${doc.created_at}</small>
-                </td>
-                <td>
-                    <div class="fw-bold">${doc.receptor.razon_social}</div>
-                    <small class="text-muted">${doc.receptor.numero_doc}</small>
-                </td>
-                <td class="text-end">
-                    <div class="fw-bold">${total}</div>
-                    <small class="text-muted">${doc.moneda}</small>
-                </td>
-                <td>
-                    <span class="badge ${badgeClass}">${badgeText}</span>
-                </td>
-                <td class="text-center">
-                    ${doc.tiene_cdr ? 
-                        '<i class="bi bi-check-circle text-success" title="CDR Disponible"></i>' : 
-                        '<i class="bi bi-clock text-warning" title="Sin CDR"></i>'
-                    }
-                </td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-info btn-sm" onclick="loadCDRById('${doc.id}')" title="Ver CDR">
-                            <i class="bi bi-file-check"></i>
-                        </button>
-                        <button class="btn btn-outline-success btn-sm" onclick="sendToSUNAT('${doc.id}')" title="Reenviar">
-                            <i class="bi bi-send"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            
-            return row;
-        }
-
-        // CDR Functions - CORREGIDAS
-        function updateCDRDocumentSelect(documentos = null) {
-            const select = document.getElementById('cdrDocumentSelect');
-            select.innerHTML = '<option value="">Seleccione un documento...</option>';
-            
-            if (documentos && documentos.length > 0) {
-                documentos.forEach(doc => {
-                    const option = document.createElement('option');
-                    option.value = doc.id;
-                    option.textContent = `${doc.numero_completo} - ${doc.receptor.razon_social}`;
-                    select.appendChild(option);
-                });
-            }
-        }
-
-        async function loadCDR() {
-            const select = document.getElementById('cdrDocumentSelect');
-            const docId = select.value;
-            if (!docId) return;
-            
-            await loadCDRById(docId);
-        }
-
-        // ✅ FUNCIÓN PRINCIPAL CDR CORREGIDA
-        async function loadCDRById(docId = null) {
-            const documentIdInput = document.getElementById('cdrDocumentId');
-            let targetDocId = docId || documentIdInput.value.trim();
-            
-            if (!targetDocId) {
-                log('⚠️ Ingrese un ID de documento válido', 'warning');
-                return;
-            }
-
-            targetDocId = targetDocId.replace(/[{}]/g, '').trim();
-            
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-            if (!uuidRegex.test(targetDocId)) {
-                log(`❌ ID de documento inválido: ${targetDocId}`, 'error');
-                return;
-            }
-
-            currentCDRDocumentId = targetDocId;
-            log(`🔍 Cargando CDR para documento: ${targetDocId}`, 'info');
-            
-            const cdrContent = document.getElementById('cdrContent');
-            cdrContent.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary mb-3" role="status"></div>
-                    <h5>Cargando CDR</h5>
-                    <p class="text-muted">Consultando información del documento...</p>
-                </div>
-            `;
-
-            const result = await apiCall('GET', `/cdr-info/${targetDocId}/`);
-
-            if (result.success) {
-                displayCDR(result.data);
-                log('✅ CDR cargado exitosamente', 'success');
-            } else {
-                log('❌ Error cargando CDR', 'error');
-                displayCDRError(result.error);
-            }
-        }
-
-        // ✅ FUNCIÓN DISPLAY CDR CORREGIDA COMPLETAMENTE
-        function displayCDR(cdrData) {
-            console.log('📋 CDR Data recibida:', cdrData);
-            
-            const infoCard = document.getElementById('cdrInfoCard');
-            const infoContent = document.getElementById('cdrInfoContent');
-            const cdrContent = document.getElementById('cdrContent');
-            const cdrActions = document.getElementById('cdrActions');
-
-            infoCard.style.display = 'block';
-            cdrActions.style.display = 'block';
-
-            // ✅ EXTRAER DATOS CORRECTAMENTE
-            const numeroCompleto = cdrData.data?.numero_completo || cdrData.numero_completo || 'N/A';
-            const estadoDocumento = cdrData.data?.estado_documento || cdrData.estado_documento || 'DESCONOCIDO';
-            const tieneCDR = cdrData.data?.tiene_cdr || cdrData.tiene_cdr || false;
-            const cdrInfo = cdrData.data?.cdr_info || cdrData.cdr_info || null;
-
-            // Mostrar información
-            infoContent.innerHTML = `
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <strong><i class="bi bi-file-text me-1"></i>Documento:</strong><br>
-                        <span class="text-primary fw-bold">${numeroCompleto}</span>
-                    </div>
-                    <div class="col-6">
-                        <strong><i class="bi bi-check-circle me-1"></i>Estado:</strong><br>
-                        <span class="badge ${estadoDocumento === 'ACEPTADO' ? 'bg-success' : 'bg-warning'}">${estadoDocumento}</span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <strong><i class="bi bi-file-check me-1"></i>Tiene CDR:</strong><br>
-                        ${tieneCDR ? '<i class="bi bi-check-circle text-success"></i> Sí disponible' : '<i class="bi bi-x-circle text-danger"></i> No disponible'}
-                    </div>
-                    <div class="col-6">
-                        <strong><i class="bi bi-hash me-1"></i>Código:</strong><br>
-                        <span class="badge bg-info">${cdrInfo?.codigo_respuesta || 'N/A'}</span>
-                    </div>
-                </div>
-                ${cdrInfo?.descripcion ? `
-                <div class="alert alert-info">
-                    <strong><i class="bi bi-info-circle me-1"></i>Descripción:</strong><br>
-                    <small>${cdrInfo.descripcion}</small>
-                </div>
-                ` : ''}
-            `;
-
-            // ✅ MOSTRAR CONTENIDO CDR
-            if (tieneCDR && cdrInfo?.xml_cdr) {
-                log('✅ Mostrando CDR con XML', 'success');
-                
-                cdrContent.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>CDR Disponible y Corregido</strong>
-                        <div class="mt-2">
-                            <small><strong>Estado:</strong> ${cdrInfo.estado || 'Procesado'}</small><br>
-                            <small><strong>Código:</strong> ${cdrInfo.codigo_respuesta || '0'}</small><br>
-                            <small><strong>Resumen:</strong> ${cdrInfo.resumen || 'Documento procesado exitosamente'}</small>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <h6><i class="bi bi-code me-1"></i>XML CDR</h6>
-                        <pre id="xmlDisplayArea" class="bg-dark text-light p-3 rounded" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto; white-space: pre-wrap;">${escapeHtml(cdrInfo.xml_cdr)}</pre>
-                    </div>
-                `;
-            } else {
-                const documentoId = cdrData.data?.documento_id || cdrData.documento_id;
-                const cleanDocId = documentoId ? documentoId.replace(/[{}]/g, '') : '';
-                
-                cdrContent.innerHTML = `
-                    <div class="alert alert-warning text-center py-4">
-                        <i class="bi bi-exclamation-triangle display-3 text-warning mb-3"></i>
-                        <h5>CDR No Disponible</h5>
-                        <p>Este documento aún no tiene CDR.</p>
-                        <div class="mt-3">
-                            <strong>Estado:</strong> <span class="badge bg-secondary">${estadoDocumento}</span>
-                        </div>
-                        ${cleanDocId ? `
-                        <div class="mt-4">
-                            <button class="btn btn-primary" onclick="sendToSUNAT('${cleanDocId}')">
-                                <i class="bi bi-send me-1"></i>Enviar a SUNAT
-                            </button>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-        }
-
-        function displayCDRError(error) {
-            const infoCard = document.getElementById('cdrInfoCard');
-            const cdrContent = document.getElementById('cdrContent');
-            const cdrActions = document.getElementById('cdrActions');
-
-            infoCard.style.display = 'none';
-            cdrActions.style.display = 'none';
-
-            cdrContent.innerHTML = `
-                <div class="alert alert-danger text-center py-4">
-                    <i class="bi bi-x-circle display-3 text-danger mb-3"></i>
-                    <h5>Error Cargando CDR</h5>
-                    <p><strong>Error:</strong> ${typeof error === 'string' ? error : error.error || 'Error desconocido'}</p>
-                    <div class="mt-3">
-                        <button class="btn btn-warning me-2" onclick="refreshDocuments()">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Actualizar Documentos
-                        </button>
-                        <button class="btn btn-primary" onclick="generateDocument()">
-                            <i class="bi bi-plus me-1"></i>Generar Documento
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ✅ FUNCIONES HELPER CDR
-        function formatXMLDisplay() {
-            const xmlArea = document.getElementById('xmlDisplayArea');
-            if (!xmlArea) return;
-            
-            try {
-                let formatted = xmlArea.textContent
-                    .replace(/></g, '>\n<')
-                    .replace(/^\s+|\s+$/gm, '');
-                
-                let indent = 0;
-                formatted = formatted.split('\n').map(line => {
-                    if (line.includes('</') && !line.includes('</'+ line.split('</')[1].split('>')[0] + '>')) {
-                        indent--;
-                    }
-                    const indentedLine = '  '.repeat(Math.max(0, indent)) + line.trim();
-                    if (line.includes('<') && !line.includes('</') && !line.includes('/>')) {
-                        indent++;
-                    }
-                    return indentedLine;
-                }).join('\n');
-                
-                xmlArea.textContent = formatted;
-                log('✅ XML formateado', 'success');
-                
-            } catch (error) {
-                log('❌ Error formateando XML', 'error');
-            }
-        }
-
-        function copyXMLContent() {
-            const xmlArea = document.getElementById('xmlDisplayArea');
-            if (!xmlArea) {
-                log('⚠️ No hay contenido XML para copiar', 'warning');
-                return;
-            }
-            
-            navigator.clipboard.writeText(xmlArea.textContent)
-                .then(() => log('📋 XML CDR copiado', 'success'))
-                .catch(() => log('❌ Error copiando XML', 'error'));
-        }
-
-        function downloadXMLContent() {
-            const xmlArea = document.getElementById('xmlDisplayArea');
-            if (!xmlArea) {
-                log('⚠️ No hay contenido para descargar', 'warning');
-                return;
-            }
-            
-            try {
-                const xmlContent = xmlArea.textContent;
-                const blob = new Blob([xmlContent], { type: 'application/xml' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `CDR_${currentCDRDocumentId || 'documento'}_${new Date().toISOString().split('T')[0]}.xml`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                log('⬇️ CDR XML descargado', 'success');
-                
-            } catch (error) {
-                log('❌ Error descargando XML', 'error');
-            }
-        }
-
-        // Test functions optimizadas
-        async function testAPI() {
-            log('🧪 Test de API...', 'info');
-            const result = await apiCall('GET', '/test/');
-            
-            if (result.success) {
-                showResult('testResults', `
-                    <div class="alert alert-success">
-                        <h6><i class="bi bi-check-circle me-2"></i>API Funcionando</h6>
-                        <strong>Versión:</strong> ${result.data.version}<br>
-                        <strong>Certificado:</strong> ${result.data.certificate_status}
-                    </div>
-                `, 'success');
-            } else {
-                showResult('testResults', `
-                    <div class="alert alert-danger">
-                        <h6><i class="bi bi-x-circle me-2"></i>Error en API</h6>
-                        <pre>${JSON.stringify(result.error, null, 2)}</pre>
-                    </div>
-                `, 'error');
-            }
-        }
-
-        async function testSUNATStatus() {
-            log('🧪 Test estado SUNAT...', 'info');
-            const result = await apiCall('GET', '/sunat/status/');
-            
-            if (result.success) {
-                showResult('testResults', `
-                    <div class="alert alert-success">
-                        <h6><i class="bi bi-check-circle me-2"></i>SUNAT OK</h6>
-                        <strong>Estado:</strong> ${result.data.system_status}<br>
-                        <strong>CDR Fix:</strong> CORREGIDO
-                    </div>
-                `, 'success');
-            } else {
-                showResult('testResults', `
-                    <div class="alert alert-danger">
-                        <h6><i class="bi bi-x-circle me-2"></i>Error SUNAT</h6>
-                        <pre>${JSON.stringify(result.error, null, 2)}</pre>
-                    </div>
-                `, 'error');
-            }
-        }
-
-        async function testSUNATConnection() {
-            log('🧪 Test conexión SUNAT...', 'info');
-            const result = await apiCall('GET', '/sunat/test-connection/');
-            
-            if (result.success) {
-                showResult('testResults', `
-                    <div class="alert alert-success">
-                        <h6><i class="bi bi-wifi me-2"></i>Conexión OK</h6>
-                        <strong>Estado:</strong> ${result.data.status}
-                    </div>
-                `, 'success');
-            } else {
-                showResult('testResults', `
-                    <div class="alert alert-danger">
-                        <h6><i class="bi bi-wifi-off me-2"></i>Error Conexión</h6>
-                        <pre>${JSON.stringify(result.error, null, 2)}</pre>
-                    </div>
-                `, 'error');
-            }
-        }
-
-        async function getCertificateInfo() {
-            log('🧪 Info certificados...', 'info');
-            const result = await apiCall('GET', '/certificate-info/');
-            
-            if (result.success) {
-                showResult('testResults', `
-                    <div class="alert alert-success">
-                        <h6><i class="bi bi-key me-2"></i>Certificados OK</h6>
-                        <strong>Reales:</strong> ${result.data.total_real_certificates}<br>
-                        <strong>Activo:</strong> ${result.data.certificate_used}
-                    </div>
-                `, 'success');
-            } else {
-                showResult('testResults', `
-                    <div class="alert alert-danger">
-                        <h6><i class="bi bi-key me-2"></i>Error Certificados</h6>
-                        <pre>${JSON.stringify(result.error, null, 2)}</pre>
-                    </div>
-                `, 'error');
-            }
-        }
-
-        function testConnection() {
-            testSUNATConnection();
-        }
-
-        // Utility functions optimizadas
-        function showResult(containerId, content, type = 'info') {
-            const container = document.getElementById(containerId);
-            container.innerHTML = content;
-        }
-
-        function showSampleData() {
-            document.getElementById('jsonContent').textContent = JSON.stringify(sampleData, null, 2);
-            new bootstrap.Modal(document.getElementById('jsonModal')).show();
-        }
-
-        function copyJson() {
-            navigator.clipboard.writeText(JSON.stringify(sampleData, null, 2))
-                .then(() => log('📋 JSON copiado', 'success'))
-                .catch(() => log('❌ Error copiando JSON', 'error'));
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function updateStatsFromAPI(stats) {
-            document.getElementById('statsDocuments').textContent = stats.enviados || 0;
-            document.getElementById('statsCDR').textContent = stats.con_cdr || 0;
-            document.getElementById('statsProcessing').textContent = stats.procesando || 0;
-        }
-
-        function updateStats() {
-            const statsDocuments = document.getElementById('statsDocuments');
-            const statsCDR = document.getElementById('statsCDR');
-            
-            statsDocuments.textContent = parseInt(statsDocuments.textContent) + 1;
-            statsCDR.textContent = parseInt(statsCDR.textContent) + 1;
-        }
-
-        // Initialize optimizado
-        window.addEventListener('load', () => {
-            log('🚀 Dashboard optimizado cargado', 'success');
-            log('✅ Sistema CDR corregido y funcionando', 'success');
-            log('🔐 Certificado real C23022479065 integrado', 'info');
-            
-            refreshDocuments();
-            
-            setTimeout(() => {
-                log('🧪 Verificación automática...', 'info');
-                testAPI();
-            }, 2000);
-        });
-
-        // Tab handlers
-        document.querySelectorAll('#mainTabs button').forEach(tab => {
-            tab.addEventListener('shown.bs.tab', function (e) {
-                const target = e.target.getAttribute('data-bs-target');
-                const tabName = target.replace('#', '').toUpperCase();
-                log(`📂 Navegando: ${tabName}`, 'info');
-                
-                if (target === '#documents') {
-                    refreshDocuments();
-                }
-                
-                if (target === '#cdr') {
-                    updateCDRDocumentSelect(currentDocuments);
-                }
-            });
-        });
-
-        // Auto-refresh optimizado
-        setInterval(() => {
-            if (document.querySelector('#documents-tab').classList.contains('active')) {
-                log('🔄 Auto-actualización...', 'info');
-                refreshDocuments();
-            }
-        }, 30000);
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'g') {
-                e.preventDefault();
-                generateDocument();
-                log('⌨️ Ctrl+G: Generando documento', 'info');
-            }
-            
-            if (e.ctrlKey && e.key === 'r' && e.shiftKey) {
-                e.preventDefault();
-                refreshDocuments();
-                log('⌨️ Ctrl+Shift+R: Actualizando', 'info');
-            }
-        });
-
-        // Error handling
-        window.addEventListener('error', function(e) {
-            log(`💥 Error: ${e.message}`, 'error');
-        });
-    </script>
+    <script src="{% static 'js/general.js' %}"></script>
 </body>
 </html>
