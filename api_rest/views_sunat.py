@@ -438,20 +438,3 @@ class GetStatusCDRView(APIView):
                 'cdr_storage_fixed': True,
                 'recovery_mode': True
             })
-
-# ==============================================================================
-# MENSAJE DE CONFIRMACIÓN
-# ==============================================================================
-
-logger.info("SISTEMA PERFECTO CARGADO CON CDR STORAGE CORREGIDO")
-logger.info("CDR se guarda correctamente en la base de datos")
-logger.info("UUID correlation_id arreglado")
-logger.info("SISTEMA LISTO PARA USAR")
-
-print("=" * 80)
-print("CDR STORAGE CORREGIDO EXITOSAMENTE")
-print("✅ Sistema perfecto cargado")
-print("✅ CDR se guarda en BD correctamente")
-print("✅ UUID correlation_id válido")
-print("✅ CDR visible en dashboard")
-print("=" * 80)

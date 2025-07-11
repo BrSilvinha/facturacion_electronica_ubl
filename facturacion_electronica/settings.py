@@ -426,14 +426,3 @@ if DEBUG:
         'LOG_SOAP_RESPONSES': True,
         'SAVE_REQUEST_RESPONSE_TO_FILE': True,
     })
-
-# =============================================================================
-# MENSAJES DE CONFIRMACIÓN
-# =============================================================================
-
-print("🔧 Settings cargado con configuración CSRF corregida")
-print(f"✅ RUC configurado: {SUNAT_CONFIG['RUC']}")
-print(f"✅ Ambiente: {SUNAT_CONFIG['ENVIRONMENT']}")
-print(f"✅ Usuario completo será: {SUNAT_CONFIG['RUC']}{SUNAT_CONFIG['BETA_USER']}")
-print("🛡️ CSRF Fix aplicado - Error 403 solucionado")
-print("🚀 Sistema listo para generar documentos")
