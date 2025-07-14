@@ -86,3 +86,37 @@ INFO 2025-07-14 11:03:45,936 xml_signer 29660 31456 Iniciando firma digital del 
 WARNING 2025-07-14 11:03:45,936 xml_signer 29660 31456 Firma digital real no disponible, usando simulación con RUC fix
 INFO 2025-07-14 11:03:45,936 xml_signer 29660 31456 Generando firma simulada con RUC fix para documento: 3e67a3c8-8d43-4306-8205-5d2477aef49b
 WARNING 2025-07-14 11:03:45,936 xml_signer 29660 31456 Usando RUC por defecto: 20103129061
+WARNING 2025-07-14 11:33:23,653 xml_signer 29452 28072 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:33:23,654 xml_signer 29452 28072 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:33:23,654 xml_signer 29452 28072 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 11:33:23,725 xml_signer 29452 28072 Certificado cargado exitosamente:
+INFO 2025-07-14 11:33:23,725 xml_signer 29452 28072   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 11:33:23,725 xml_signer 29452 28072   - RUC/Serial: N/A
+INFO 2025-07-14 11:33:23,727 xml_signer 29452 28072   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 11:33:23,727 xml_signer 29452 28072   - Tamaño clave: 2048 bits
+WARNING 2025-07-14 11:33:23,727 xml_signer 29452 28072 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:33:23,727 xml_signer 29452 28072 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:33:23,727 xml_signer 29452 28072 Iniciando firma digital del documento: c58f9c79-03b4-45fe-830d-f4b5a6627855
+WARNING 2025-07-14 11:33:23,727 xml_signer 29452 28072 Firma digital real no disponible, usando simulación con RUC fix
+INFO 2025-07-14 11:33:23,727 xml_signer 29452 28072 Generando firma simulada con RUC fix para documento: c58f9c79-03b4-45fe-830d-f4b5a6627855
+WARNING 2025-07-14 11:33:23,727 xml_signer 29452 28072 Usando RUC por defecto: 20103129061
+WARNING 2025-07-14 11:37:28,271 xml_signer 30968 16792 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:37:28,272 xml_signer 30968 16792 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:37:28,272 xml_signer 30968 16792 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 11:37:28,325 xml_signer 30968 16792 Certificado cargado exitosamente:
+INFO 2025-07-14 11:37:28,326 xml_signer 30968 16792   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 11:37:28,326 xml_signer 30968 16792   - RUC/Serial: N/A
+INFO 2025-07-14 11:37:28,326 xml_signer 30968 16792   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 11:37:28,326 xml_signer 30968 16792   - Tamaño clave: 2048 bits
+WARNING 2025-07-14 11:37:28,326 xml_signer 30968 16792 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:37:28,326 xml_signer 30968 16792 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:37:28,328 xml_signer 30968 16792 Iniciando firma digital del documento: d8a9eb05-efab-48ae-91ae-fc79ce551924
+WARNING 2025-07-14 11:37:28,328 xml_signer 30968 16792 Firma digital real no disponible, usando simulación con RUC fix
+INFO 2025-07-14 11:37:28,329 xml_signer 30968 16792 Generando firma simulada con RUC fix para documento: d8a9eb05-efab-48ae-91ae-fc79ce551924
+WARNING 2025-07-14 11:37:28,329 xml_signer 30968 16792 Usando RUC por defecto: 20103129061
+WARNING 2025-07-14 11:39:16,291 xml_signer 30968 26256 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:39:16,292 xml_signer 30968 26256 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:39:16,292 xml_signer 30968 26256 Iniciando firma digital del documento: e6237025-8dcd-4c66-b5eb-daa994923a78
+WARNING 2025-07-14 11:39:16,292 xml_signer 30968 26256 Firma digital real no disponible, usando simulación con RUC fix
+INFO 2025-07-14 11:39:16,292 xml_signer 30968 26256 Generando firma simulada con RUC fix para documento: e6237025-8dcd-4c66-b5eb-daa994923a78
+WARNING 2025-07-14 11:39:16,292 xml_signer 30968 26256 Usando RUC por defecto: 20103129061

@@ -2,12 +2,13 @@
 
 """
 URLs para la API REST de Facturación Electrónica
-VERSIÓN COMPLETA con endpoints de documentos
+VERSIÓN COMPLETA con endpoints de documentos y CDR
 """
 
 from django.urls import path
 from . import views
 from . import views_sunat
+from . import views_cdr
 
 urlpatterns = [
     # Endpoints principales de la API
@@ -18,7 +19,7 @@ urlpatterns = [
     path('validar-ruc/', views.ValidarRUCView.as_view(), name='validar-ruc'),
     path('certificate-info/', views.CertificateInfoView.as_view(), name='certificate-info'),
     
-    # 🆕 NUEVOS ENDPOINTS DE DOCUMENTOS
+    # Endpoints de documentos
     path('documentos/', views.DocumentosListView.as_view(), name='documentos-list'),
     path('documentos/<uuid:documento_id>/', views.DocumentoDetailView.as_view(), name='documento-detail'),
     path('documentos/stats/', views.DocumentosStatsView.as_view(), name='documentos-stats'),
@@ -31,6 +32,12 @@ urlpatterns = [
     path('sunat/get-status-cdr/', views_sunat.GetStatusCDRView.as_view(), name='sunat-get-status-cdr'),
     path('sunat/status/', views_sunat.SUNATStatusView.as_view(), name='sunat-status'),
     
-    # Endpoint para obtener información de CDR
+    # 🆕 ENDPOINTS CDR - Procesamiento de Constancia de Recepción
+    path('cdr/process/', views_cdr.ProcessCDRView.as_view(), name='cdr-process'),
+    path('cdr/generate/', views_cdr.GenerateCDRView.as_view(), name='cdr-generate'),
+    path('cdr/status/<uuid:documento_id>/', views_cdr.CDRStatusView.as_view(), name='cdr-status'),
+    path('cdr/simulate-sunat/', views_cdr.SimulateSUNATResponseView.as_view(), name='cdr-simulate-sunat'),
+    
+    # Endpoint para obtener información de CDR (compatibilidad)
     path('cdr-info/<uuid:documento_id>/', views.CDRInfoView.as_view(), name='cdr-info'),
 ]
