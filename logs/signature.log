@@ -40,3 +40,49 @@ INFO 2025-07-11 03:11:19,823 xml_signer 18736 14848 Documento firmado exitosamen
 INFO 2025-07-11 03:11:19,823 xml_signer 18736 14848   - ID Firma: 38ca9507-e4a7-47e4-82ba-94f4d0179f01
 INFO 2025-07-11 03:11:19,824 xml_signer 18736 14848   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
 INFO 2025-07-11 03:11:19,824 xml_signer 18736 14848   - Algoritmo: RSA-SHA256
+WARNING 2025-07-12 09:32:53,586 xml_signer 23736 39724 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-12 09:32:53,587 xml_signer 23736 39724 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-12 09:32:53,588 xml_signer 23736 39724 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-12 09:32:53,722 xml_signer 23736 39724 Certificado cargado exitosamente:
+INFO 2025-07-12 09:32:53,722 xml_signer 23736 39724   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-12 09:32:53,722 xml_signer 23736 39724   - RUC/Serial: N/A
+INFO 2025-07-12 09:32:53,723 xml_signer 23736 39724   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-12 09:32:53,724 xml_signer 23736 39724   - Tamaño clave: 2048 bits
+WARNING 2025-07-12 09:32:53,724 xml_signer 23736 39724 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-12 09:32:53,724 xml_signer 23736 39724 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-12 09:32:53,724 xml_signer 23736 39724 Iniciando firma digital del documento: 34805afe-0a79-43c0-aa7d-ec9928ed147a
+WARNING 2025-07-12 09:32:53,724 xml_signer 23736 39724 Firma digital real no disponible, usando simulación
+INFO 2025-07-12 09:32:53,724 xml_signer 23736 39724 Generando firma simulada para documento: 34805afe-0a79-43c0-aa7d-ec9928ed147a
+WARNING 2025-07-14 10:26:09,459 xml_signer 32668 28460 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 10:26:09,460 xml_signer 32668 28460 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 10:26:09,460 xml_signer 32668 28460 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 10:26:09,568 xml_signer 32668 28460 Certificado cargado exitosamente:
+INFO 2025-07-14 10:26:09,568 xml_signer 32668 28460   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 10:26:09,568 xml_signer 32668 28460   - RUC/Serial: N/A
+INFO 2025-07-14 10:26:09,568 xml_signer 32668 28460   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 10:26:09,569 xml_signer 32668 28460   - Tamaño clave: 2048 bits
+WARNING 2025-07-14 10:26:09,569 xml_signer 32668 28460 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 10:26:09,569 xml_signer 32668 28460 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 10:26:09,569 xml_signer 32668 28460 Iniciando firma digital del documento: 42a69039-8907-4993-afa4-ea2fc2cad0c4
+WARNING 2025-07-14 10:26:09,569 xml_signer 32668 28460 Firma digital real no disponible, usando simulación
+INFO 2025-07-14 10:26:09,569 xml_signer 32668 28460 Generando firma simulada para documento: 42a69039-8907-4993-afa4-ea2fc2cad0c4
+WARNING 2025-07-14 11:02:11,513 xml_signer 29660 29116 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:02:11,514 xml_signer 29660 29116 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:02:11,515 xml_signer 29660 29116 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 11:02:11,590 xml_signer 29660 29116 Certificado cargado exitosamente:
+INFO 2025-07-14 11:02:11,590 xml_signer 29660 29116   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 11:02:11,590 xml_signer 29660 29116   - RUC/Serial: N/A
+INFO 2025-07-14 11:02:11,590 xml_signer 29660 29116   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 11:02:11,590 xml_signer 29660 29116   - Tamaño clave: 2048 bits
+WARNING 2025-07-14 11:02:11,591 xml_signer 29660 29116 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:02:11,591 xml_signer 29660 29116 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:02:11,591 xml_signer 29660 29116 Iniciando firma digital del documento: 8be74685-bd84-4551-a996-7b870f995a63
+WARNING 2025-07-14 11:02:11,591 xml_signer 29660 29116 Firma digital real no disponible, usando simulación con RUC fix
+INFO 2025-07-14 11:02:11,592 xml_signer 29660 29116 Generando firma simulada con RUC fix para documento: 8be74685-bd84-4551-a996-7b870f995a63
+WARNING 2025-07-14 11:02:11,592 xml_signer 29660 29116 Usando RUC por defecto: 20103129061
+WARNING 2025-07-14 11:03:45,935 xml_signer 29660 31456 XMLSigner inicializado con dependencias limitadas: signxml no disponible: cannot import name 'verify' from 'OpenSSL.crypto' (unknown location)
+INFO 2025-07-14 11:03:45,935 xml_signer 29660 31456 XMLSigner inicializado - Firma disponible: False
+INFO 2025-07-14 11:03:45,936 xml_signer 29660 31456 Iniciando firma digital del documento: 3e67a3c8-8d43-4306-8205-5d2477aef49b
+WARNING 2025-07-14 11:03:45,936 xml_signer 29660 31456 Firma digital real no disponible, usando simulación con RUC fix
+INFO 2025-07-14 11:03:45,936 xml_signer 29660 31456 Generando firma simulada con RUC fix para documento: 3e67a3c8-8d43-4306-8205-5d2477aef49b
+WARNING 2025-07-14 11:03:45,936 xml_signer 29660 31456 Usando RUC por defecto: 20103129061

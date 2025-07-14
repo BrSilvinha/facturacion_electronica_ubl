@@ -1,7 +1,9 @@
+# conversion/generators/factura_generator.py - VERSIÓN CORREGIDA
+
 from .base_generator import BaseUBLGenerator
 
 class FacturaGenerator(BaseUBLGenerator):
-    """Generador específico para Facturas UBL 2.1"""
+    """Generador específico para Facturas UBL 2.1 - CORREGIDO para SUNAT"""
     
     def get_template_name(self):
         return 'factura.xml'
@@ -10,7 +12,7 @@ class FacturaGenerator(BaseUBLGenerator):
         return '01'
     
     def _prepare_context(self, documento):
-        """Prepara contexto específico para facturas"""
+        """Prepara contexto específico para facturas - CORREGIDO"""
         
         # Obtener contexto base
         context = super()._prepare_context(documento)
@@ -23,10 +25,39 @@ class FacturaGenerator(BaseUBLGenerator):
             'delivery_terms': self._get_delivery_terms(documento),
         })
         
+        # 🚀 VALIDACIÓN ADICIONAL: Verificar datos críticos para SUNAT
+        self._validate_factura_specific_data(context, documento)
+        
         return context
     
+    def _validate_factura_specific_data(self, context, documento):
+        """Validaciones específicas para facturas SUNAT"""
+        
+        # Validar que el receptor tenga RUC (para facturas)
+        if documento.receptor_tipo_doc != '6':
+            # Para facturas, generalmente se requiere RUC del cliente
+            # Pero permitimos otros tipos de documento
+            pass
+        
+        # Validar que el receptor tenga documento válido
+        receptor_doc = documento.receptor_numero_doc
+        if documento.receptor_tipo_doc == '6':  # RUC
+            if not receptor_doc or len(receptor_doc) != 11 or not receptor_doc.isdigit():
+                raise ValueError(f"RUC del receptor inválido para factura: {receptor_doc}")
+        elif documento.receptor_tipo_doc == '1':  # DNI
+            if not receptor_doc or len(receptor_doc) != 8 or not receptor_doc.isdigit():
+                raise ValueError(f"DNI del receptor inválido para factura: {receptor_doc}")
+        
+        # Validar montos mínimos
+        if documento.total <= 0:
+            raise ValueError("El total de la factura debe ser mayor a 0")
+        
+        # Validar que tenga al menos una línea
+        if not documento.lineas.exists():
+            raise ValueError("La factura debe tener al menos una línea de detalle")
+    
     def _get_payment_terms(self, documento):
-        """Obtiene términos de pago para la factura"""
+        """Obtiene términos de pago para la factura - CORREGIDO"""
         
         payment_terms = {
             'payment_means_code': '001',  # Depósito en cuenta
