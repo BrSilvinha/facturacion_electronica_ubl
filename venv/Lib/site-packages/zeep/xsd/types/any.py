@@ -1,6 +1,11 @@
 import logging
+import sys
 import typing
-from functools import cached_property as threaded_cached_property
+
+if sys.version_info >= (3, 8):
+    from functools import cached_property as threaded_cached_property
+else:
+    from cached_property import threaded_cached_property
 
 from lxml import etree
 
