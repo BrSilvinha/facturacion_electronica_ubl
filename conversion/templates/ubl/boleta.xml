@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TEMPLATE UBL 2.1 PARA BOLETAS - SIMPLIFICADO -->
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+         xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
+         xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+
+    <!-- ========================================= -->
+    <!-- EXTENSIONES UBL CON FIRMA DIGITAL       -->
+    <!-- ========================================= -->
+    <ext:UBLExtensions>
+        <ext:UBLExtension>
+            <ext:ExtensionContent>
+                <!-- Aquí irá la firma digital XML-DSig -->
+            </ext:ExtensionContent>
+        </ext:UBLExtension>
+    </ext:UBLExtensions>
+
+    <!-- ========================================= -->
+    <!-- INFORMACIÓN BÁSICA DEL DOCUMENTO        -->
+    <!-- ========================================= -->
+    <cbc:UBLVersionID>{{ ubl_version }}</cbc:UBLVersionID>
+    <cbc:CustomizationID>{{ customization_id }}</cbc:CustomizationID>
+    <cbc:ProfileID schemeName="SUNAT:Identificador de Tipo de Operación" 
+                   schemeAgencyName="PE:SUNAT" 
+                   schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo17">0101</cbc:ProfileID>
+    <cbc:ID>{{ document_id }}</cbc:ID>
+    <cbc:IssueDate>{{ issue_date|format_date }}</cbc:IssueDate>
+    <cbc:IssueTime>{{ generation_time.strftime('%H:%M:%S') }}</cbc:IssueTime>
+    <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" 
+                        listName="SUNAT:Identificador de Tipo de Documento" 
+                        listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">{{ document_type_code }}</cbc:InvoiceTypeCode>
+    <cbc:Note languageLocaleID="1000">{{ totals.total_precio_venta|format_decimal }}</cbc:Note>
+    <cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" 
+                              listName="Currency" 
+                              listAgencyName="United Nations Economic Commission for Europe">{{ currency_code }}</cbc:DocumentCurrencyCode>
+
+    <!-- ========================================= -->
+    <!-- 🔧 SECCIÓN SIGNATURE CORREGIDA          -->
+    <!-- ========================================= -->
+    <cac:Signature>
+        <cbc:ID>SignatureSP</cbc:ID>
+        <cac:SignatoryParty>
+            <cac:PartyIdentification>
+                <!-- 🚀 CRÍTICO: RUC del emisor OBLIGATORIO -->
+                <cbc:ID>{{ supplier.ruc }}</cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PartyName>
+                <cbc:Name>{{ supplier.legal_name|cdata }}</cbc:Name>
+            </cac:PartyName>
+        </cac:SignatoryParty>
+        <cac:DigitalSignatureAttachment>
+            <cac:ExternalReference>
+                <cbc:URI>#SignatureSP</cbc:URI>
+            </cac:ExternalReference>
+        </cac:DigitalSignatureAttachment>
+    </cac:Signature>
+
+    <!-- ========================================= -->
+    <!-- INFORMACIÓN DEL EMISOR (SUPPLIER)       -->
+    <!-- ========================================= -->
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cac:PartyIdentification>
+                <!-- 🚀 CRÍTICO: RUC del emisor con schemeID="6" -->
+                <cbc:ID schemeID="6" 
+                        schemeName="Documento de Identidad" 
+                        schemeAgencyName="PE:SUNAT" 
+                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{ supplier.ruc }}</cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PartyName>
+                <cbc:Name>{{ supplier.trade_name|cdata }}</cbc:Name>
+            </cac:PartyName>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>{{ supplier.legal_name|cdata }}</cbc:RegistrationName>
+                <cac:RegistrationAddress>
+                    <cbc:ID schemeAgencyName="PE:INEI">{{ supplier.ubigeo }}</cbc:ID>
+                    <cbc:AddressTypeCode listAgencyName="PE:SUNAT" 
+                                         listName="Establecimientos anexos">0000</cbc:AddressTypeCode>
+                    <cbc:CitySubdivisionName>-</cbc:CitySubdivisionName>
+                    <cbc:CityName>-</cbc:CityName>
+                    <cbc:CountrySubentity>-</cbc:CountrySubentity>
+                    <cbc:District>-</cbc:District>
+                    <cac:AddressLine>
+                        <cbc:Line>{{ supplier.address|cdata }}</cbc:Line>
+                    </cac:AddressLine>
+                    <cac:Country>
+                        <cbc:IdentificationCode listAgencyName="United Nations Economic Commission for Europe" 
+                                                listName="Country" 
+                                                listID="ISO 3166-1">PE</cbc:IdentificationCode>
+                    </cac:Country>
+                </cac:RegistrationAddress>
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+
+    <!-- ========================================= -->
+    <!-- INFORMACIÓN DEL CLIENTE (CUSTOMER)      -->
+    <!-- ========================================= -->
+    <cac:AccountingCustomerParty>
+        <cac:Party>
+            <cac:PartyIdentification>
+                <cbc:ID schemeID="{{ customer.document_type }}" 
+                        schemeName="Documento de Identidad" 
+                        schemeAgencyName="PE:SUNAT" 
+                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{ customer.document_number }}</cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>{{ customer.legal_name|cdata }}</cbc:RegistrationName>
+                {% if customer.address %}
+                <cac:RegistrationAddress>
+                    <cac:AddressLine>
+                        <cbc:Line>{{ customer.address|cdata }}</cbc:Line>
+                    </cac:AddressLine>
+                </cac:RegistrationAddress>
+                {% endif %}
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingCustomerParty>
+
+    <!-- ========================================= -->
+    <!-- RESUMEN DE IMPUESTOS                     -->
+    <!-- ========================================= -->
+    {% for tax in tax_data %}
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="{{ currency_code }}">{{ tax.tax_amount|format_decimal }}</cbc:TaxAmount>
+        <cac:TaxSubtotal>
+            {% if tax.taxable_amount %}
+            <cbc:TaxableAmount currencyID="{{ currency_code }}">{{ tax.taxable_amount|format_decimal }}</cbc:TaxableAmount>
+            {% endif %}
+            <cbc:TaxAmount currencyID="{{ currency_code }}">{{ tax.tax_amount|format_decimal }}</cbc:TaxAmount>
+            <cac:TaxCategory>
+                <cbc:ID schemeID="UN/ECE 5305" 
+                        schemeName="Tax Category Identifier" 
+                        schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
+                {% if tax.tax_percentage %}
+                <cbc:Percent>{{ tax.tax_percentage|format_decimal }}</cbc:Percent>
+                {% endif %}
+                <cac:TaxScheme>
+                    <cbc:ID schemeID="UN/ECE 5153" 
+                            schemeAgencyID="6">{{ tax.tax_id }}</cbc:ID>
+                    <cbc:Name>{{ tax.tax_name }}</cbc:Name>
+                    <cbc:TaxTypeCode>{{ tax.tax_type_code }}</cbc:TaxTypeCode>
+                </cac:TaxScheme>
+            </cac:TaxCategory>
+        </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    {% endfor %}
+
+    <!-- ========================================= -->
+    <!-- TOTALES MONETARIOS                       -->
+    <!-- ========================================= -->
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ totals.total_valor_venta|format_decimal }}</cbc:LineExtensionAmount>
+        <cbc:TaxInclusiveAmount currencyID="{{ currency_code }}">{{ totals.total_precio_venta|format_decimal }}</cbc:TaxInclusiveAmount>
+        <cbc:PayableAmount currencyID="{{ currency_code }}">{{ totals.total_precio_venta|format_decimal }}</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+
+    <!-- ========================================= -->
+    <!-- LÍNEAS DEL DOCUMENTO                     -->
+    <!-- ========================================= -->
+    {% for line in lines %}
+    <cac:InvoiceLine>
+        <cbc:ID>{{ line.id }}</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="{{ line.unit_code }}" 
+                              unitCodeListID="UN/ECE rec 20" 
+                              unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal }}</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ line.line_extension_amount|format_decimal }}</cbc:LineExtensionAmount>
+
+        <!-- Información del precio -->
+        <cac:PricingReference>
+            <cac:AlternativeConditionPrice>
+                <cbc:PriceAmount currencyID="{{ currency_code }}">{{ (line.line_extension_amount + (line.tax_data[0].tax_amount if line.tax_data else 0))|format_decimal }}</cbc:PriceAmount>
+                <cbc:PriceTypeCode listName="SUNAT:Indicador de Tipo de Precio" 
+                                   listAgencyName="PE:SUNAT" 
+                                   listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16">01</cbc:PriceTypeCode>
+            </cac:AlternativeConditionPrice>
+        </cac:PricingReference>
+
+        <!-- Impuestos de línea -->
+        {% for tax in line.tax_data %}
+        <cac:TaxTotal>
+            <cbc:TaxAmount currencyID="{{ currency_code }}">{{ tax.tax_amount|format_decimal }}</cbc:TaxAmount>
+            <cac:TaxSubtotal>
+                {% if tax.taxable_amount %}
+                <cbc:TaxableAmount currencyID="{{ currency_code }}">{{ tax.taxable_amount|format_decimal }}</cbc:TaxableAmount>
+                {% endif %}
+                <cbc:TaxAmount currencyID="{{ currency_code }}">{{ tax.tax_amount|format_decimal }}</cbc:TaxAmount>
+                <cac:TaxCategory>
+                    <cbc:ID schemeID="UN/ECE 5305" 
+                            schemeName="Tax Category Identifier" 
+                            schemeAgencyName="United Nations Economic Commission for Europe">{{ tax.tax_category_id }}</cbc:ID>
+                    {% if tax.tax_percentage %}
+                    <cbc:Percent>{{ tax.tax_percentage|format_decimal }}</cbc:Percent>
+                    {% endif %}
+                    {% if tax.exemption_reason_code %}
+                    <cbc:TaxExemptionReasonCode listAgencyName="PE:SUNAT" 
+                                                listName="SUNAT:Codigo de Tipo de Afectación del IGV" 
+                                                listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">{{ tax.exemption_reason_code }}</cbc:TaxExemptionReasonCode>
+                    {% endif %}
+                    <cac:TaxScheme>
+                        <cbc:ID schemeID="UN/ECE 5153" 
+                                schemeAgencyID="6">{{ tax.tax_id }}</cbc:ID>
+                        <cbc:Name>{{ tax.tax_name }}</cbc:Name>
+                        <cbc:TaxTypeCode>{{ tax.tax_type_code }}</cbc:TaxTypeCode>
+                    </cac:TaxScheme>
+                </cac:TaxCategory>
+            </cac:TaxSubtotal>
+        </cac:TaxTotal>
+        {% endfor %}
+
+        <!-- Información del item -->
+        <cac:Item>
+            <cbc:Description>{{ line.description|cdata }}</cbc:Description>
+            {% if line.product_code %}
+            <cac:SellersItemIdentification>
+                <cbc:ID>{{ line.product_code }}</cbc:ID>
+            </cac:SellersItemIdentification>
+            {% endif %}
+        </cac:Item>
+
+        <!-- Precio unitario -->
+        <cac:Price>
+            <cbc:PriceAmount currencyID="{{ currency_code }}">{{ line.price_amount|format_decimal }}</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="{{ line.unit_code }}">{{ line.base_quantity|format_decimal }}</cbc:BaseQuantity>
+        </cac:Price>
+    </cac:InvoiceLine>
+    {% endfor %}
+
+</Invoice>

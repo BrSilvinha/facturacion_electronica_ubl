@@ -1,7 +1,6 @@
-# api_rest/utils.py - Utilidades para limpiar XML
+# api_rest/utils.py - Utilidades para limpiar XML - CORREGIDO
 
 import re
-from typing import str
 
 def clean_xml_for_sunat(xml_content: str) -> str:
     """

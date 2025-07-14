@@ -120,3 +120,65 @@ INFO 2025-07-14 11:39:16,292 xml_signer 30968 26256 Iniciando firma digital del 
 WARNING 2025-07-14 11:39:16,292 xml_signer 30968 26256 Firma digital real no disponible, usando simulación con RUC fix
 INFO 2025-07-14 11:39:16,292 xml_signer 30968 26256 Generando firma simulada con RUC fix para documento: e6237025-8dcd-4c66-b5eb-daa994923a78
 WARNING 2025-07-14 11:39:16,292 xml_signer 30968 26256 Usando RUC por defecto: 20103129061
+INFO 2025-07-14 15:35:10,162 xml_signer 34328 14264 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 15:35:10,163 xml_signer 34328 14264 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 15:35:10,240 xml_signer 34328 14264 Certificado cargado exitosamente:
+INFO 2025-07-14 15:35:10,240 xml_signer 34328 14264   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264   - RUC/Serial: N/A
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264   - Tamaño clave: 2048 bits
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264 Iniciando firma digital del documento: 8081265a-7636-4c58-8581-ef68eb4ff9da
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264 Validando fechas:
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264   - Ahora: 2025-07-14 15:35:10.242022
+INFO 2025-07-14 15:35:10,242 xml_signer 34328 14264   - Válido desde: 2023-02-24 21:17:11
+INFO 2025-07-14 15:35:10,243 xml_signer 34328 14264   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 15:35:10,243 xml_signer 34328 14264   - Tolerancia aplicada: ±12:00:00
+WARNING 2025-07-14 15:35:10,243 xml_signer 34328 14264 Certificado sin número de serie/RUC en el sujeto
+INFO 2025-07-14 15:35:10,243 xml_signer 34328 14264 Certificado validado exitosamente
+WARNING 2025-07-14 15:35:10,243 xml_signer 34328 14264 Usando RUC por defecto: 20103129061
+INFO 2025-07-14 15:35:10,278 xml_signer 34328 14264 Firmador XML configurado exitosamente
+INFO 2025-07-14 15:35:10,319 xml_signer 34328 14264 RUCs encontrados en XML: ['20103129061']
+INFO 2025-07-14 15:35:10,326 xml_signer 34328 14264 Documento firmado exitosamente en 85ms
+INFO 2025-07-14 15:35:10,326 xml_signer 34328 14264   - ID Firma: 8081265a-7636-4c58-8581-ef68eb4ff9da
+INFO 2025-07-14 15:35:10,326 xml_signer 34328 14264   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 15:35:10,327 xml_signer 34328 14264   - Algoritmo: RSA-SHA256
+INFO 2025-07-14 15:35:36,979 xml_signer 34328 31024 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 15:35:36,979 xml_signer 34328 31024 Iniciando firma digital del documento: a2bcdaf4-f786-4e8b-8811-d8c7fd28211d
+INFO 2025-07-14 15:35:36,979 xml_signer 34328 31024 Validando fechas:
+INFO 2025-07-14 15:35:36,980 xml_signer 34328 31024   - Ahora: 2025-07-14 15:35:36.979560
+INFO 2025-07-14 15:35:36,980 xml_signer 34328 31024   - Válido desde: 2023-02-24 21:17:11
+INFO 2025-07-14 15:35:36,980 xml_signer 34328 31024   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 15:35:36,980 xml_signer 34328 31024   - Tolerancia aplicada: ±12:00:00
+WARNING 2025-07-14 15:35:36,980 xml_signer 34328 31024 Certificado sin número de serie/RUC en el sujeto
+INFO 2025-07-14 15:35:36,980 xml_signer 34328 31024 Certificado validado exitosamente
+WARNING 2025-07-14 15:35:36,980 xml_signer 34328 31024 Usando RUC por defecto: 20103129061
+INFO 2025-07-14 15:35:36,994 xml_signer 34328 31024 Firmador XML configurado exitosamente
+INFO 2025-07-14 15:35:37,030 xml_signer 34328 31024 RUCs encontrados en XML: ['20103129061']
+INFO 2025-07-14 15:35:37,035 xml_signer 34328 31024 Documento firmado exitosamente en 56ms
+INFO 2025-07-14 15:35:37,035 xml_signer 34328 31024   - ID Firma: a2bcdaf4-f786-4e8b-8811-d8c7fd28211d
+INFO 2025-07-14 15:35:37,035 xml_signer 34328 31024   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 15:35:37,036 xml_signer 34328 31024   - Algoritmo: RSA-SHA256
+INFO 2025-07-14 15:41:26,723 xml_signer 15580 22684 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 15:41:26,724 xml_signer 15580 22684 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 15:41:26,799 xml_signer 15580 22684 Certificado cargado exitosamente:
+INFO 2025-07-14 15:41:26,799 xml_signer 15580 22684   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 15:41:26,799 xml_signer 15580 22684   - RUC/Serial: N/A
+INFO 2025-07-14 15:41:26,799 xml_signer 15580 22684   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684   - Tamaño clave: 2048 bits
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684 Iniciando firma digital del documento: d3351bed-1a58-4df6-ab22-46dfee841603
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684 Validando fechas:
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684   - Ahora: 2025-07-14 15:41:26.800960
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684   - Válido desde: 2023-02-24 21:17:11
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684   - Tolerancia aplicada: ±12:00:00
+WARNING 2025-07-14 15:41:26,800 xml_signer 15580 22684 Certificado sin número de serie/RUC en el sujeto
+INFO 2025-07-14 15:41:26,800 xml_signer 15580 22684 Certificado validado exitosamente
+WARNING 2025-07-14 15:41:26,800 xml_signer 15580 22684 Usando RUC por defecto: 20103129061
+INFO 2025-07-14 15:41:26,828 xml_signer 15580 22684 Firmador XML configurado exitosamente
+INFO 2025-07-14 15:41:26,880 xml_signer 15580 22684 RUCs encontrados en XML: ['20103129061']
+INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684 Documento firmado exitosamente en 87ms
+INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - ID Firma: d3351bed-1a58-4df6-ab22-46dfee841603
+INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - Algoritmo: RSA-SHA256

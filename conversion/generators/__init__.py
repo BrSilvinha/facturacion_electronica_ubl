@@ -1,15 +1,33 @@
+# conversion/generators/__init__.py - ARCHIVO CORREGIDO SIN IMPORTACIONES CIRCULARES
+"""
+Factory actualizado para incluir generador de boletas
+CORREGIDO: Sin importaciones circulares
+"""
+
 from .base_generator import BaseUBLGenerator
 from .factura_generator import FacturaGenerator
+
+# Importar BoletaGenerator solo si existe el archivo
+try:
+    from .boleta_generator import BoletaGenerator
+    BOLETA_GENERATOR_AVAILABLE = True
+except ImportError:
+    BOLETA_GENERATOR_AVAILABLE = False
+    print("⚠️ BoletaGenerator no disponible - crear archivo boleta_generator.py")
 
 class UBLGeneratorFactory:
     """Factory para crear generadores UBL según tipo de documento"""
     
     _generators = {
         '01': FacturaGenerator,  # Factura
-        # '03': BoletaGenerator,   # Boleta (implementar después)
-        # '07': NotaCreditoGenerator,  # Nota de Crédito (implementar después)
-        # '08': NotaDebitoGenerator,   # Nota de Débito (implementar después)
+        # '03': BoletaGenerator,   # Boleta - Se agregará dinámicamente
+        # '07': NotaCreditoGenerator,   # Nota de Crédito (implementar después)
+        # '08': NotaDebitoGenerator,    # Nota de Débito (implementar después)
     }
+    
+    # Agregar BoletaGenerator si está disponible
+    if BOLETA_GENERATOR_AVAILABLE:
+        _generators['03'] = BoletaGenerator
     
     @classmethod
     def create_generator(cls, tipo_documento: str) -> BaseUBLGenerator:

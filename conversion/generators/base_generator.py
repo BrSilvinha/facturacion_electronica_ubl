@@ -1,5 +1,3 @@
-# conversion/generators/base_generator.py - VERSIÓN CORREGIDA PARA SUNAT
-
 from abc import ABC, abstractmethod
 from jinja2 import Environment, FileSystemLoader
 from django.conf import settings
@@ -9,7 +7,7 @@ import os
 import uuid
 
 class BaseUBLGenerator(ABC):
-    """Generador base para documentos UBL 2.1 - CORREGIDO para SUNAT"""
+    """Generador base para documentos UBL 2.1"""
     
     def __init__(self):
         # Configurar Jinja2
@@ -74,7 +72,7 @@ class BaseUBLGenerator(ABC):
         return xml_content
     
     def _prepare_context(self, documento):
-        """Prepara el contexto de datos para el template - CORREGIDO RUC"""
+        """Prepara el contexto de datos para el template"""
         
         # Calcular totales detallados
         totals = self._calculate_detailed_totals(documento)
@@ -82,11 +80,7 @@ class BaseUBLGenerator(ABC):
         # Preparar datos de impuestos
         tax_data = self._prepare_tax_data(documento, totals)
         
-        # 🚀 CRÍTICO: Verificar que empresa tiene RUC válido
-        if not documento.empresa.ruc or len(documento.empresa.ruc) != 11:
-            raise ValueError(f"RUC de empresa inválido: {documento.empresa.ruc}")
-        
-        # Context completo con RUC validado
+        # Context completo
         context = {
             # Metadatos del documento
             'ubl_version': '2.1',
@@ -96,9 +90,9 @@ class BaseUBLGenerator(ABC):
             'document_type_code': self.get_document_type_code(),
             'currency_code': documento.moneda,
             
-            # 🚀 CRÍTICO: Empresa emisora con RUC validado
+            # Empresa emisora
             'supplier': {
-                'ruc': documento.empresa.ruc,  # RUC validado
+                'ruc': documento.empresa.ruc,
                 'document_type': '6',  # RUC
                 'legal_name': documento.empresa.razon_social,
                 'trade_name': documento.empresa.nombre_comercial or documento.empresa.razon_social,
@@ -106,7 +100,7 @@ class BaseUBLGenerator(ABC):
                 'ubigeo': documento.empresa.ubigeo or '150101'  # Lima por defecto
             },
             
-            # 🚀 CRÍTICO: Cliente receptor con validación
+            # Cliente receptor
             'customer': {
                 'document_type': documento.receptor_tipo_doc,
                 'document_number': documento.receptor_numero_doc,
@@ -126,37 +120,7 @@ class BaseUBLGenerator(ABC):
             'generation_time': datetime.now(),
         }
         
-        # 🔧 Validación adicional para SUNAT
-        self._validate_context_for_sunat(context)
-        
         return context
-    
-    def _validate_context_for_sunat(self, context):
-        """Validación específica para SUNAT"""
-        
-        supplier = context['supplier']
-        customer = context['customer']
-        
-        # Validar RUC emisor
-        if not supplier['ruc'] or len(supplier['ruc']) != 11 or not supplier['ruc'].isdigit():
-            raise ValueError(f"RUC emisor inválido: {supplier['ruc']}")
-        
-        # Validar razón social emisor
-        if not supplier['legal_name'] or len(supplier['legal_name'].strip()) == 0:
-            raise ValueError("Razón social del emisor es requerida")
-        
-        # Validar documento receptor
-        if not customer['document_number'] or len(customer['document_number'].strip()) == 0:
-            raise ValueError("Número de documento del receptor es requerido")
-        
-        # Validar razón social receptor
-        if not customer['legal_name'] or len(customer['legal_name'].strip()) == 0:
-            raise ValueError("Razón social del receptor es requerida")
-        
-        # Validar tipo de documento receptor
-        valid_doc_types = ['1', '4', '6', '7', '0']  # DNI, CE, RUC, Pasaporte, Sin Doc
-        if customer['document_type'] not in valid_doc_types:
-            raise ValueError(f"Tipo de documento receptor inválido: {customer['document_type']}")
     
     def _calculate_detailed_totals(self, documento):
         """Calcula totales detallados del documento"""
