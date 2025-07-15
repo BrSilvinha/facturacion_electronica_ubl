@@ -4,18 +4,14 @@
          xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
          xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
          xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-
     <!-- ========================================= -->
-    <!-- EXTENSIONES UBL CON FIRMA DIGITAL       -->
     <!-- ========================================= -->
     <ext:UBLExtensions>
         <ext:UBLExtension>
             <ext:ExtensionContent>
-                <!-- Aquí irá la firma digital XML-DSig -->
             </ext:ExtensionContent>
         </ext:UBLExtension>
     </ext:UBLExtensions>
-
     <!-- ========================================= -->
     <!-- INFORMACIÓN BÁSICA DEL DOCUMENTO        -->
     <!-- ========================================= -->
@@ -33,19 +29,16 @@
     <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" 
                         listName="SUNAT:Identificador de Tipo de Documento" 
                         listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">{{ document_type_code }}</cbc:InvoiceTypeCode>
-    <cbc:Note languageLocaleID="1000">{{ totals.total_precio_venta|format_decimal }}</cbc:Note>
+    <cbc:Note languageLocaleID="1000">{{ totales.total_precio_venta|format_decimal }}</cbc:Note>
     <cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" 
                               listName="Currency" 
                               listAgencyName="United Nations Economic Commission for Europe">{{ currency_code }}</cbc:DocumentCurrencyCode>
-
     <!-- ========================================= -->
-    <!-- 🔧 SECCIÓN SIGNATURE CORREGIDA          -->
     <!-- ========================================= -->
     <cac:Signature>
         <cbc:ID>SignatureSP</cbc:ID>
         <cac:SignatoryParty>
             <cac:PartyIdentification>
-                <!-- 🚀 CRÍTICO: RUC del emisor OBLIGATORIO -->
                 <cbc:ID>{{ supplier.ruc }}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyName>
@@ -58,14 +51,12 @@
             </cac:ExternalReference>
         </cac:DigitalSignatureAttachment>
     </cac:Signature>
-
     <!-- ========================================= -->
     <!-- INFORMACIÓN DEL EMISOR (SUPPLIER)       -->
     <!-- ========================================= -->
     <cac:AccountingSupplierParty>
         <cac:Party>
             <cac:PartyIdentification>
-                <!-- 🚀 CRÍTICO: RUC del emisor con schemeID="6" -->
                 <cbc:ID schemeID="6" 
                         schemeName="Documento de Identidad" 
                         schemeAgencyName="PE:SUNAT" 
@@ -96,14 +87,12 @@
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingSupplierParty>
-
     <!-- ========================================= -->
     <!-- INFORMACIÓN DEL CLIENTE (CUSTOMER)      -->
     <!-- ========================================= -->
     <cac:AccountingCustomerParty>
         <cac:Party>
             <cac:PartyIdentification>
-                <!-- 🚀 CRÍTICO: Documento del cliente con schemeID correcto -->
                 <cbc:ID schemeID="{{ customer.document_type }}" 
                         schemeName="Documento de Identidad" 
                         schemeAgencyName="PE:SUNAT" 
@@ -121,7 +110,6 @@
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
-
     <!-- ========================================= -->
     <!-- CONDICIONES DE PAGO                     -->
     <!-- ========================================= -->
@@ -132,7 +120,6 @@
         <cbc:Amount currencyID="{{ currency_code }}">{{ payment_terms.payment_amount|format_decimal }}</cbc:Amount>
     </cac:PaymentTerms>
     {% endif %}
-
     <!-- ========================================= -->
     <!-- RESUMEN DE IMPUESTOS                     -->
     <!-- ========================================= -->
@@ -161,22 +148,20 @@
         </cac:TaxSubtotal>
     </cac:TaxTotal>
     {% endfor %}
-
     <!-- ========================================= -->
     <!-- TOTALES MONETARIOS LEGALES              -->
     <!-- ========================================= -->
     <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ totals.total_valor_venta|format_decimal }}</cbc:LineExtensionAmount>
-        <cbc:TaxInclusiveAmount currencyID="{{ currency_code }}">{{ totals.total_precio_venta|format_decimal }}</cbc:TaxInclusiveAmount>
-        {% if totals.total_descuentos > 0 %}
-        <cbc:AllowanceTotalAmount currencyID="{{ currency_code }}">{{ totals.total_descuentos|format_decimal }}</cbc:AllowanceTotalAmount>
+        <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ totales.total_valor_venta|format_decimal }}</cbc:LineExtensionAmount>
+        <cbc:TaxInclusiveAmount currencyID="{{ currency_code }}">{{ totales.total_precio_venta|format_decimal }}</cbc:TaxInclusiveAmount>
+        {% if totales.total_descuentos > 0 %}
+        <cbc:AllowanceTotalAmount currencyID="{{ currency_code }}">{{ totales.total_descuentos|format_decimal }}</cbc:AllowanceTotalAmount>
         {% endif %}
-        {% if totals.total_otros_cargos > 0 %}
-        <cbc:ChargeTotalAmount currencyID="{{ currency_code }}">{{ totals.total_otros_cargos|format_decimal }}</cbc:ChargeTotalAmount>
+        {% if totales.total_otros_cargos > 0 %}
+        <cbc:ChargeTotalAmount currencyID="{{ currency_code }}">{{ totales.total_otros_cargos|format_decimal }}</cbc:ChargeTotalAmount>
         {% endif %}
-        <cbc:PayableAmount currencyID="{{ currency_code }}">{{ totals.total_precio_venta|format_decimal }}</cbc:PayableAmount>
+        <cbc:PayableAmount currencyID="{{ currency_code }}">{{ totales.total_precio_venta|format_decimal }}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
-
     <!-- ========================================= -->
     <!-- LÍNEAS DEL DOCUMENTO                     -->
     <!-- ========================================= -->
@@ -187,7 +172,6 @@
                               unitCodeListID="UN/ECE rec 20" 
                               unitCodeListAgencyName="United Nations Economic Commission for Europe">{{ line.quantity|format_decimal }}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{{ currency_code }}">{{ line.line_extension_amount|format_decimal }}</cbc:LineExtensionAmount>
-
         <!-- Información del precio -->
         <cac:PricingReference>
             <cac:AlternativeConditionPrice>
@@ -197,7 +181,6 @@
                                    listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16">01</cbc:PriceTypeCode>
             </cac:AlternativeConditionPrice>
         </cac:PricingReference>
-
         <!-- Impuestos de línea -->
         {% for tax in line.tax_data %}
         <cac:TaxTotal>
@@ -229,7 +212,6 @@
             </cac:TaxSubtotal>
         </cac:TaxTotal>
         {% endfor %}
-
         <!-- Información del item -->
         <cac:Item>
             <cbc:Description>{{ line.description|cdata }}</cbc:Description>
@@ -239,7 +221,6 @@
             </cac:SellersItemIdentification>
             {% endif %}
         </cac:Item>
-
         <!-- Precio unitario -->
         <cac:Price>
             <cbc:PriceAmount currencyID="{{ currency_code }}">{{ line.price_amount|format_decimal }}</cbc:PriceAmount>
@@ -247,5 +228,4 @@
         </cac:Price>
     </cac:InvoiceLine>
     {% endfor %}
-
 </Invoice>

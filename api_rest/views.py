@@ -314,11 +314,10 @@ class GenerarXMLView(APIView):
                     'ruc_validation': f'RUC empresa: {empresa.ruc}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-            # 8. FIRMA DIGITAL REAL
+            # 8. FIRMA DIGITAL REAL SIN COMENTARIOS
             try:
                 cert_info = self._get_certificate_for_empresa(empresa)
-                signer = XMLSigner()
-                xml_firmado = signer.sign_xml_document(xml_content, cert_info)
+                xml_firmado = self._apply_digital_signature_clean(xml_content, empresa)
                 
                 if '<ds:Signature' in xml_firmado and 'ds:SignatureValue' in xml_firmado:
                     documento.estado = 'FIRMADO'
@@ -329,7 +328,8 @@ class GenerarXMLView(APIView):
                     raise SignatureError("Error: No se detectó firma digital válida")
                 
             except Exception as sig_error:
-                xml_firmado = self._simulate_digital_signature(xml_content)
+                # Fallback: firma simulada LIMPIA
+                xml_firmado = self._generate_clean_simulated_xml(xml_content)
                 documento.estado = 'FIRMADO_SIMULADO'
                 documento.hash_digest = 'simulado:' + str(uuid.uuid4())[:32]
             
@@ -467,6 +467,7 @@ class GenerarXMLView(APIView):
         signature_id = str(uuid.uuid4())[:16]
         
         return f'''<?xml version="1.0" encoding="UTF-8"?>
+        
 <!-- FIRMA DIGITAL SIMULADA - FALLBACK -->
 <!-- RUC FIX APLICADO -->
 <!-- Timestamp: {timestamp} -->
