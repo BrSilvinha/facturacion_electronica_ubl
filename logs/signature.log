@@ -182,3 +182,11 @@ INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684 Documento firmado exitosamen
 INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - ID Firma: d3351bed-1a58-4df6-ab22-46dfee841603
 INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - Certificado: SOFTWARE DE FACTURACION ELECTRONICA
 INFO 2025-07-14 15:41:26,887 xml_signer 15580 22684   - Algoritmo: RSA-SHA256
+INFO 2025-07-14 16:11:42,962 xml_signer 34372 35472 XMLSigner inicializado - Firma disponible: True
+INFO 2025-07-14 16:11:42,964 xml_signer 34372 35472 Cargando certificado desde: certificados/production/C23022479065.pfx
+INFO 2025-07-14 16:11:43,115 xml_signer 34372 35472 Certificado cargado exitosamente:
+INFO 2025-07-14 16:11:43,115 xml_signer 34372 35472   - Sujeto: SOFTWARE DE FACTURACION ELECTRONICA
+INFO 2025-07-14 16:11:43,115 xml_signer 34372 35472   - RUC/Serial: N/A
+INFO 2025-07-14 16:11:43,115 xml_signer 34372 35472   - Válido hasta: 2026-02-23 21:17:00
+INFO 2025-07-14 16:11:43,116 xml_signer 34372 35472   - Tamaño clave: 2048 bits
+INFO 2025-07-14 16:11:43,116 xml_signer 34372 35472 XMLSigner inicializado - Firma disponible: True
