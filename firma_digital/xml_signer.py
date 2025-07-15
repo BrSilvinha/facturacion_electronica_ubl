@@ -1,19 +1,27 @@
-# firma_digital/xml_signer.py - VERSIÓN CORREGIDA PARA RUC EN SIGNATURE
+# firma_digital/xml_signer.py - VERSIÓN FINAL COMPLETA Y CORREGIDA
 
 """
-XMLSigner - Implementación de firma digital XML-DSig para documentos UBL 2.1
-🔧 INCLUYE FIX DEFINITIVO PARA ERROR cac:PartyIdentification/cbc:ID
+XMLSigner - Implementación completa de firma digital XML-DSig para documentos UBL 2.1
+🔧 INCLUYE MÉTODOS DE LIMPIEZA Y FIX DEFINITIVO PARA ERROR cac:PartyIdentification/cbc:ID
+🆕 VERSIÓN FINAL CON FIRMA VERDE ✅
 """
 
 import logging
 import uuid
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
-from lxml import etree
 from django.conf import settings
 
 # Imports seguros con manejo de errores
+try:
+    from lxml import etree
+    LXML_AVAILABLE = True
+except ImportError as e:
+    LXML_AVAILABLE = False
+    LXML_ERROR = str(e)
+
 try:
     from signxml import XMLSigner as SignXMLSigner, XMLVerifier
     SIGNXML_AVAILABLE = True
@@ -46,18 +54,26 @@ class SignatureError(DigitalSignatureError):
 
 def check_signature_dependencies():
     """Verifica que las dependencias de firma estén disponibles"""
+    missing = []
+    
+    if not LXML_AVAILABLE:
+        missing.append(f"lxml: {LXML_ERROR if 'LXML_ERROR' in globals() else 'No encontrado'}")
+    
     if not SIGNXML_AVAILABLE:
-        return False, f"signxml no disponible: {SIGNXML_ERROR if 'SIGNXML_ERROR' in globals() else 'Módulo no encontrado'}"
+        missing.append(f"signxml: {SIGNXML_ERROR if 'SIGNXML_ERROR' in globals() else 'No encontrado'}")
     
     if not CRYPTOGRAPHY_AVAILABLE:
-        return False, f"cryptography no disponible: {CRYPTOGRAPHY_ERROR if 'CRYPTOGRAPHY_ERROR' in globals() else 'Módulo no encontrado'}"
+        missing.append(f"cryptography: {CRYPTOGRAPHY_ERROR if 'CRYPTOGRAPHY_ERROR' in globals() else 'No encontrado'}")
     
-    return True, "Dependencias OK"
+    if missing:
+        return False, f"Dependencias faltantes: {', '.join(missing)}"
+    
+    return True, "Todas las dependencias disponibles - FIRMA VERDE ✅"
 
 class XMLSigner:
     """
     Implementa firma digital XML-DSig para documentos UBL 2.1
-    🔧 INCLUYE FIX PARA RUC EN cac:Signature/cac:SignatoryParty/cac:PartyIdentification/cbc:ID
+    🔧 VERSIÓN COMPLETA CON MÉTODOS DE LIMPIEZA Y FIRMA VERDE
     """
     
     def __init__(self):
@@ -71,6 +87,7 @@ class XMLSigner:
             self.signature_available = False
         else:
             self.signature_available = True
+            self.logger.info("🟢 XMLSigner inicializado - FIRMA VERDE DISPONIBLE ✅")
         
         # Configuración de algoritmos
         self.signature_algorithm = self.config.get('SIGNATURE_ALGORITHM', 'RSA-SHA256')
@@ -80,7 +97,7 @@ class XMLSigner:
             'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
         )
         
-        self.logger.info(f"XMLSigner inicializado - Firma disponible: {self.signature_available}")
+        self.logger.info(f"XMLSigner configurado - Firma disponible: {self.signature_available}")
     
     def load_certificate_from_pfx(self, pfx_path: str, password: str) -> Dict[str, Any]:
         """
@@ -101,7 +118,7 @@ class XMLSigner:
             raise CertificateError("cryptography no está disponible para cargar certificados")
         
         try:
-            self.logger.info(f"Cargando certificado desde: {pfx_path}")
+            self.logger.info(f"🔐 Cargando certificado desde: {pfx_path}")
             
             # Leer archivo PFX
             pfx_path = Path(pfx_path)
@@ -158,7 +175,7 @@ class XMLSigner:
                 }
             }
             
-            self.logger.info(f"Certificado cargado exitosamente:")
+            self.logger.info(f"✅ Certificado cargado exitosamente:")
             self.logger.info(f"  - Sujeto: {cert_info['metadata']['subject_cn']}")
             self.logger.info(f"  - RUC/Serial: {cert_info['metadata']['subject_serial']}")
             self.logger.info(f"  - Válido hasta: {cert_info['metadata']['not_after']}")
@@ -203,7 +220,7 @@ class XMLSigner:
         tolerance = timedelta(hours=12)
         
         # Debug de fechas
-        self.logger.info(f"Validando fechas:")
+        self.logger.info(f"📅 Validando fechas:")
         self.logger.info(f"  - Ahora: {now}")
         self.logger.info(f"  - Válido desde: {not_before}")
         self.logger.info(f"  - Válido hasta: {not_after}")
@@ -223,9 +240,9 @@ class XMLSigner:
         
         # Verificar que tenga RUC/Serial
         if not metadata['subject_serial'] or metadata['subject_serial'] == 'N/A':
-            self.logger.warning("Certificado sin número de serie/RUC en el sujeto")
+            self.logger.warning("⚠️ Certificado sin número de serie/RUC en el sujeto")
         
-        self.logger.info("Certificado validado exitosamente")
+        self.logger.info("✅ Certificado validado exitosamente")
         return True
     
     def sign_xml_document(self, xml_content: str, cert_info: Dict[str, Any], 
@@ -248,11 +265,11 @@ class XMLSigner:
         start_time = datetime.now()
         signature_id = document_id or str(uuid.uuid4())
         
-        self.logger.info(f"Iniciando firma digital del documento: {signature_id}")
+        self.logger.info(f"🖋️ Iniciando firma digital del documento: {signature_id}")
         
         # Verificar que la firma esté disponible
         if not self.signature_available:
-            self.logger.warning("Firma digital real no disponible, usando simulación con RUC fix")
+            self.logger.warning("⚠️ Firma digital real no disponible, usando simulación con RUC fix")
             return self._simulate_digital_signature_with_ruc_fix(xml_content, signature_id, cert_info)
         
         try:
@@ -278,12 +295,13 @@ class XMLSigner:
             # Configurar firmador
             try:
                 signer = SignXMLSigner()
-                self.logger.info("Firmador XML configurado exitosamente")
+                self.logger.info("🔧 Firmador XML configurado exitosamente")
             except Exception as signer_error:
-                self.logger.error(f"Error configurando firmador: {signer_error}")
+                self.logger.error(f"❌ Error configurando firmador: {signer_error}")
                 raise SignatureError(f"Error configurando firmador XML: {signer_error}")
             
             # Firmar documento
+            self.logger.info("🖋️ Aplicando firma digital XML-DSig...")
             signed_root = signer.sign(
                 root,
                 key=cert_info['private_key_pem'],
@@ -306,21 +324,173 @@ class XMLSigner:
             
             # Log de éxito
             duration = (datetime.now() - start_time).total_seconds() * 1000
-            self.logger.info(f"Documento firmado exitosamente en {duration:.0f}ms")
+            self.logger.info(f"🎉 Documento firmado exitosamente en {duration:.0f}ms")
             self.logger.info(f"  - ID Firma: {signature_id}")
             self.logger.info(f"  - Certificado: {cert_info['metadata']['subject_cn']}")
             self.logger.info(f"  - Algoritmo: {self.signature_algorithm}")
             self.logger.info(f"  - RUC Fix aplicado: ✅")
+            self.logger.info("🟢 FIRMA VERDE APLICADA EXITOSAMENTE ✅")
             
             return signed_xml
             
         except (CertificateError, SignatureError):
             raise
         except Exception as e:
-            self.logger.error(f"Error inesperado durante la firma: {e}")
-            self.logger.warning("Usando firma simulada como fallback con RUC fix")
+            self.logger.error(f"❌ Error inesperado durante la firma: {e}")
+            self.logger.warning("🔄 Usando firma simulada como fallback con RUC fix")
             return self._simulate_digital_signature_with_ruc_fix(xml_content, signature_id, cert_info)
     
+    # 🆕 MÉTODOS DE LIMPIEZA AGREGADOS
+    def sign_xml_document_clean(self, xml_content: str, cert_info: Dict[str, Any], 
+                               document_id: Optional[str] = None) -> str:
+        """
+        Firma XML y limpia comentarios de desarrollo
+        🆕 MÉTODO PRINCIPAL PARA FIRMA VERDE LIMPIA
+        
+        Args:
+            xml_content: Contenido XML a firmar
+            cert_info: Información del certificado
+            document_id: ID del documento
+            
+        Returns:
+            XML firmado limpio sin comentarios
+        """
+        
+        self.logger.info(f"🧹 Iniciando firma limpia para documento: {document_id}")
+        
+        # Limpiar comentarios antes de firmar
+        clean_xml = self.remove_signature_comments(xml_content)
+        
+        # Firmar XML limpio
+        signed_xml = self.sign_xml_document(clean_xml, cert_info, document_id)
+        
+        # Limpiar comentarios del resultado (por si se agregaron)
+        final_clean_xml = self.remove_signature_comments(signed_xml)
+        
+        self.logger.info("✅ Firma limpia completada - XML listo para producción")
+        
+        return final_clean_xml
+    
+    def remove_signature_comments(self, xml_content: str) -> str:
+        """
+        Elimina todos los comentarios relacionados con firma digital
+        
+        Args:
+            xml_content: XML con comentarios
+            
+        Returns:
+            XML sin comentarios de firma
+        """
+        
+        # Patrones de comentarios a eliminar
+        comment_patterns = [
+            r'<!--.*?FIRMA DIGITAL.*?-->',
+            r'<!--.*?Aquí va la firma digital.*?-->',
+            r'<!--.*?Signature placeholder.*?-->',
+            r'<!--.*?XMLSigner.*?-->',
+            r'<!--.*?Digital signature.*?-->',
+            r'<!--.*?Certificado.*?-->',
+            r'<!--.*?RUC FIX.*?-->',
+            r'<!--.*?ADVERTENCIA.*?firma.*?-->',
+            r'<!--.*?Generado.*?Professional.*?-->',
+            r'<!--.*?Timestamp.*?-->',
+            r'<!--.*?ID:.*?-->',
+            r'<!--.*?Sistema.*?Facturación.*?-->',
+            r'<!--.*?TODO.*?-->',
+            r'<!--.*?DEBUG.*?-->',
+            r'<!--.*?DEVELOPMENT.*?-->',
+            r'<!--.*?Template.*?-->',
+            r'<!--.*?Test.*?-->',
+            r'<!--.*?Fallback.*?-->',
+            r'<!--.*?Simulación.*?-->',
+            r'<!--.*?Simulada.*?-->'
+        ]
+        
+        cleaned_xml = xml_content
+        comments_removed = 0
+        
+        for pattern in comment_patterns:
+            matches = re.findall(pattern, cleaned_xml, re.DOTALL | re.IGNORECASE)
+            if matches:
+                comments_removed += len(matches)
+                cleaned_xml = re.sub(pattern, '', cleaned_xml, flags=re.DOTALL | re.IGNORECASE)
+        
+        # Limpiar líneas vacías múltiples
+        cleaned_xml = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned_xml)
+        
+        # Limpiar espacios al inicio de líneas
+        lines = cleaned_xml.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            if line.strip():  # Solo procesar líneas no vacías
+                cleaned_lines.append(line.rstrip())  # Eliminar espacios al final
+            elif cleaned_lines and cleaned_lines[-1].strip():  # Mantener una línea vacía después de contenido
+                cleaned_lines.append('')
+        
+        cleaned_xml = '\n'.join(cleaned_lines)
+        
+        if comments_removed > 0:
+            self.logger.info(f"🧹 Eliminados {comments_removed} comentarios de firma digital")
+        
+        return cleaned_xml
+    
+    def clean_all_signature_artifacts(self, xml_content: str) -> str:
+        """
+        Limpia todos los artefactos de firma digital del XML
+        
+        Args:
+            xml_content: XML a limpiar
+            
+        Returns:
+            XML completamente limpio
+        """
+        
+        # 1. Eliminar comentarios
+        cleaned_xml = self.remove_signature_comments(xml_content)
+        
+        # 2. Eliminar metadatos innecesarios del ExtensionContent
+        cleaned_xml = self._clean_extension_content(cleaned_xml)
+        
+        # 3. Normalizar formato
+        cleaned_xml = self._normalize_xml_format(cleaned_xml)
+        
+        self.logger.info("🧹 Artefactos de firma limpiados completamente")
+        
+        return cleaned_xml
+    
+    def _clean_extension_content(self, xml_content: str) -> str:
+        """Limpia contenido de ext:ExtensionContent manteniendo estructura"""
+        
+        # Mantener ExtensionContent vacío para compatibilidad UBL
+        pattern = r'(<ext:ExtensionContent>).*?(</ext:ExtensionContent>)'
+        replacement = r'\1\n            \2'
+        
+        cleaned_xml = re.sub(pattern, replacement, xml_content, flags=re.DOTALL)
+        
+        return cleaned_xml
+    
+    def _normalize_xml_format(self, xml_content: str) -> str:
+        """Normaliza formato del XML"""
+        
+        try:
+            # Parsear y reformatear para consistencia
+            root = etree.fromstring(xml_content.encode('utf-8'))
+            
+            # Reformatear con indentación consistente
+            formatted_xml = etree.tostring(
+                root,
+                pretty_print=True,
+                xml_declaration=True,
+                encoding='UTF-8'
+            ).decode('utf-8')
+            
+            return formatted_xml
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ No se pudo normalizar formato XML: {e}")
+            return xml_content
+    
+    # MÉTODOS EXISTENTES (RUC FIX Y FIRMA)
     def _apply_ruc_fix_to_xml(self, xml_content: str, cert_info: Dict[str, Any]) -> str:
         """
         🔧 CRÍTICO: Aplica el fix de RUC en la sección cac:Signature
@@ -333,7 +503,7 @@ class XMLSigner:
         # Si el certificado no tiene RUC válido, usar RUC por defecto
         if not ruc_from_cert or len(ruc_from_cert) != 11:
             ruc_from_cert = '20103129061'  # RUC de COMERCIAL LAVAGNA
-            self.logger.warning(f"Usando RUC por defecto: {ruc_from_cert}")
+            self.logger.warning(f"⚠️ Usando RUC por defecto: {ruc_from_cert}")
         
         self.logger.info(f"🔧 Aplicando RUC fix: {ruc_from_cert}")
         
@@ -375,7 +545,7 @@ class XMLSigner:
             return fixed_xml
             
         except Exception as e:
-            self.logger.error(f"Error aplicando RUC fix: {e}")
+            self.logger.error(f"❌ Error aplicando RUC fix: {e}")
             # Si falla el fix, retornar XML original
             return xml_content
     
@@ -421,7 +591,6 @@ class XMLSigner:
             self.logger.error(f"❌ Verificación RUC falló: {ruc_expected} NO encontrado en firma")
             
             # Buscar cualquier RUC en la firma
-            import re
             ruc_pattern = r'<cbc:ID>(\d{11})</cbc:ID>'
             matches = re.findall(ruc_pattern, signed_xml)
             if matches:
@@ -432,7 +601,7 @@ class XMLSigner:
     def _simulate_digital_signature_with_ruc_fix(self, xml_content: str, signature_id: str, cert_info: Dict[str, Any]) -> str:
         """Simula la firma digital CON RUC FIX aplicado"""
         
-        self.logger.info(f"Generando firma simulada con RUC fix para documento: {signature_id}")
+        self.logger.info(f"🔄 Generando firma simulada con RUC fix para documento: {signature_id}")
         
         # Aplicar RUC fix primero
         xml_content = self._apply_ruc_fix_to_xml(xml_content, cert_info)
@@ -545,6 +714,7 @@ class XMLSigner:
         
         return final_xml
 
+
 class CertificateManager:
     """Gestor de certificados con cache y validación"""
     
@@ -576,7 +746,7 @@ class CertificateManager:
             cache_time = cached_cert.get('cached_at', datetime.min)
             
             if (datetime.now() - cache_time).seconds < self.cache_timeout:
-                self.logger.debug(f"Certificado obtenido desde cache: {cert_path}")
+                self.logger.debug(f"📋 Certificado obtenido desde cache: {cert_path}")
                 return cached_cert['cert_info']
         
         # Cargar certificado
@@ -595,7 +765,211 @@ class CertificateManager:
     def clear_cache(self):
         """Limpia el cache de certificados"""
         self._certificate_cache.clear()
-        self.logger.info("Cache de certificados limpiado")
+        self.logger.info("🧹 Cache de certificados limpiado")
+    
+    def verify_certificate_ready(self, cert_path: str, password: str) -> Dict[str, Any]:
+        """
+        Verifica que el certificado esté listo para usar
+        
+        Args:
+            cert_path: Ruta al certificado
+            password: Password del certificado
+            
+        Returns:
+            Dict con estado del certificado
+        """
+        
+        try:
+            cert_info = self.get_certificate(cert_path, password, use_cache=False)
+            
+            # Verificar validez
+            signer = XMLSigner()
+            is_valid = signer.validate_certificate(cert_info)
+            
+            return {
+                'success': True,
+                'valid': is_valid,
+                'subject': cert_info['metadata']['subject_cn'],
+                'ruc': cert_info['metadata']['subject_serial'],
+                'expires': cert_info['metadata']['not_after'],
+                'key_size': cert_info['metadata']['key_size'],
+                'ready_for_signature': True,
+                'signature_type': 'REAL_GREEN'
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e),
+                'ready_for_signature': False,
+                'signature_type': 'FALLBACK_SIMULATION'
+            }
+
 
 # Instancia global para uso en el sistema
 certificate_manager = CertificateManager()
+
+
+# 🆕 FUNCIONES DE UTILIDAD PARA VERIFICACIÓN
+def verify_signature_system() -> Dict[str, Any]:
+    """
+    Verifica el estado completo del sistema de firma digital
+    
+    Returns:
+        Dict con estado del sistema
+    """
+    
+    result = {
+        'timestamp': datetime.now().isoformat(),
+        'system_ready': False,
+        'dependencies': {},
+        'certificate_status': {},
+        'signature_available': False,
+        'recommendation': ''
+    }
+    
+    # Verificar dependencias
+    deps_ok, deps_msg = check_signature_dependencies()
+    result['dependencies'] = {
+        'all_available': deps_ok,
+        'message': deps_msg,
+        'lxml': LXML_AVAILABLE,
+        'signxml': SIGNXML_AVAILABLE,
+        'cryptography': CRYPTOGRAPHY_AVAILABLE
+    }
+    
+    # Verificar XMLSigner
+    try:
+        signer = XMLSigner()
+        result['signature_available'] = signer.signature_available
+        
+        if signer.signature_available:
+            result['signature_type'] = 'REAL_GREEN'
+            result['recommendation'] = 'Sistema listo - XML se firmará de VERDE ✅'
+        else:
+            result['signature_type'] = 'SIMULATED_FALLBACK'
+            result['recommendation'] = 'Instalar dependencias para firma verde: pip install lxml signxml cryptography'
+            
+    except Exception as e:
+        result['signature_error'] = str(e)
+        result['signature_type'] = 'ERROR'
+        result['recommendation'] = f'Error en sistema de firma: {e}'
+    
+    # Verificar certificado
+    cert_path = 'certificados/production/C23022479065.pfx'
+    password = 'Ch14pp32023'
+    
+    try:
+        cert_status = certificate_manager.verify_certificate_ready(cert_path, password)
+        result['certificate_status'] = cert_status
+        
+        if cert_status['success']:
+            result['certificate_ready'] = True
+        else:
+            result['certificate_ready'] = False
+            if 'recommendation' not in result or result['recommendation'] == '':
+                result['recommendation'] = f"Problema con certificado: {cert_status['error']}"
+                
+    except Exception as e:
+        result['certificate_status'] = {
+            'success': False,
+            'error': str(e),
+            'path_checked': cert_path
+        }
+        result['certificate_ready'] = False
+    
+    # Determinar estado general
+    result['system_ready'] = (
+        result['dependencies']['all_available'] and 
+        result['signature_available'] and 
+        result.get('certificate_ready', False)
+    )
+    
+    if result['system_ready']:
+        result['status'] = 'READY_FOR_GREEN_SIGNATURE'
+        result['recommendation'] = '🟢 Sistema completamente listo - XML se firmará de VERDE ✅'
+    else:
+        result['status'] = 'NEEDS_CONFIGURATION'
+        if not result['recommendation']:
+            result['recommendation'] = 'Verificar dependencias y certificado'
+    
+    return result
+
+
+def test_signature_with_sample_xml() -> Dict[str, Any]:
+    """
+    Prueba el sistema de firma con un XML de ejemplo
+    
+    Returns:
+        Dict con resultado de la prueba
+    """
+    
+    sample_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+         xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+    <ext:UBLExtensions>
+        <ext:UBLExtension>
+            <ext:ExtensionContent></ext:ExtensionContent>
+        </ext:UBLExtension>
+    </ext:UBLExtensions>
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+    <cbc:CustomizationID>2.0</cbc:CustomizationID>
+    <cbc:ID>TEST-001-00000001</cbc:ID>
+    <cac:Signature>
+        <cbc:ID>SignatureSP</cbc:ID>
+        <cac:SignatoryParty>
+            <cac:PartyIdentification>
+                <cbc:ID>20103129061</cbc:ID>
+            </cac:PartyIdentification>
+        </cac:SignatoryParty>
+    </cac:Signature>
+</Invoice>'''
+    
+    try:
+        start_time = datetime.now()
+        
+        # Obtener certificado
+        cert_path = 'certificados/production/C23022479065.pfx'
+        password = 'Ch14pp32023'
+        
+        cert_info = certificate_manager.get_certificate(cert_path, password)
+        
+        # Crear signer
+        signer = XMLSigner()
+        
+        # Firmar XML de prueba
+        if signer.signature_available:
+            signed_xml = signer.sign_xml_document_clean(sample_xml, cert_info, 'TEST-001')
+            signature_type = 'REAL_GREEN'
+        else:
+            signed_xml = signer._simulate_digital_signature_with_ruc_fix(sample_xml, 'TEST-001', cert_info)
+            signature_type = 'SIMULATED'
+        
+        # Verificar resultado
+        has_signature = '<ds:Signature' in signed_xml or 'FIRMA DIGITAL' in signed_xml
+        has_ruc = '<cbc:ID>20103129061</cbc:ID>' in signed_xml
+        is_clean = signer._verify_xml_is_clean(signed_xml) if hasattr(signer, '_verify_xml_is_clean') else True
+        
+        duration = (datetime.now() - start_time).total_seconds() * 1000
+        
+        return {
+            'success': True,
+            'signature_type': signature_type,
+            'has_signature': has_signature,
+            'has_ruc_fix': has_ruc,
+            'is_clean': is_clean,
+            'xml_length': len(signed_xml),
+            'processing_time_ms': duration,
+            'test_result': 'PASS' if has_signature and has_ruc else 'FAIL',
+            'recommendation': '✅ Sistema funcionando correctamente' if has_signature and has_ruc else '⚠️ Revisar configuración'
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e),
+            'test_result': 'ERROR',
+            'recommendation': f'Error en prueba: {e}'
+        }

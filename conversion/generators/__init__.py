@@ -1,404 +1,189 @@
+# conversion/generators/__init__.py - VERSIÓN COMPLETA CON LIMPIEZA
+
 """
-Generadores UBL 2.1 - VERSIÓN CORREGIDA SIN COMENTARIOS DE FIRMA
-Ubicación: conversion/generators/__init__.py
-REEMPLAZAR TODO EL CONTENIDO DEL ARCHIVO
+Generadores UBL 2.1 para documentos electrónicos SUNAT
+VERSIÓN COMPLETA - Incluye limpieza de artefactos de desarrollo
 """
 
 import logging
 from datetime import datetime
-from typing import Dict, Any, List
 from decimal import Decimal
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from pathlib import Path
-from django.conf import settings
+from typing import Dict, Any, List
+from django.template.loader import get_template
+from django.template import Context, Template
+from documentos.models import DocumentoElectronico
 
 logger = logging.getLogger(__name__)
 
-def generate_ubl_xml(documento) -> str:
-    """
-    Genera XML UBL 2.1 SIN comentarios de firma
-    VERSIÓN CORREGIDA - FIRMA REAL INCLUIDA
-    """
+# Factory para crear generadores
+class UBLGeneratorFactory:
+    """Factory para crear generadores UBL según tipo de documento"""
     
-    try:
-        logger.info(f"Generando XML UBL para: {documento.get_numero_completo()}")
+    _generators = {}
+    _supported_types = ['01', '03', '07', '08', '09']
+    
+    @classmethod
+    def get_generator(cls, document_type: str):
+        """Obtiene el generador apropiado para el tipo de documento"""
         
-        # Preparar datos del documento
-        context = _prepare_document_context(documento)
+        if document_type not in cls._generators:
+            if document_type in ['01']:  # Factura
+                cls._generators[document_type] = FacturaGenerator()
+            elif document_type in ['03']:  # Boleta
+                cls._generators[document_type] = BoletaGenerator()
+            elif document_type in ['07']:  # Nota de Crédito
+                cls._generators[document_type] = NotaCreditoGenerator()
+            elif document_type in ['08']:  # Nota de Débito
+                cls._generators[document_type] = NotaDebitoGenerator()
+            else:
+                raise ValueError(f"Tipo de documento no soportado: {document_type}")
         
-        # Cargar template corregido
-        template_name = _get_template_name(documento.tipo_documento.codigo)
-        
-        # Configurar Jinja2
-        template_dir = Path(__file__).parent.parent / 'templates' / 'ubl'
-        env = Environment(
-            loader=FileSystemLoader(str(template_dir)),
-            autoescape=select_autoescape(['xml'])
-        )
-        
-        # Agregar filtros personalizados
-        env.filters['format_decimal'] = _format_decimal
-        env.filters['format_date'] = _format_date
-        env.filters['cdata'] = _cdata_filter
-        
-        # Renderizar template
-        template = env.get_template(template_name)
-        xml_content = template.render(**context)
-        
-        # 🔥 CRÍTICO: Aplicar firma digital REAL aquí
-        xml_content = _apply_real_digital_signature(xml_content, documento)
-        
-        logger.info(f"XML UBL generado exitosamente: {len(xml_content)} caracteres")
-        return xml_content
-        
-    except Exception as e:
-        logger.error(f"Error generando XML UBL: {e}")
-        raise
+        return cls._generators[document_type]
+    
+    @classmethod
+    def get_supported_document_types(cls) -> List[str]:
+        """Retorna lista de tipos de documento soportados"""
+        return cls._supported_types.copy()
+    
+    @classmethod
+    def is_supported(cls, document_type: str) -> bool:
+        """Verifica si un tipo de documento está soportado"""
+        return document_type in cls._supported_types
 
-def _apply_real_digital_signature(xml_content: str, documento) -> str:
-    """
-    Aplica firma digital REAL y elimina comentarios
-    🔥 ESTA FUNCIÓN REEMPLAZA LOS COMENTARIOS CON FIRMA REAL
-    """
-    
-    try:
-        from firma_digital import XMLSigner, certificate_manager
-        
-        # Obtener certificado real
-        cert_path = 'certificados/production/C23022479065.pfx'
-        password = 'Ch14pp32023'
-        
-        # Cargar certificado
-        cert_info = certificate_manager.get_certificate(cert_path, password)
-        
-        # Crear firmador
-        signer = XMLSigner()
-        
-        # 🔥 PASO 1: ELIMINAR TODOS LOS COMENTARIOS DE FIRMA
-        import re
-        
-        # Remover comentarios de firma
-        xml_content = re.sub(r'<!-- Aquí va la firma digital[^>]*-->', '', xml_content)
-        xml_content = re.sub(r'<!-- Aquí irá la firma digital[^>]*-->', '', xml_content)
-        xml_content = re.sub(r'<!--[^>]*firma[^>]*-->', '', xml_content, flags=re.IGNORECASE)
-        
-        # 🔥 PASO 2: AGREGAR FIRMA DIGITAL REAL
-        # Buscar el elemento ExtensionContent
-        if '<ext:ExtensionContent>' in xml_content and '</ext:ExtensionContent>' in xml_content:
-            # Generar firma digital real
-            signature_xml = _generate_real_signature_xml(documento, cert_info)
-            
-            # Reemplazar contenido vacío con firma real
-            xml_content = xml_content.replace(
-                '<ext:ExtensionContent>\n            </ext:ExtensionContent>',
-                f'<ext:ExtensionContent>\n{signature_xml}\n            </ext:ExtensionContent>'
-            )
-            
-            xml_content = xml_content.replace(
-                '<ext:ExtensionContent></ext:ExtensionContent>',
-                f'<ext:ExtensionContent>\n{signature_xml}\n            </ext:ExtensionContent>'
-            )
-        
-        logger.info("✅ Firma digital REAL aplicada exitosamente")
-        return xml_content
-        
-    except Exception as e:
-        logger.warning(f"Error aplicando firma real: {e}")
-        # Fallback: generar firma simulada sin comentarios
-        return _generate_simulated_signature_clean(xml_content, documento)
 
-def _generate_real_signature_xml(documento, cert_info) -> str:
-    """Genera el XML de firma digital real usando el certificado"""
+class BaseUBLGenerator:
+    """Generador base para documentos UBL 2.1"""
     
-    import uuid
-    import hashlib
-    from datetime import datetime
+    def __init__(self):
+        self.template_name = None
+        self.document_type = None
+        self.ubl_version = "2.1"
+        self.customization_id = "2.0"
     
-    # Datos de la firma
-    signature_id = f"SignatureSP-{uuid.uuid4().hex[:8]}"
-    doc_id = f"doc-{uuid.uuid4().hex[:8]}"
-    timestamp = datetime.now().isoformat()
-    
-    # Simular digest (en producción real sería calculado)
-    digest_value = hashlib.sha256(f"{documento.get_numero_completo()}{timestamp}".encode()).hexdigest()[:44] + "="
-    
-    # Extraer información del certificado
-    subject_cn = cert_info['metadata'].get('subject_cn', 'CERTIFICADO REAL')
-    
-    # Generar valor de firma simulado pero realista
-    signature_value = _generate_realistic_signature_value(documento, cert_info)
-    
-    # XML de firma digital real
-    signature_xml = f'''                <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="{signature_id}">
-                    <ds:SignedInfo>
-                        <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
-                        <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-                        <ds:Reference URI="#{doc_id}">
-                            <ds:Transforms>
-                                <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
-                                <ds:Transform Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
-                            </ds:Transforms>
-                            <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                            <ds:DigestValue>{digest_value}</ds:DigestValue>
-                        </ds:Reference>
-                    </ds:SignedInfo>
-                    <ds:SignatureValue>{signature_value}</ds:SignatureValue>
-                    <ds:KeyInfo>
-                        <ds:X509Data>
-                            <ds:X509Certificate>{_get_certificate_base64(cert_info)}</ds:X509Certificate>
-                        </ds:X509Data>
-                    </ds:KeyInfo>
-                </ds:Signature>'''
-    
-    return signature_xml
-
-def _generate_realistic_signature_value(documento, cert_info) -> str:
-    """Genera un valor de firma realista"""
-    
-    import hashlib
-    import base64
-    
-    # Datos para la firma
-    data_to_sign = f"{documento.get_numero_completo()}{documento.empresa.ruc}{datetime.now().isoformat()}"
-    
-    # Simular proceso de firma
-    hash_data = hashlib.sha256(data_to_sign.encode()).digest()
-    
-    # Generar firma simulada pero realista (512 bytes para RSA-2048)
-    signature_bytes = hash_data * 16  # Repetir para llegar a 512 bytes
-    signature_bytes = signature_bytes[:512]  # Truncar a 512 bytes exactos
-    
-    # Codificar en base64
-    signature_value = base64.b64encode(signature_bytes).decode('ascii')
-    
-    return signature_value
-
-def _get_certificate_base64(cert_info) -> str:
-    """Extrae el certificado en formato base64"""
-    
-    try:
-        # Obtener el certificado PEM
-        cert_pem = cert_info.get('certificate_pem', '')
-        
-        if cert_pem:
-            # Extraer solo la parte base64 (sin headers)
-            lines = cert_pem.split('\n')
-            cert_lines = [line for line in lines if line and not line.startswith('-----')]
-            cert_base64 = ''.join(cert_lines)
-            return cert_base64
-        else:
-            # Fallback: certificado simulado
-            return _generate_simulated_certificate_base64()
-            
-    except Exception as e:
-        logger.warning(f"Error extrayendo certificado: {e}")
-        return _generate_simulated_certificate_base64()
-
-def _generate_simulated_certificate_base64() -> str:
-    """Genera certificado simulado en base64 para testing"""
-    
-    import base64
-    import uuid
-    
-    # Datos simulados del certificado
-    cert_data = f"CERTIFICADO_SIMULADO_{uuid.uuid4().hex}".encode() * 20
-    cert_data = cert_data[:1024]  # Tamaño típico de certificado
-    
-    return base64.b64encode(cert_data).decode('ascii')
-
-def _generate_simulated_signature_clean(xml_content: str, documento) -> str:
-    """Genera firma simulada LIMPIA sin comentarios"""
-    
-    import uuid
-    import re
-    
-    signature_id = f"SimSignature-{uuid.uuid4().hex[:8]}"
-    
-    # Eliminar comentarios existentes
-    xml_content = re.sub(r'<!--[^>]*-->', '', xml_content)
-    
-    def _apply_digital_signature_clean(self, xml_content: str, empresa) -> str:
+    def generate_xml(self, documento: DocumentoElectronico) -> str:
         """
-        🔥 APLICA FIRMA DIGITAL COMPLETAMENTE LIMPIA
+        Genera XML UBL 2.1 para el documento
+        
+        Args:
+            documento: DocumentoElectronico instance
+            
+        Returns:
+            XML UBL 2.1 como string
         """
         
         try:
-            from firma_digital import XMLSigner, certificate_manager
+            logger.info(f"Generando {self.document_type} UBL 2.1: {documento.get_numero_completo()}")
             
-            # Obtener certificado
-            cert_info = self._get_certificate_for_empresa(empresa)
+            # Preparar contexto
+            context = self._prepare_context(documento)
             
-            # Crear firmador
-            signer = XMLSigner()
+            # Renderizar template
+            xml_content = self._render_template(context)
             
-            # 🔥 USAR MÉTODO LIMPIO
-            xml_firmado = signer.sign_xml_document_clean(xml_content, cert_info)
+            # Limpiar artefactos de desarrollo
+            clean_xml = self._clean_development_artifacts(xml_content)
             
-            # Verificar que NO hay comentarios de firma
-            if '<!-- Aquí' in xml_firmado or '<!-- Firma' in xml_firmado:
-                # Si aún hay comentarios, forzar limpieza
-                xml_firmado = self._force_clean_signature(xml_firmado)
+            # Validar XML generado
+            self._validate_generated_xml(clean_xml, documento)
             
-            return xml_firmado
+            logger.info(f"XML UBL 2.1 generado exitosamente: {len(clean_xml)} caracteres")
+            
+            return clean_xml
             
         except Exception as e:
-            logger.warning(f"Error con firma real, usando simulada limpia: {e}")
-            return self._generate_clean_simulated_xml(xml_content)
-
-    def _force_clean_signature(self, xml_content: str) -> str:
-        """
-        🔥 FUERZA LIMPIEZA TOTAL DE COMENTARIOS
-        """
-        
-        import re
-        
-        # Eliminar TODOS los comentarios
-        xml_content = re.sub(r'<!--[^>]*-->', '', xml_content)
-        
-        # Si ExtensionContent está vacío, agregar firma mínima
-        if '<ext:ExtensionContent>\n            </ext:ExtensionContent>' in xml_content:
-            minimal_signature = '''                <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-                    <ds:SignedInfo>
-                        <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-                    </ds:SignedInfo>
-                    <ds:SignatureValue>CLEAN_SIGNATURE_APPLIED</ds:SignatureValue>
-                </ds:Signature>'''
-            
-            xml_content = xml_content.replace(
-                '<ext:ExtensionContent>\n            </ext:ExtensionContent>',
-                f'<ext:ExtensionContent>\n{minimal_signature}\n            </ext:ExtensionContent>'
-            )
-        
-        return xml_content
-
-    def _generate_clean_simulated_xml(self, xml_content: str) -> str:
-        """
-        Genera XML simulado COMPLETAMENTE LIMPIO
-        """
-        
-        import re
-        import uuid
-        
-        # Eliminar comentarios
-        xml_content = re.sub(r'<!--[^>]*-->', '', xml_content)
-        
-        # Agregar firma simulada limpia
-        signature_id = str(uuid.uuid4())[:8]
-        clean_signature = f'''                <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Sig{signature_id}">
-                    <ds:SignedInfo>
-                        <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
-                        <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-                        <ds:Reference URI="">
-                            <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                            <ds:DigestValue>SIMULATED_DIGEST_CLEAN</ds:DigestValue>
-                        </ds:Reference>
-                    </ds:SignedInfo>
-                    <ds:SignatureValue>SIMULATED_SIGNATURE_CLEAN_NO_COMMENTS</ds:SignatureValue>
-                    <ds:KeyInfo>
-                        <ds:X509Data>
-                            <ds:X509Certificate>SIMULATED_CERTIFICATE_CLEAN</ds:X509Certificate>
-                        </ds:X509Data>
-                    </ds:KeyInfo>
-                </ds:Signature>'''
-        
-        # Insertar en ExtensionContent
-        if '<ext:ExtensionContent>' in xml_content:
-            xml_content = re.sub(
-                r'<ext:ExtensionContent>\s*</ext:ExtensionContent>',
-                f'<ext:ExtensionContent>\n{clean_signature}\n            </ext:ExtensionContent>',
-                xml_content
-            )
-        
-        return xml_content
-
-def _prepare_document_context(documento) -> Dict[str, Any]:
-    """Prepara contexto para el template"""
+            logger.error(f"Error generando XML UBL 2.1 para {documento.get_numero_completo()}: {e}")
+            raise
     
-    return {
-        # Información básica del documento
-        'ubl_version': '2.1',
-        'customization_id': '2.0',
-        'document_id': f"{documento.serie}-{documento.numero:08d}",
-        'document_type_code': documento.tipo_documento.codigo,
-        'issue_date': documento.fecha_emision,
-        'generation_time': datetime.now(),
-        'currency_code': documento.moneda,
+    def _prepare_context(self, documento: DocumentoElectronico) -> Dict[str, Any]:
+        """Prepara el contexto para el template"""
         
-        # Información del proveedor
-        'supplier': {
-            'ruc': documento.empresa.ruc,
-            'legal_name': documento.empresa.razon_social,
-            'trade_name': documento.empresa.nombre_comercial or documento.empresa.razon_social,
-            'address': documento.empresa.direccion,
-            'ubigeo': documento.empresa.ubigeo or '140103'
-        },
+        # Información básica
+        context = {
+            'ubl_version': self.ubl_version,
+            'customization_id': self.customization_id,
+            'document_id': documento.get_numero_completo(),
+            'document_type_code': documento.tipo_documento.codigo,
+            'issue_date': documento.fecha_emision,
+            'generation_time': datetime.now(),
+            'currency_code': documento.moneda,
+        }
         
-        # Información del cliente
-        'customer': {
+        # Empresa emisora
+        context['supplier'] = self._prepare_supplier_data(documento.empresa)
+        
+        # Cliente receptor
+        context['customer'] = self._prepare_customer_data(documento)
+        
+        # Líneas del documento
+        context['lines'] = self._prepare_lines_data(documento)
+        
+        # Totales
+        context['totales'] = self._prepare_totals_data(documento)
+        
+        # Datos tributarios
+        context['tax_data'] = self._prepare_tax_data(documento)
+        
+        # Condiciones de pago (solo facturas)
+        if documento.tipo_documento.codigo == '01':
+            context['payment_terms'] = self._prepare_payment_terms(documento)
+        
+        return context
+    
+    def _prepare_supplier_data(self, empresa) -> Dict[str, Any]:
+        """Prepara datos del emisor (empresa)"""
+        
+        return {
+            'ruc': empresa.ruc,
+            'legal_name': empresa.razon_social,
+            'trade_name': empresa.nombre_comercial or empresa.razon_social,
+            'address': empresa.direccion,
+            'ubigeo': empresa.ubigeo or '150101'
+        }
+    
+    def _prepare_customer_data(self, documento: DocumentoElectronico) -> Dict[str, Any]:
+        """Prepara datos del receptor (cliente)"""
+        
+        return {
             'document_type': documento.receptor_tipo_doc,
             'document_number': documento.receptor_numero_doc,
             'legal_name': documento.receptor_razon_social,
             'address': documento.receptor_direccion
-        },
+        }
+    
+    def _prepare_lines_data(self, documento: DocumentoElectronico) -> List[Dict[str, Any]]:
+        """Prepara datos de las líneas del documento"""
         
-        # Términos de pago
-        'payment_terms': {
-            'payment_means_code': '000',
-            'payment_amount': documento.total,
-            'payment_due_date': documento.fecha_vencimiento
-        },
+        lines = []
         
-        # Datos de impuestos
-        'tax_data': _prepare_tax_data(documento),
+        for linea in documento.lineas.all().order_by('numero_linea'):
+            # Calcular precio unitario con IGV incluido
+            precio_unitario_con_igv = linea.valor_unitario + (linea.igv_linea / linea.cantidad if linea.cantidad > 0 else Decimal('0'))
+            
+            line_data = {
+                'id': linea.numero_linea,
+                'product_code': linea.codigo_producto or '',
+                'description': linea.descripcion,
+                'quantity': linea.cantidad,
+                'unit_code': linea.unidad_medida,
+                'price_amount': linea.valor_unitario,
+                'base_quantity': Decimal('1.000'),
+                'line_extension_amount': linea.valor_venta,
+                'tax_data': self._prepare_line_tax_data(linea)
+            }
+            
+            lines.append(line_data)
         
-        # Totales
-        'totales': _prepare_totals_data(documento),
+        return lines
+    
+    def _prepare_line_tax_data(self, linea) -> List[Dict[str, Any]]:
+        """Prepara datos tributarios de una línea"""
         
-        # Líneas del documento
-        'lines': _prepare_lines_data(documento)
-    }
-
-def _prepare_tax_data(documento) -> List[Dict[str, Any]]:
-    """Prepara datos de impuestos"""
-    
-    tax_data = []
-    
-    if documento.igv > 0:
-        tax_data.append({
-            'tax_id': '1000',
-            'tax_name': 'IGV',
-            'tax_type_code': 'VAT',
-            'tax_amount': documento.igv,
-            'taxable_amount': documento.subtotal,
-            'tax_percentage': Decimal('18.00')
-        })
-    
-    return tax_data
-
-def _prepare_totals_data(documento) -> Dict[str, Decimal]:
-    """Prepara datos de totales"""
-    
-    return {
-        'total_valor_venta': documento.subtotal,
-        'total_igv': documento.igv,
-        'total_isc': documento.isc,
-        'total_icbper': documento.icbper,
-        'total_precio_venta': documento.total,
-        'total_descuentos': Decimal('0.00'),
-        'total_otros_cargos': Decimal('0.00')
-    }
-
-def _prepare_lines_data(documento) -> List[Dict[str, Any]]:
-    """Prepara datos de líneas"""
-    
-    lines = []
-    
-    for linea in documento.lineas.all().order_by('numero_linea'):
-        # Preparar datos de impuestos de línea
-        line_tax_data = []
+        tax_data = []
         
-        if linea.igv_linea > 0:
-            line_tax_data.append({
+        # IGV
+        if linea.afectacion_igv in ['10', '11', '12', '13', '14', '15', '16', '17']:
+            # Gravado
+            tax_data.append({
                 'tax_id': '1000',
                 'tax_name': 'IGV',
                 'tax_type_code': 'VAT',
@@ -408,62 +193,371 @@ def _prepare_lines_data(documento) -> List[Dict[str, Any]]:
                 'tax_percentage': Decimal('18.00'),
                 'exemption_reason_code': linea.afectacion_igv
             })
+        elif linea.afectacion_igv in ['20', '21']:
+            # Exonerado
+            tax_data.append({
+                'tax_id': '9997',
+                'tax_name': 'EXO',
+                'tax_type_code': 'VAT',
+                'tax_category_id': 'E',
+                'tax_amount': Decimal('0.00'),
+                'taxable_amount': linea.valor_venta,
+                'tax_percentage': None,
+                'exemption_reason_code': linea.afectacion_igv
+            })
+        elif linea.afectacion_igv in ['30', '31', '32', '33', '34', '35', '36']:
+            # Inafecto
+            tax_data.append({
+                'tax_id': '9998',
+                'tax_name': 'INA',
+                'tax_type_code': 'FRE',
+                'tax_category_id': 'O',
+                'tax_amount': Decimal('0.00'),
+                'taxable_amount': linea.valor_venta,
+                'tax_percentage': None,
+                'exemption_reason_code': linea.afectacion_igv
+            })
+        elif linea.afectacion_igv == '40':
+            # Exportación
+            tax_data.append({
+                'tax_id': '9995',
+                'tax_name': 'EXP',
+                'tax_type_code': 'FRE',
+                'tax_category_id': 'G',
+                'tax_amount': Decimal('0.00'),
+                'taxable_amount': linea.valor_venta,
+                'tax_percentage': None,
+                'exemption_reason_code': linea.afectacion_igv
+            })
         
-        line_data = {
-            'id': linea.numero_linea,
-            'quantity': linea.cantidad,
-            'unit_code': linea.unidad_medida,
-            'line_extension_amount': linea.valor_venta,
-            'description': linea.descripcion,
-            'product_code': linea.codigo_producto,
-            'price_amount': linea.valor_unitario,
-            'base_quantity': Decimal('1.00'),
-            'tax_data': line_tax_data
+        # ISC (si aplica)
+        if linea.isc_linea > 0:
+            tax_data.append({
+                'tax_id': '2000',
+                'tax_name': 'ISC',
+                'tax_type_code': 'EXC',
+                'tax_category_id': 'S',
+                'tax_amount': linea.isc_linea,
+                'taxable_amount': linea.valor_venta,
+                'tax_percentage': None
+            })
+        
+        # ICBPER (si aplica)
+        if linea.icbper_linea > 0:
+            tax_data.append({
+                'tax_id': '7152',
+                'tax_name': 'ICBPER',
+                'tax_type_code': 'OTH',
+                'tax_category_id': 'S',
+                'tax_amount': linea.icbper_linea,
+                'taxable_amount': None,
+                'tax_percentage': None
+            })
+        
+        return tax_data
+    
+    def _prepare_totals_data(self, documento: DocumentoElectronico) -> Dict[str, Any]:
+        """Prepara datos de totales del documento"""
+        
+        # Calcular subtotales por afectación
+        lineas = documento.lineas.all()
+        
+        subtotal_gravado = sum(
+            linea.valor_venta for linea in lineas
+            if linea.afectacion_igv in ['10', '11', '12', '13', '14', '15', '16', '17']
+        )
+        
+        subtotal_exonerado = sum(
+            linea.valor_venta for linea in lineas
+            if linea.afectacion_igv in ['20', '21']
+        )
+        
+        subtotal_inafecto = sum(
+            linea.valor_venta for linea in lineas
+            if linea.afectacion_igv in ['30', '31', '32', '33', '34', '35', '36']
+        )
+        
+        subtotal_exportacion = sum(
+            linea.valor_venta for linea in lineas
+            if linea.afectacion_igv == '40'
+        )
+        
+        return {
+            'subtotal_gravado': subtotal_gravado,
+            'subtotal_exonerado': subtotal_exonerado,
+            'subtotal_inafecto': subtotal_inafecto,
+            'subtotal_exportacion': subtotal_exportacion,
+            'total_valor_venta': documento.subtotal,
+            'total_igv': documento.igv,
+            'total_isc': documento.isc,
+            'total_icbper': documento.icbper,
+            'total_precio_venta': documento.total,
+            'total_descuentos': Decimal('0.00'),
+            'total_otros_cargos': Decimal('0.00')
         }
+    
+    def _prepare_tax_data(self, documento: DocumentoElectronico) -> List[Dict[str, Any]]:
+        """Prepara resumen de impuestos del documento"""
         
-        lines.append(line_data)
+        tax_data = []
+        
+        # IGV total
+        if documento.igv > 0:
+            # Calcular base gravada
+            lineas_gravadas = documento.lineas.filter(
+                afectacion_igv__in=['10', '11', '12', '13', '14', '15', '16', '17']
+            )
+            base_gravada = sum(linea.valor_venta for linea in lineas_gravadas)
+            
+            tax_data.append({
+                'tax_id': '1000',
+                'tax_name': 'IGV',
+                'tax_type_code': 'VAT',
+                'tax_amount': documento.igv,
+                'taxable_amount': base_gravada,
+                'tax_percentage': Decimal('18.00')
+            })
+        
+        # ISC total
+        if documento.isc > 0:
+            tax_data.append({
+                'tax_id': '2000',
+                'tax_name': 'ISC',
+                'tax_type_code': 'EXC',
+                'tax_amount': documento.isc,
+                'taxable_amount': None,
+                'tax_percentage': None
+            })
+        
+        # ICBPER total
+        if documento.icbper > 0:
+            tax_data.append({
+                'tax_id': '7152',
+                'tax_name': 'ICBPER',
+                'tax_type_code': 'OTH',
+                'tax_amount': documento.icbper,
+                'taxable_amount': None,
+                'tax_percentage': None
+            })
+        
+        return tax_data
     
-    return lines
-
-def _get_template_name(document_type: str) -> str:
-    """Obtiene nombre del template según tipo de documento"""
+    def _prepare_payment_terms(self, documento: DocumentoElectronico) -> Dict[str, Any]:
+        """Prepara condiciones de pago (solo para facturas)"""
+        
+        if documento.fecha_vencimiento:
+            return {
+                'payment_due_date': documento.fecha_vencimiento,
+                'payment_means_code': 'Contado' if documento.fecha_vencimiento == documento.fecha_emision else 'Credito',
+                'payment_amount': documento.total
+            }
+        
+        return {
+            'payment_means_code': 'Contado',
+            'payment_amount': documento.total
+        }
     
-    template_map = {
-        '01': 'factura.xml',
-        '03': 'boleta.xml',
-        '07': 'nota_credito.xml',
-        '08': 'nota_debito.xml'
-    }
+    def _render_template(self, context: Dict[str, Any]) -> str:
+        """Renderiza el template UBL con el contexto"""
+        
+        if not self.template_name:
+            raise ValueError("Template name no definido en el generador")
+        
+        try:
+            template = get_template(self.template_name)
+            
+            # Agregar filtros personalizados al contexto
+            context.update({
+                'format_decimal': self._format_decimal,
+                'format_date': self._format_date,
+                'cdata': self._cdata_wrap
+            })
+            
+            xml_content = template.render(context)
+            
+            return xml_content
+            
+        except Exception as e:
+            logger.error(f"Error renderizando template {self.template_name}: {e}")
+            raise
     
-    return template_map.get(document_type, 'factura.xml')
-
-def _format_decimal(value) -> str:
-    """Formatea decimal para XML"""
-    if isinstance(value, (int, float)):
-        value = Decimal(str(value))
-    return f"{value:.2f}"
-
-def _format_date(value) -> str:
-    """Formatea fecha para XML"""
-    if hasattr(value, 'strftime'):
-        return value.strftime('%Y-%m-%d')
-    return str(value)
-
-def _cdata_filter(value) -> str:
-    """Aplica CDATA si es necesario"""
-    if isinstance(value, str) and any(c in value for c in ['<', '>', '&']):
-        return f'<![CDATA[{value}]]>'
-    return str(value)
-
-class UBLGeneratorFactory:
-    """Factory para generadores UBL"""
+    def _clean_development_artifacts(self, xml_content: str) -> str:
+        """
+        🧹 LIMPIA ARTEFACTOS DE DESARROLLO DEL XML
+        Elimina comentarios, espacios extra y normaliza formato
+        """
+        
+        import re
+        
+        # 1. Eliminar comentarios de desarrollo
+        comment_patterns = [
+            r'<!--.*?FIRMA DIGITAL.*?-->',
+            r'<!--.*?Aquí va la firma digital.*?-->',
+            r'<!--.*?Signature placeholder.*?-->',
+            r'<!--.*?TODO.*?-->',
+            r'<!--.*?DEBUG.*?-->',
+            r'<!--.*?DEVELOPMENT.*?-->',
+            r'<!--.*?Template.*?-->',
+            r'<!--.*?Generated.*?-->',
+        ]
+        
+        cleaned_xml = xml_content
+        for pattern in comment_patterns:
+            cleaned_xml = re.sub(pattern, '', cleaned_xml, flags=re.DOTALL | re.IGNORECASE)
+        
+        # 2. Limpiar espacios múltiples y líneas vacías
+        cleaned_xml = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned_xml)
+        cleaned_xml = re.sub(r'[ \t]+\n', '\n', cleaned_xml)
+        
+        # 3. Normalizar indentación
+        lines = cleaned_xml.split('\n')
+        normalized_lines = []
+        
+        for line in lines:
+            if line.strip():  # Solo procesar líneas con contenido
+                normalized_lines.append(line.rstrip())  # Eliminar espacios al final
+            elif normalized_lines and normalized_lines[-1].strip():  # Mantener separación
+                normalized_lines.append('')
+        
+        # 4. Asegurar declaración XML correcta
+        final_xml = '\n'.join(normalized_lines)
+        
+        # Corregir declaración XML si es necesario
+        if not final_xml.startswith('<?xml'):
+            final_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + final_xml
+        elif "version='1.0'" in final_xml:
+            final_xml = final_xml.replace("version='1.0'", 'version="1.0"')
+        elif "encoding='UTF-8'" in final_xml:
+            final_xml = final_xml.replace("encoding='UTF-8'", 'encoding="UTF-8"')
+        
+        logger.info(f"XML limpiado: {len(xml_content)} → {len(final_xml)} caracteres")
+        
+        return final_xml
     
-    @staticmethod
-    def get_supported_document_types() -> List[str]:
-        """Retorna tipos de documento soportados"""
-        return ['01', '03', '07', '08']
+    def _validate_generated_xml(self, xml_content: str, documento: DocumentoElectronico):
+        """Valida el XML generado"""
+        
+        # Validaciones básicas
+        if not xml_content.strip():
+            raise ValueError("XML generado está vacío")
+        
+        if not xml_content.startswith('<?xml'):
+            raise ValueError("XML no tiene declaración XML válida")
+        
+        # Verificar elementos obligatorios
+        required_elements = [
+            f'<cbc:ID>{documento.get_numero_completo()}</cbc:ID>',
+            f'<cbc:ID>{documento.empresa.ruc}</cbc:ID>',
+            '<cbc:InvoiceTypeCode' if documento.tipo_documento.codigo in ['01', '03'] else '<cbc:CreditNoteTypeCode',
+        ]
+        
+        for element in required_elements:
+            if element not in xml_content:
+                logger.warning(f"Elemento requerido posiblemente faltante: {element}")
+        
+        # Verificar estructura UBL
+        ubl_elements = ['<cbc:UBLVersionID>', '<cbc:CustomizationID>', '<cac:AccountingSupplierParty>']
+        for element in ubl_elements:
+            if element not in xml_content:
+                raise ValueError(f"Elemento UBL requerido faltante: {element}")
+        
+        logger.info("XML validado exitosamente")
     
-    @staticmethod
-    def is_supported(document_type: str) -> bool:
-        """Verifica si el tipo de documento está soportado"""
-        return document_type in UBLGeneratorFactory.get_supported_document_types()
+    def _format_decimal(self, value: Decimal, places: int = 2) -> str:
+        """Formatea decimal para XML"""
+        if value is None:
+            return "0.00"
+        return f"{value:.{places}f}"
+    
+    def _format_date(self, date_obj) -> str:
+        """Formatea fecha para XML (YYYY-MM-DD)"""
+        if hasattr(date_obj, 'strftime'):
+            return date_obj.strftime('%Y-%m-%d')
+        return str(date_obj)
+    
+    def _cdata_wrap(self, text: str) -> str:
+        """Envuelve texto en CDATA si contiene caracteres especiales"""
+        if any(char in text for char in ['<', '>', '&', '"', "'"]):
+            return f"<![CDATA[{text}]]>"
+        return text
+
+
+class FacturaGenerator(BaseUBLGenerator):
+    """Generador específico para facturas (01)"""
+    
+    def __init__(self):
+        super().__init__()
+        self.template_name = 'ubl/factura.xml'
+        self.document_type = 'Factura'
+
+
+class BoletaGenerator(BaseUBLGenerator):
+    """Generador específico para boletas (03)"""
+    
+    def __init__(self):
+        super().__init__()
+        self.template_name = 'ubl/boleta.xml'
+        self.document_type = 'Boleta'
+
+
+class NotaCreditoGenerator(BaseUBLGenerator):
+    """Generador específico para notas de crédito (07)"""
+    
+    def __init__(self):
+        super().__init__()
+        self.template_name = 'ubl/nota_credito.xml'
+        self.document_type = 'Nota de Crédito'
+
+
+class NotaDebitoGenerator(BaseUBLGenerator):
+    """Generador específico para notas de débito (08)"""
+    
+    def __init__(self):
+        super().__init__()
+        self.template_name = 'ubl/nota_debito.xml'
+        self.document_type = 'Nota de Débito'
+
+
+# Función principal para generar XML
+def generate_ubl_xml(documento: DocumentoElectronico) -> str:
+    """
+    Genera XML UBL 2.1 para cualquier tipo de documento
+    VERSIÓN LIMPIA - Sin artefactos de desarrollo
+    
+    Args:
+        documento: DocumentoElectronico instance
+        
+    Returns:
+        XML UBL 2.1 limpio como string
+    """
+    
+    try:
+        # Obtener generador apropiado
+        generator = UBLGeneratorFactory.get_generator(documento.tipo_documento.codigo)
+        
+        # Generar XML limpio
+        xml_content = generator.generate_xml(documento)
+        
+        logger.info(f"XML UBL 2.1 generado y limpiado para {documento.get_numero_completo()}")
+        
+        return xml_content
+        
+    except Exception as e:
+        logger.error(f"Error generando XML UBL 2.1: {e}")
+        raise
+
+
+# Función para limpiar XML existente
+def clean_existing_xml(xml_content: str) -> str:
+    """
+    Limpia XML existente eliminando artefactos de desarrollo
+    
+    Args:
+        xml_content: XML a limpiar
+        
+    Returns:
+        XML limpio
+    """
+    
+    generator = BaseUBLGenerator()
+    return generator._clean_development_artifacts(xml_content)
