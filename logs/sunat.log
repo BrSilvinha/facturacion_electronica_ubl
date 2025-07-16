@@ -136,3 +136,15 @@ INFO 2025-07-14 15:41:28,960 views_sunat 15580 22684 [a22f5ca7-a661-46fd-9841-f4
 INFO 2025-07-14 15:41:28,962 views_sunat 15580 22684 [a22f5ca7-a661-46fd-9841-f49f9033737a] EXITO TOTAL! CDR generado en 1007ms
 INFO 2025-07-14 15:41:28,969 views_sunat 15580 22684 [20eddb05-f18e-41b1-a378-f8ed49f24fd3] Documento actualizado como EXITOSO - CDR guardado!
 INFO 2025-07-14 15:41:28,969 views_sunat 15580 22684 [20eddb05-f18e-41b1-a378-f8ed49f24fd3] EXITO TOTAL! CDR guardado en BD correctamente!
+INFO 2025-07-15 18:55:32,485 views_sunat 18916 768 [c8c51e1d-4c01-4fdd-b930-ccf00bbc8683] Iniciando test de conexión SUNAT
+ERROR 2025-07-15 18:55:32,486 views_sunat 18916 768 [c8c51e1d-4c01-4fdd-b930-ccf00bbc8683] Error SUNAT: name 'e' is not defined
+INFO 2025-07-15 18:56:02,075 views_sunat 18916 768 [f9d4eae2-0eee-43f5-8c15-231f5bae581e] Iniciando test de conexión SUNAT
+ERROR 2025-07-15 18:56:02,075 views_sunat 18916 768 [f9d4eae2-0eee-43f5-8c15-231f5bae581e] Error SUNAT: name 'e' is not defined
+INFO 2025-07-15 18:56:39,293 views_sunat 23992 6232 [7e6fdb28-ee50-4883-8453-15e7a3b2a19b] Iniciando test de conexión SUNAT
+INFO 2025-07-15 18:56:39,293 views_sunat 23992 6232 [7e6fdb28-ee50-4883-8453-15e7a3b2a19b] Test SUNAT completado exitosamente
+INFO 2025-07-15 18:56:53,602 views_sunat 23992 6232 [b7c91d14-b395-41ef-a22e-48110e2f22d5] Iniciando test de conexión SUNAT
+INFO 2025-07-15 18:56:53,602 views_sunat 23992 6232 [b7c91d14-b395-41ef-a22e-48110e2f22d5] Test SUNAT completado exitosamente
+INFO 2025-07-15 18:59:58,992 views_sunat 23992 28092 [cd2b2c31-b457-41c2-8aec-763f645403c3] Iniciando test de conexión SUNAT
+INFO 2025-07-15 18:59:58,992 views_sunat 23992 28092 [cd2b2c31-b457-41c2-8aec-763f645403c3] Test SUNAT completado exitosamente
+INFO 2025-07-15 19:01:53,980 views_sunat 22980 26136 [c91f826f-cdcd-46d4-9cba-919be7e28889] Iniciando test de conexión SUNAT
+INFO 2025-07-15 19:01:53,981 views_sunat 22980 26136 [c91f826f-cdcd-46d4-9cba-919be7e28889] Test SUNAT completado exitosamente
