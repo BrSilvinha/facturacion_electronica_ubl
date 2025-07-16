@@ -192,3 +192,8 @@ INFO 2025-07-14 16:11:43,116 xml_signer 34372 35472   - Tamaño clave: 2048 bits
 INFO 2025-07-14 16:11:43,116 xml_signer 34372 35472 XMLSigner inicializado - Firma disponible: True
 INFO 2025-07-15 18:20:12,609 xml_signer 24612 9144 XMLSigner configurado - Firma disponible: True
 INFO 2025-07-15 18:23:25,935 xml_signer 24612 20756 XMLSigner configurado - Firma disponible: True
+INFO 2025-07-15 23:40:41,953 xml_signer 28832 29764 XMLSigner configurado - Firma disponible: True
+INFO 2025-07-15 23:41:24,882 xml_signer 28832 29764 XMLSigner configurado - Firma disponible: True
+INFO 2025-07-15 23:47:36,391 xml_signer 29536 13128 XMLSigner configurado - Firma disponible: True
+INFO 2025-07-15 23:48:12,417 xml_signer 29536 13128 XMLSigner configurado - Firma disponible: True
+INFO 2025-07-15 23:57:27,647 xml_signer 29536 30400 XMLSigner configurado - Firma disponible: True

@@ -1,528 +1,399 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧾 Sistema Facturación Electrónica - Dashboard Completo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Sistema de Facturación Electrónica UBL 2.1</title>
+    
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    {% load static %}
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
 </head>
-<body class="bg-light">
-    <div class="container-fluid py-4">
-        <!-- Header -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card bg-gradient-primary text-white shadow-lg">
-                    <div class="card-body text-center py-4">
-                        <h1 class="display-5">
-                            <i class="bi bi-receipt-cutoff me-3"></i>
-                            Sistema Facturación Electrónica UBL 2.1
-                        </h1>
-                        <p class="lead mb-3">Dashboard Completo - Certificado Real C23022479065 - CDR Funcionando</p>
-                        <div class="d-flex justify-content-center gap-2 flex-wrap">
-                            <span class="badge bg-light text-dark fs-6 px-3 py-2">
-                                <i class="bi bi-check-circle me-1"></i>Sistema 100% Operativo
-                            </span>
-                            <span class="badge bg-success fs-6 px-3 py-2">
-                                <i class="bi bi-file-check me-1"></i>CDR Completamente Corregido
-                            </span>
-                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                                <i class="bi bi-key me-1"></i>Certificado Real Integrado
-                            </span>
-                            <span class="badge bg-info fs-6 px-3 py-2">
-                                <i class="bi bi-currency-exchange me-1"></i>Multi-Moneda (PEN/USD/EUR)
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-receipt-cutoff"></i>
+                Facturación Electrónica UBL 2.1
+            </a>
+            <span class="navbar-text">
+                <span id="connectionStatus" class="badge bg-secondary">Verificando...</span>
+            </span>
         </div>
+    </nav>
 
-        <!-- Navigation Tabs -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <ul class="nav nav-pills nav-justified shadow-sm bg-white rounded p-2" id="mainTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard" type="button">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="create-tab" data-bs-toggle="pill" data-bs-target="#create" type="button">
-                            <i class="bi bi-plus-circle me-2"></i>Crear Factura
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="documents-tab" data-bs-toggle="pill" data-bs-target="#documents" type="button">
-                            <i class="bi bi-file-text me-2"></i>Mis Documentos
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="xml-tab" data-bs-toggle="pill" data-bs-target="#xml" type="button">
-                            <i class="bi bi-code me-2"></i>Visor XML
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="cdr-tab" data-bs-toggle="pill" data-bs-target="#cdr" type="button">
-                            <i class="bi bi-file-check me-2"></i>Visor CDR
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tab-content" id="mainTabsContent">
-            
-            <!-- ===== DASHBOARD TAB ===== -->
-            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
-                <div class="row mb-4">
-                    <!-- Stats Cards -->
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="card text-center text-white bg-success shadow-sm h-100">
-                            <div class="card-body py-4">
-                                <i class="bi bi-file-text display-3 mb-2"></i>
-                                <h5 class="card-title">Documentos</h5>
-                                <h2 class="display-4" id="statsDocuments">0</h2>
-                                <small class="opacity-75">Total Generados</small>
-                            </div>
-                        </div>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-list-task"></i> Menú</h5>
                     </div>
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="card text-center text-white bg-info shadow-sm h-100">
-                            <div class="card-body py-4">
-                                <i class="bi bi-file-check display-3 mb-2"></i>
-                                <h5 class="card-title">CDR</h5>
-                                <h2 class="display-4" id="statsCDR">0</h2>
-                                <small class="opacity-75">Disponibles</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="card text-center text-white bg-warning shadow-sm h-100">
-                            <div class="card-body py-4">
-                                <i class="bi bi-currency-dollar display-3 mb-2"></i>
-                                <h5 class="card-title">Total Facturado</h5>
-                                <h2 class="display-6" id="statsTotal">S/ 0.00</h2>
-                                <small class="opacity-75">Este Mes</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="card text-center text-white bg-primary shadow-sm h-100">
-                            <div class="card-body py-4">
-                                <i class="bi bi-check-circle display-3 mb-2"></i>
-                                <h5 class="card-title">Estado</h5>
-                                <h2 class="display-6">100%</h2>
-                                <small class="opacity-75">Operativo</small>
-                            </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <button class="list-group-item list-group-item-action" onclick="showSection('inicio')">
+                                <i class="bi bi-house"></i> Inicio
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="showSection('generar')">
+                                <i class="bi bi-plus-circle"></i> Generar Documento
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="showSection('escenarios')">
+                                <i class="bi bi-play-circle"></i> Escenarios de Prueba
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="showSection('documentos')">
+                                <i class="bi bi-file-earmark-text"></i> Documentos
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="showSection('sunat')">
+                                <i class="bi bi-cloud-upload"></i> SUNAT
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Actions & Activity -->
-                <div class="row">
-                    <div class="col-lg-8 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Acciones Rápidas</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <button class="btn btn-success btn-lg w-100" onclick="switchToCreateTab()">
-                                            <i class="bi bi-file-plus me-2"></i>Crear Nueva Factura
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <button class="btn btn-info btn-lg w-100" onclick="refreshDocuments()">
-                                            <i class="bi bi-arrow-clockwise me-2"></i>Actualizar Documentos
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <button class="btn btn-warning btn-lg w-100" onclick="testConnection()">
-                                            <i class="bi bi-wifi me-2"></i>Test Conexión SUNAT
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <button class="btn btn-secondary btn-lg w-100" onclick="switchToDocumentsTab()">
-                                            <i class="bi bi-folder me-2"></i>Ver Todos los Documentos
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Status Card -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6><i class="bi bi-info-circle"></i> Estado del Sistema</h6>
                     </div>
-
-                    <!-- Activity Log -->
-                    <div class="col-lg-4 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Log Sistema</h5>
-                                <button class="btn btn-sm btn-outline-light" onclick="clearLog()">
-                                    <i class="bi bi-trash me-1"></i>Limpiar
-                                </button>
-                            </div>
-                            <div class="card-body p-0">
-                                <div id="activityLog" class="p-3" style="height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; background: #f8f9fa;">
-                                    <div class="text-success"><strong>[Inicio]</strong> Dashboard cargado exitosamente</div>
-                                    <div class="text-info"><strong>[CDR]</strong> Sistema CDR corregido operativo</div>
-                                    <div class="text-warning"><strong>[Cert]</strong> Certificado C23022479065 activo</div>
-                                    <div class="text-primary"><strong>[Ready]</strong> Listo para facturar...</div>
-                                </div>
+                    <div class="card-body">
+                        <div id="systemStatus">
+                            <div class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <small class="d-block mt-2">Cargando...</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ===== CREAR FACTURA TAB ===== -->
-            <div class="tab-pane fade" id="create" role="tabpanel">
-                <div class="row">
-                    <div class="col-lg-8 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="mb-0"><i class="bi bi-file-plus me-2"></i>Crear Nueva Factura</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="facturaForm">
-                                    <!-- Datos del Documento -->
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <h6 class="text-primary border-bottom pb-2"><i class="bi bi-file-text me-1"></i>Datos del Documento</h6>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Tipo Documento</label>
-                                            <select class="form-select" id="tipoDocumento" required>
-                                                <option value="01" selected>01 - Factura</option>
-                                                <option value="03">03 - Boleta</option>
-                                                <option value="07">07 - Nota Crédito</option>
-                                                <option value="08">08 - Nota Débito</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Serie</label>
-                                            <input type="text" class="form-control" id="serie" value="F001" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Número</label>
-                                            <input type="number" class="form-control" id="numero" min="1" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Moneda</label>
-                                            <select class="form-select" id="moneda" onchange="updateCurrencySymbol()">
-                                                <option value="PEN">PEN - Soles Peruanos</option>
-                                                <option value="USD">USD - Dólares Americanos</option>
-                                                <option value="EUR">EUR - Euros</option>
-                                            </select>
-                                        </div>
-                                    </div>
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Alerts Container -->
+                <div id="alertsContainer"></div>
 
-                                    <!-- Datos del Cliente -->
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <h6 class="text-primary border-bottom pb-2"><i class="bi bi-person me-1"></i>Datos del Cliente</h6>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Tipo Doc Cliente</label>
-                                            <select class="form-select" id="clienteTipoDoc">
-                                                <option value="6">RUC</option>
-                                                <option value="1">DNI</option>
-                                                <option value="4">Carnet Extranjería</option>
-                                                <option value="7">Pasaporte</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Número Documento</label>
-                                            <input type="text" class="form-control" id="clienteNumDoc" placeholder="20123456789" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Razón Social / Nombre</label>
-                                            <input type="text" class="form-control" id="clienteRazonSocial" placeholder="EMPRESA CLIENTE SAC" required>
-                                        </div>
-                                        <div class="col-12 mt-2">
-                                            <label class="form-label">Dirección (Opcional)</label>
-                                            <input type="text" class="form-control" id="clienteDireccion" placeholder="AV. PRINCIPAL 123, LIMA">
-                                        </div>
-                                    </div>
-
-                                    <!-- Items/Productos -->
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                                <h6 class="text-primary mb-0"><i class="bi bi-basket me-1"></i>Productos / Servicios</h6>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
-                                                    <i class="bi bi-plus me-1"></i>Agregar Item
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div id="itemsContainer">
-                                                <!-- Items se agregan dinámicamente aquí -->
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Totales -->
-                                    <div class="row mb-4">
-                                        <div class="col-lg-6">
-                                            <!-- Espacio para futuras opciones -->
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <div class="card bg-light">
+                <!-- Inicio Section -->
+                <div id="section-inicio" class="content-section">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4"><i class="bi bi-receipt-cutoff text-primary"></i></h1>
+                                    <h2>Sistema de Facturación Electrónica</h2>
+                                    <p class="lead">UBL 2.1 Professional con Firma Digital Real</p>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card border-success">
                                                 <div class="card-body">
-                                                    <h6 class="text-primary mb-3"><i class="bi bi-calculator me-1"></i>Resumen de Totales</h6>
-                                                    <div class="d-flex justify-content-between">
-                                                        <span>Subtotal:</span>
-                                                        <span id="displaySubtotal" class="fw-bold">S/ 0.00</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between">
-                                                        <span>IGV (18%):</span>
-                                                        <span id="displayIGV" class="fw-bold">S/ 0.00</span>
-                                                    </div>
-                                                    <hr>
-                                                    <div class="d-flex justify-content-between fs-5">
-                                                        <span class="fw-bold">Total:</span>
-                                                        <span id="displayTotal" class="fw-bold text-success">S/ 0.00</span>
-                                                    </div>
+                                                    <h5 class="text-success"><i class="bi bi-check-circle"></i> XML UBL 2.1</h5>
+                                                    <p>Generación completa según estándares SUNAT</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-info">
+                                                <div class="card-body">
+                                                    <h5 class="text-info"><i class="bi bi-shield-check"></i> Firma Digital</h5>
+                                                    <p>Certificado real C23022479065.pfx</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-warning">
+                                                <div class="card-body">
+                                                    <h5 class="text-warning"><i class="bi bi-cloud"></i> SUNAT Ready</h5>
+                                                    <p>Integración Beta y Producción</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                    <!-- Botones de Acción -->
-                                    <div class="text-center">
-                                        <button type="button" class="btn btn-success btn-lg me-3" onclick="generateFactura()">
-                                            <i class="bi bi-file-plus me-2"></i>Generar Factura
+                <!-- Generar Documento Section -->
+                <div id="section-generar" class="content-section d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="bi bi-plus-circle"></i> Generar Nuevo Documento</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="documentForm">
+                                <!-- Tipo de Documento -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tipo de Documento</label>
+                                            <select class="form-select" id="tipoDocumento" onchange="updateFormByDocType()">
+                                                <option value="">Seleccionar...</option>
+                                                <option value="01">01 - Factura</option>
+                                                <option value="03">03 - Boleta de Venta</option>
+                                                <option value="07">07 - Nota de Crédito</option>
+                                                <option value="08">08 - Nota de Débito</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Serie</label>
+                                            <input type="text" class="form-control" id="serie" placeholder="F001">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Número</label>
+                                            <input type="number" class="form-control" id="numero" placeholder="1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fechas -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha de Emisión</label>
+                                            <input type="date" class="form-control" id="fechaEmision">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha de Vencimiento</label>
+                                            <input type="date" class="form-control" id="fechaVencimiento">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Receptor -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="bi bi-person"></i> Datos del Receptor</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tipo Doc</label>
+                                                    <select class="form-select" id="receptorTipoDoc">
+                                                        <option value="1">DNI</option>
+                                                        <option value="6">RUC</option>
+                                                        <option value="4">Carnet Ext.</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Número</label>
+                                                    <input type="text" class="form-control" id="receptorNumero" placeholder="12345678">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Razón Social / Nombre</label>
+                                                    <input type="text" class="form-control" id="receptorRazon" placeholder="CLIENTE DE PRUEBA">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Dirección</label>
+                                            <input type="text" class="form-control" id="receptorDireccion" placeholder="AV. PRINCIPAL 123">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Items -->
+                                <div class="card mb-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6><i class="bi bi-list"></i> Items del Documento</h6>
+                                        <button type="button" class="btn btn-sm btn-success" onclick="addItem()">
+                                            <i class="bi bi-plus"></i> Agregar Item
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
-                                            <i class="bi bi-arrow-clockwise me-2"></i>Limpiar Formulario
-                                        </button>
                                     </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                                    <div class="card-body">
+                                        <div id="itemsContainer">
+                                            <!-- Items se agregan dinámicamente -->
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <!-- Panel Lateral -->
-                    <div class="col-lg-4 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-info text-white">
-                                <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Datos de Prueba</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-outline-primary btn-sm" onclick="loadSampleClient()">
-                                        <i class="bi bi-person me-1"></i>Cliente de Prueba
+                                <!-- Buttons -->
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                        <i class="bi bi-arrow-clockwise"></i> Limpiar
                                     </button>
-                                    <button class="btn btn-outline-success btn-sm" onclick="loadSampleProducts()">
-                                        <i class="bi bi-basket me-1"></i>Productos de Ejemplo
-                                    </button>
-                                    <button class="btn btn-outline-warning btn-sm" onclick="loadFullSample()">
-                                        <i class="bi bi-file-text me-1"></i>Factura Completa
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Generar XML
                                     </button>
                                 </div>
-                                
-                                <hr>
-                                
-                                <div class="small text-muted">
-                                    <h6>💡 Tips:</h6>
-                                    <ul class="mb-0">
-                                        <li>Use RUC para empresas (11 dígitos)</li>
-                                        <li>DNI para personas (8 dígitos)</li>
-                                        <li>Los precios son sin IGV</li>
-                                        <li>El IGV se calcula automáticamente</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Estado del Último Documento -->
-                        <div class="card shadow-sm mt-3" id="lastDocumentCard" style="display: none;">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="bi bi-check-circle me-2"></i>Último Documento Generado</h6>
-                            </div>
-                            <div class="card-body" id="lastDocumentInfo">
-                                <!-- Info del último documento -->
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ===== DOCUMENTOS TAB ===== -->
-            <div class="tab-pane fade" id="documents" role="tabpanel">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Mis Documentos Electrónicos</h5>
-                                <div>
-                                    <button class="btn btn-light btn-sm me-2" onclick="refreshDocuments()">
-                                        <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
-                                    </button>
-                                    <button class="btn btn-success btn-sm" onclick="switchToCreateTab()">
-                                        <i class="bi bi-plus me-1"></i>Nuevo
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Documento</th>
-                                                <th>Fecha</th>
-                                                <th>Cliente</th>
-                                                <th>Total</th>
-                                                <th>Estado</th>
-                                                <th>CDR</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="documentsTableBody">
-                                            <tr>
-                                                <td colspan="7" class="text-center py-5">
-                                                    <div class="spinner-border text-primary mb-3" role="status"></div>
-                                                    <div>Cargando documentos...</div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                <!-- Escenarios Section -->
+                <div id="section-escenarios" class="content-section d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="bi bi-play-circle"></i> Escenarios de Prueba</h5>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== XML VIEWER TAB ===== -->
-            <div class="tab-pane fade" id="xml" role="tabpanel">
-                <div class="row">
-                    <div class="col-lg-4 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-warning text-dark">
-                                <h6 class="mb-0"><i class="bi bi-search me-2"></i>Buscar XML</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Seleccionar Documento</label>
-                                    <select class="form-select" id="xmlDocumentSelect" onchange="loadXML()">
-                                        <option value="">Seleccione un documento...</option>
-                                    </select>
+                        <div class="card-body">
+                            <p class="text-muted">Ejecuta escenarios predefinidos para probar el sistema:</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-primary">
+                                        <div class="card-body">
+                                            <h6 class="text-primary"><i class="bi bi-receipt"></i> Boleta Completa</h6>
+                                            <p>Boleta con IGV gravado y productos variados</p>
+                                            <button class="btn btn-primary btn-sm" onclick="runScenario('scenario-1-boleta-completa')">
+                                                <i class="bi bi-play"></i> Ejecutar
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">O ingrese ID manualmente</label>
-                                    <input type="text" class="form-control" id="xmlDocumentId" placeholder="UUID del documento">
-                                </div>
-                                <button class="btn btn-warning w-100 btn-lg" onclick="loadXMLById()">
-                                    <i class="bi bi-search me-2"></i>Cargar XML
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- XML Info -->
-                        <div class="card shadow-sm mt-3" id="xmlInfoCard" style="display: none;">
-                            <div class="card-header bg-info text-white">
-                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información XML</h6>
-                            </div>
-                            <div class="card-body" id="xmlInfoContent">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-8 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-code me-2"></i>Contenido XML UBL 2.1</h5>
-                                <div id="xmlActions" style="display: none;">
-                                    <button class="btn btn-dark btn-sm me-1" onclick="copyXML()" title="Copiar XML">
-                                        <i class="bi bi-clipboard"></i>
-                                    </button>
-                                    <button class="btn btn-dark btn-sm me-1" onclick="downloadXML()" title="Descargar XML">
-                                        <i class="bi bi-download"></i>
-                                    </button>
-                                    <button class="btn btn-dark btn-sm" onclick="formatXML()" title="Formatear">
-                                        <i class="bi bi-code"></i>
-                                    </button>
+                                <div class="col-md-6">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <h6 class="text-success"><i class="bi bi-file-earmark-text"></i> Factura Gravada</h6>
+                                            <p>Factura estándar con IGV gravado</p>
+                                            <button class="btn btn-success btn-sm" onclick="runScenario('scenario-2-factura-gravada')">
+                                                <i class="bi bi-play"></i> Ejecutar
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <div id="xmlContent" class="border rounded p-4 bg-light" style="max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
-                                    <div class="text-center text-muted py-5">
-                                        <i class="bi bi-code-slash display-1 opacity-50"></i>
-                                        <h5 class="mt-3">Visor XML UBL 2.1</h5>
-                                        <p class="mb-0">Seleccione un documento para ver su XML firmado</p>
-                                        <small class="text-muted">Compatible con estándares SUNAT</small>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="card border-warning">
+                                        <div class="card-body">
+                                            <h6 class="text-warning"><i class="bi bi-file-earmark"></i> Factura Exonerada</h6>
+                                            <p>Factura con productos exonerados de IGV</p>
+                                            <button class="btn btn-warning btn-sm" onclick="runScenario('scenario-3-factura-exonerada')">
+                                                <i class="bi bi-play"></i> Ejecutar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-info">
+                                        <div class="card-body">
+                                            <h6 class="text-info"><i class="bi bi-file-earmark-medical"></i> Factura Mixta</h6>
+                                            <p>Factura con productos gravados y exonerados</p>
+                                            <button class="btn btn-info btn-sm" onclick="runScenario('scenario-4-factura-mixta')">
+                                                <i class="bi bi-play"></i> Ejecutar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="card border-dark">
+                                        <div class="card-body">
+                                            <h6 class="text-dark"><i class="bi bi-globe"></i> Factura Exportación</h6>
+                                            <p>Factura de exportación</p>
+                                            <button class="btn btn-dark btn-sm" onclick="runScenario('scenario-5-factura-exportacion')">
+                                                <i class="bi bi-play"></i> Ejecutar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-secondary">
+                                        <div class="card-body">
+                                            <h6 class="text-secondary"><i class="bi bi-lightning"></i> Todos los Escenarios</h6>
+                                            <p>Ejecutar todos los escenarios de una vez</p>
+                                            <button class="btn btn-secondary btn-sm" onclick="runAllScenarios()">
+                                                <i class="bi bi-lightning-charge"></i> Ejecutar Todos
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ===== CDR VIEWER TAB ===== -->
-            <div class="tab-pane fade" id="cdr" role="tabpanel">
-                <div class="row">
-                    <div class="col-lg-4 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="bi bi-search me-2"></i>Buscar CDR</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Seleccionar Documento</label>
-                                    <select class="form-select" id="cdrDocumentSelect" onchange="loadCDR()">
-                                        <option value="">Seleccione un documento...</option>
-                                    </select>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">O ingrese ID manualmente</label>
-                                    <input type="text" class="form-control" id="cdrDocumentId" placeholder="UUID del documento">
-                                </div>
-                                <button class="btn btn-success w-100 btn-lg" onclick="loadCDRById()">
-                                    <i class="bi bi-search me-2"></i>Buscar CDR
-                                </button>
-                            </div>
+                <!-- Documentos Section -->
+                <div id="section-documentos" class="content-section d-none">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="bi bi-file-earmark-text"></i> Documentos Generados</h5>
+                            <button class="btn btn-sm btn-primary" onclick="loadDocuments()">
+                                <i class="bi bi-arrow-clockwise"></i> Actualizar
+                            </button>
                         </div>
-
-                        <!-- CDR Info -->
-                        <div class="card shadow-sm mt-3" id="cdrInfoCard" style="display: none;">
-                            <div class="card-header bg-primary text-white">
-                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Estado CDR</h6>
-                            </div>
-                            <div class="card-body" id="cdrInfoContent">
+                        <div class="card-body">
+                            <div id="documentsContainer">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status"></div>
+                                    <p class="mt-2">Cargando documentos...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-lg-8 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-file-check me-2"></i>Constancia de Recepción (CDR)</h5>
-                                <div id="cdrActions" style="display: none;">
-                                    <button class="btn btn-light btn-sm me-1" onclick="copyCDR()" title="Copiar CDR">
-                                        <i class="bi bi-clipboard"></i>
+                <!-- SUNAT Section -->
+                <div id="section-sunat" class="content-section d-none">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="bi bi-wifi"></i> Test de Conexión</h6>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-info" onclick="testSunatConnection()">
+                                        <i class="bi bi-wifi"></i> Probar Conexión SUNAT
                                     </button>
-                                    <button class="btn btn-light btn-sm me-1" onclick="downloadCDR()" title="Descargar CDR">
-                                        <i class="bi bi-download"></i>
-                                    </button>
-                                    <button class="btn btn-light btn-sm" onclick="formatCDR()" title="Formatear">
-                                        <i class="bi bi-code"></i>
-                                    </button>
+                                    <div id="sunatTestResult" class="mt-3"></div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <div id="cdrContent" class="border rounded p-4 bg-light" style="max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
-                                    <div class="text-center text-muted py-5">
-                                        <i class="bi bi-file-check display-1 opacity-50"></i>
-                                        <h5 class="mt-3">Visor CDR SUNAT</h5>
-                                        <p class="mb-0">Seleccione un documento para ver su Constancia de Recepción</p>
-                                        <small class="text-muted">Sistema CDR completamente corregido y funcionando</small>
-                                    </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="bi bi-cloud-upload"></i> Enviar Documento</h6>
                                 </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">ID del Documento</label>
+                                        <input type="text" class="form-control" id="documentIdToSend" placeholder="UUID del documento">
+                                    </div>
+                                    <button class="btn btn-success" onclick="sendToSunat()">
+                                        <i class="bi bi-cloud-upload"></i> Enviar a SUNAT
+                                    </button>
+                                    <div id="sunatSendResult" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Modal -->
+                <div class="modal fade" id="resultsModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Resultado de la Operación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="modalContent"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                             </div>
                         </div>
                     </div>
@@ -531,7 +402,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/general.js' %}"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Load static files -->
+    {% load static %}
+    <!-- JavaScript del sistema -->
+    <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

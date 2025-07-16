@@ -1,8 +1,8 @@
-# conversion/generators.py - GENERADORES UBL BÁSICOS
+# conversion/generators.py - CORREGIDO - SIN FILTROS PERSONALIZADOS
 
 """
 Generadores de XML UBL 2.1 para documentos electrónicos
-VERSIÓN BÁSICA - Funcionalidad esencial
+VERSIÓN CORREGIDA - Sin filtros de template personalizados
 """
 
 import logging
@@ -29,7 +29,7 @@ def generate_ubl_xml(documento) -> str:
         # Usar factory para obtener el generador correcto
         generator = UBLGeneratorFactory.get_generator(documento.tipo_documento.codigo)
         
-        # Generar XML
+        # Generar XML directamente (sin templates Django)
         xml_content = generator.generate_xml(documento)
         
         logger.info(f"XML UBL generado exitosamente: {len(xml_content)} caracteres")
@@ -95,7 +95,7 @@ class UBLGeneratorFactory:
         return tipo_documento in cls.SUPPORTED_TYPES
 
 class BaseUBLGenerator:
-    """Generador base para documentos UBL 2.1"""
+    """Generador base para documentos UBL 2.1 - SIN TEMPLATES DJANGO"""
     
     def __init__(self):
         self.ubl_version = "2.1"
@@ -103,7 +103,7 @@ class BaseUBLGenerator:
     
     def generate_xml(self, documento) -> str:
         """
-        Genera XML UBL básico
+        Genera XML UBL básico - DIRECTAMENTE SIN TEMPLATES
         
         Args:
             documento: Instancia de DocumentoElectronico
@@ -309,9 +309,41 @@ class BaseUBLGenerator:
         
         return payment_terms
     
+    def _format_date(self, date_obj) -> str:
+        """Formatea fecha para XML UBL"""
+        if hasattr(date_obj, 'strftime'):
+            return date_obj.strftime('%Y-%m-%d')
+        return str(date_obj)
+    
+    def _format_time(self, datetime_obj) -> str:
+        """Formatea hora para XML UBL"""
+        if hasattr(datetime_obj, 'strftime'):
+            return datetime_obj.strftime('%H:%M:%S')
+        return '00:00:00'
+    
+    def _format_decimal(self, value) -> str:
+        """Formatea valor decimal para XML"""
+        if isinstance(value, (int, float)):
+            value = Decimal(str(value))
+        return f"{value:.2f}"
+    
+    def _escape_xml(self, text: str) -> str:
+        """Escapa caracteres especiales para XML"""
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # Reemplazar caracteres especiales XML
+        text = text.replace('&', '&amp;')
+        text = text.replace('<', '&lt;')
+        text = text.replace('>', '&gt;')
+        text = text.replace('"', '&quot;')
+        text = text.replace("'", '&apos;')
+        
+        return text
+    
     def _generate_invoice_xml(self, data: Dict[str, Any]) -> str:
         """
-        Genera XML para factura/boleta básica
+        Genera XML para factura/boleta básica - HARDCODED SIN TEMPLATES
         
         Args:
             data: Datos preparados del documento
@@ -320,7 +352,18 @@ class BaseUBLGenerator:
             XML UBL 2.1 como string
         """
         
-        # Template básico de factura UBL 2.1
+        # Formatear fechas y horas
+        issue_date = self._format_date(data['issue_date'])
+        issue_time = self._format_time(data['generation_time'])
+        
+        # Formatear datos con escape XML
+        supplier_legal_name = self._escape_xml(data['supplier']['legal_name'])
+        supplier_trade_name = self._escape_xml(data['supplier']['trade_name'])
+        supplier_address = self._escape_xml(data['supplier']['address'])
+        customer_legal_name = self._escape_xml(data['customer']['legal_name'])
+        customer_address = self._escape_xml(data['customer']['address'])
+        
+        # Template básico de factura UBL 2.1 - HARDCODED
         xml_template = f'''<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
          xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
@@ -341,8 +384,8 @@ class BaseUBLGenerator:
                    schemeAgencyName="PE:SUNAT" 
                    schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo17">0101</cbc:ProfileID>
     <cbc:ID>{data['document_id']}</cbc:ID>
-    <cbc:IssueDate>{data['issue_date'].strftime('%Y-%m-%d')}</cbc:IssueDate>
-    <cbc:IssueTime>{data['generation_time'].strftime('%H:%M:%S')}</cbc:IssueTime>
+    <cbc:IssueDate>{issue_date}</cbc:IssueDate>
+    <cbc:IssueTime>{issue_time}</cbc:IssueTime>
     <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" 
                         listName="SUNAT:Identificador de Tipo de Documento" 
                         listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">{data['document_type_code']}</cbc:InvoiceTypeCode>
@@ -358,7 +401,7 @@ class BaseUBLGenerator:
                 <cbc:ID>{data['supplier']['ruc']}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyName>
-                <cbc:Name><![CDATA[{data['supplier']['legal_name']}]]></cbc:Name>
+                <cbc:Name><![CDATA[{supplier_legal_name}]]></cbc:Name>
             </cac:PartyName>
         </cac:SignatoryParty>
         <cac:DigitalSignatureAttachment>
@@ -377,10 +420,10 @@ class BaseUBLGenerator:
                         schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{data['supplier']['ruc']}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyName>
-                <cbc:Name><![CDATA[{data['supplier']['trade_name']}]]></cbc:Name>
+                <cbc:Name><![CDATA[{supplier_trade_name}]]></cbc:Name>
             </cac:PartyName>
             <cac:PartyLegalEntity>
-                <cbc:RegistrationName><![CDATA[{data['supplier']['legal_name']}]]></cbc:RegistrationName>
+                <cbc:RegistrationName><![CDATA[{supplier_legal_name}]]></cbc:RegistrationName>
                 <cac:RegistrationAddress>
                     <cbc:ID schemeAgencyName="PE:INEI">{data['supplier']['ubigeo']}</cbc:ID>
                     <cbc:AddressTypeCode listAgencyName="PE:SUNAT" 
@@ -390,7 +433,7 @@ class BaseUBLGenerator:
                     <cbc:CountrySubentity>-</cbc:CountrySubentity>
                     <cbc:District>-</cbc:District>
                     <cac:AddressLine>
-                        <cbc:Line><![CDATA[{data['supplier']['address']}]]></cbc:Line>
+                        <cbc:Line><![CDATA[{supplier_address}]]></cbc:Line>
                     </cac:AddressLine>
                     <cac:Country>
                         <cbc:IdentificationCode listAgencyName="United Nations Economic Commission for Europe" 
@@ -411,13 +454,13 @@ class BaseUBLGenerator:
                         schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{data['customer']['document_number']}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyLegalEntity>
-                <cbc:RegistrationName><![CDATA[{data['customer']['legal_name']}]]></cbc:RegistrationName>
-                {self._format_customer_address(data['customer'])}
+                <cbc:RegistrationName><![CDATA[{customer_legal_name}]]></cbc:RegistrationName>
+                {self._format_customer_address_xml(customer_address)}
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
     
-    {self._format_tax_totals(data['tax_data'], data['currency_code'])}
+    {self._format_tax_totals_xml(data['tax_data'], data['currency_code'])}
     
     <cac:LegalMonetaryTotal>
         <cbc:LineExtensionAmount currencyID="{data['currency_code']}">{self._format_decimal(data['totales']['total_valor_venta'])}</cbc:LineExtensionAmount>
@@ -425,38 +468,34 @@ class BaseUBLGenerator:
         <cbc:PayableAmount currencyID="{data['currency_code']}">{self._format_decimal(data['totales']['total_precio_venta'])}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
     
-    {self._format_invoice_lines(data['lines'], data['currency_code'])}
+    {self._format_invoice_lines_xml(data['lines'], data['currency_code'])}
     
 </Invoice>'''
         
         return xml_template
     
     def _generate_credit_note_xml(self, data: Dict[str, Any]) -> str:
-        """Genera XML para nota de crédito (placeholder)"""
-        return self._generate_invoice_xml(data).replace('<Invoice', '<CreditNote').replace('</Invoice>', '</CreditNote>')
+        """Genera XML para nota de crédito"""
+        xml = self._generate_invoice_xml(data)
+        return xml.replace('<Invoice', '<CreditNote').replace('</Invoice>', '</CreditNote>')
     
     def _generate_debit_note_xml(self, data: Dict[str, Any]) -> str:
-        """Genera XML para nota de débito (placeholder)"""
-        return self._generate_invoice_xml(data).replace('<Invoice', '<DebitNote').replace('</Invoice>', '</DebitNote>')
+        """Genera XML para nota de débito"""
+        xml = self._generate_invoice_xml(data)
+        return xml.replace('<Invoice', '<DebitNote').replace('</Invoice>', '</DebitNote>')
     
-    def _format_decimal(self, value) -> str:
-        """Formatea valor decimal para XML"""
-        if isinstance(value, (int, float)):
-            value = Decimal(str(value))
-        return f"{value:.2f}"
-    
-    def _format_customer_address(self, customer_data: Dict[str, Any]) -> str:
-        """Formatea dirección del cliente"""
-        if customer_data.get('address'):
+    def _format_customer_address_xml(self, customer_address: str) -> str:
+        """Formatea dirección del cliente para XML"""
+        if customer_address and customer_address.strip():
             return f'''<cac:RegistrationAddress>
                     <cac:AddressLine>
-                        <cbc:Line><![CDATA[{customer_data['address']}]]></cbc:Line>
+                        <cbc:Line><![CDATA[{customer_address}]]></cbc:Line>
                     </cac:AddressLine>
                 </cac:RegistrationAddress>'''
         return ''
     
-    def _format_tax_totals(self, tax_data: List[Dict], currency_code: str) -> str:
-        """Formatea totales de impuestos"""
+    def _format_tax_totals_xml(self, tax_data: List[Dict], currency_code: str) -> str:
+        """Formatea totales de impuestos para XML"""
         tax_xml = ''
         
         for tax in tax_data:
@@ -483,11 +522,13 @@ class BaseUBLGenerator:
         
         return tax_xml
     
-    def _format_invoice_lines(self, lines_data: List[Dict], currency_code: str) -> str:
-        """Formatea líneas del documento"""
+    def _format_invoice_lines_xml(self, lines_data: List[Dict], currency_code: str) -> str:
+        """Formatea líneas del documento para XML"""
         lines_xml = ''
         
         for line in lines_data:
+            line_description = self._escape_xml(line['description'])
+            
             lines_xml += f'''
     <cac:InvoiceLine>
         <cbc:ID>{line['id']}</cbc:ID>
@@ -505,10 +546,10 @@ class BaseUBLGenerator:
             </cac:AlternativeConditionPrice>
         </cac:PricingReference>
         
-        {self._format_line_tax_data(line.get('tax_data', []), currency_code)}
+        {self._format_line_tax_data_xml(line.get('tax_data', []), currency_code)}
         
         <cac:Item>
-            <cbc:Description><![CDATA[{line['description']}]]></cbc:Description>
+            <cbc:Description><![CDATA[{line_description}]]></cbc:Description>
             {f'<cac:SellersItemIdentification><cbc:ID>{line["product_code"]}</cbc:ID></cac:SellersItemIdentification>' if line.get('product_code') else ''}
         </cac:Item>
         
@@ -520,8 +561,8 @@ class BaseUBLGenerator:
         
         return lines_xml
     
-    def _format_line_tax_data(self, tax_data: List[Dict], currency_code: str) -> str:
-        """Formatea datos de impuestos por línea"""
+    def _format_line_tax_data_xml(self, tax_data: List[Dict], currency_code: str) -> str:
+        """Formatea datos de impuestos por línea para XML"""
         tax_xml = ''
         
         for tax in tax_data:

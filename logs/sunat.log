@@ -148,3 +148,8 @@ INFO 2025-07-15 18:59:58,992 views_sunat 23992 28092 [cd2b2c31-b457-41c2-8aec-76
 INFO 2025-07-15 18:59:58,992 views_sunat 23992 28092 [cd2b2c31-b457-41c2-8aec-763f645403c3] Test SUNAT completado exitosamente
 INFO 2025-07-15 19:01:53,980 views_sunat 22980 26136 [c91f826f-cdcd-46d4-9cba-919be7e28889] Iniciando test de conexión SUNAT
 INFO 2025-07-15 19:01:53,981 views_sunat 22980 26136 [c91f826f-cdcd-46d4-9cba-919be7e28889] Test SUNAT completado exitosamente
+INFO 2025-07-15 23:29:29,742 views_sunat 28832 15600 [1d391d30-0f30-4826-8bd6-c84aa79b45d5] Iniciando test de conexión SUNAT
+INFO 2025-07-15 23:29:29,746 views_sunat 28832 15600 [1d391d30-0f30-4826-8bd6-c84aa79b45d5] Test SUNAT completado exitosamente
+INFO 2025-07-15 23:47:49,348 views_sunat 29536 13128 [30eaae81-53d8-436d-81c7-05dcaea636db] Iniciando test de conexión SUNAT
+INFO 2025-07-15 23:47:49,349 views_sunat 29536 13128 [30eaae81-53d8-436d-81c7-05dcaea636db] Test SUNAT completado exitosamente
+INFO 2025-07-15 23:48:02,184 views_sunat 29536 13128 [3b4d6c15-17bd-4a9a-9824-9668aaf651a1] Enviando documento 01-F001-00000002 a SUNAT
