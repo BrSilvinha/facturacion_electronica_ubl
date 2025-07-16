@@ -1,8 +1,9 @@
-# conversion/generators.py - CORREGIDO - SIN FILTROS PERSONALIZADOS
+# conversion/generators.py - CORREGIDO - SIN TEMPLATES DJANGO
 
 """
 Generadores de XML UBL 2.1 para documentos electrónicos
-VERSIÓN CORREGIDA - Sin filtros de template personalizados
+VERSIÓN CORREGIDA - Generación directa sin templates Django
+✅ SOLUCIONA: Invalid filter: 'format_date'
 """
 
 import logging
@@ -66,8 +67,6 @@ class UBLGeneratorFactory:
         if tipo_documento not in cls.SUPPORTED_TYPES:
             raise ValueError(f"Tipo de documento no soportado: {tipo_documento}")
         
-        generator_class = cls.SUPPORTED_TYPES[tipo_documento]
-        
         # Por ahora, todos usan el mismo generador base
         return BaseUBLGenerator()
     
@@ -95,7 +94,7 @@ class UBLGeneratorFactory:
         return tipo_documento in cls.SUPPORTED_TYPES
 
 class BaseUBLGenerator:
-    """Generador base para documentos UBL 2.1 - SIN TEMPLATES DJANGO"""
+    """Generador base para documentos UBL 2.1 - GENERACIÓN DIRECTA"""
     
     def __init__(self):
         self.ubl_version = "2.1"
@@ -310,25 +309,25 @@ class BaseUBLGenerator:
         return payment_terms
     
     def _format_date(self, date_obj) -> str:
-        """Formatea fecha para XML UBL"""
+        """Formatea fecha para XML UBL - MÉTODO DIRECTO"""
         if hasattr(date_obj, 'strftime'):
             return date_obj.strftime('%Y-%m-%d')
         return str(date_obj)
     
     def _format_time(self, datetime_obj) -> str:
-        """Formatea hora para XML UBL"""
+        """Formatea hora para XML UBL - MÉTODO DIRECTO"""
         if hasattr(datetime_obj, 'strftime'):
             return datetime_obj.strftime('%H:%M:%S')
         return '00:00:00'
     
     def _format_decimal(self, value) -> str:
-        """Formatea valor decimal para XML"""
+        """Formatea valor decimal para XML - MÉTODO DIRECTO"""
         if isinstance(value, (int, float)):
             value = Decimal(str(value))
         return f"{value:.2f}"
     
     def _escape_xml(self, text: str) -> str:
-        """Escapa caracteres especiales para XML"""
+        """Escapa caracteres especiales para XML - MÉTODO DIRECTO"""
         if not isinstance(text, str):
             text = str(text)
         
@@ -352,7 +351,7 @@ class BaseUBLGenerator:
             XML UBL 2.1 como string
         """
         
-        # Formatear fechas y horas
+        # Formatear fechas y horas usando métodos directos
         issue_date = self._format_date(data['issue_date'])
         issue_time = self._format_time(data['generation_time'])
         
@@ -362,6 +361,10 @@ class BaseUBLGenerator:
         supplier_address = self._escape_xml(data['supplier']['address'])
         customer_legal_name = self._escape_xml(data['customer']['legal_name'])
         customer_address = self._escape_xml(data['customer']['address'])
+        
+        # Formatear totales
+        total_precio_venta = self._format_decimal(data['totales']['total_precio_venta'])
+        total_valor_venta = self._format_decimal(data['totales']['total_valor_venta'])
         
         # Template básico de factura UBL 2.1 - HARDCODED
         xml_template = f'''<?xml version="1.0" encoding="UTF-8"?>
@@ -389,7 +392,7 @@ class BaseUBLGenerator:
     <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" 
                         listName="SUNAT:Identificador de Tipo de Documento" 
                         listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">{data['document_type_code']}</cbc:InvoiceTypeCode>
-    <cbc:Note languageLocaleID="1000">{self._format_decimal(data['totales']['total_precio_venta'])}</cbc:Note>
+    <cbc:Note languageLocaleID="1000">{total_precio_venta}</cbc:Note>
     <cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" 
                               listName="Currency" 
                               listAgencyName="United Nations Economic Commission for Europe">{data['currency_code']}</cbc:DocumentCurrencyCode>
@@ -463,9 +466,9 @@ class BaseUBLGenerator:
     {self._format_tax_totals_xml(data['tax_data'], data['currency_code'])}
     
     <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{data['currency_code']}">{self._format_decimal(data['totales']['total_valor_venta'])}</cbc:LineExtensionAmount>
-        <cbc:TaxInclusiveAmount currencyID="{data['currency_code']}">{self._format_decimal(data['totales']['total_precio_venta'])}</cbc:TaxInclusiveAmount>
-        <cbc:PayableAmount currencyID="{data['currency_code']}">{self._format_decimal(data['totales']['total_precio_venta'])}</cbc:PayableAmount>
+        <cbc:LineExtensionAmount currencyID="{data['currency_code']}">{total_valor_venta}</cbc:LineExtensionAmount>
+        <cbc:TaxInclusiveAmount currencyID="{data['currency_code']}">{total_precio_venta}</cbc:TaxInclusiveAmount>
+        <cbc:PayableAmount currencyID="{data['currency_code']}">{total_precio_venta}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
     
     {self._format_invoice_lines_xml(data['lines'], data['currency_code'])}
@@ -499,17 +502,24 @@ class BaseUBLGenerator:
         tax_xml = ''
         
         for tax in tax_data:
+            tax_amount = self._format_decimal(tax['tax_amount'])
+            taxable_amount = self._format_decimal(tax.get('taxable_amount', 0)) if tax.get('taxable_amount') else ''
+            tax_percentage = self._format_decimal(tax.get('tax_percentage', 0)) if tax.get('tax_percentage') else ''
+            
+            taxable_amount_xml = f'<cbc:TaxableAmount currencyID="{currency_code}">{taxable_amount}</cbc:TaxableAmount>' if taxable_amount else ''
+            percentage_xml = f'<cbc:Percent>{tax_percentage}</cbc:Percent>' if tax_percentage else ''
+            
             tax_xml += f'''
     <cac:TaxTotal>
-        <cbc:TaxAmount currencyID="{currency_code}">{self._format_decimal(tax['tax_amount'])}</cbc:TaxAmount>
+        <cbc:TaxAmount currencyID="{currency_code}">{tax_amount}</cbc:TaxAmount>
         <cac:TaxSubtotal>
-            {f'<cbc:TaxableAmount currencyID="{currency_code}">{self._format_decimal(tax.get("taxable_amount", 0))}</cbc:TaxableAmount>' if tax.get('taxable_amount') else ''}
-            <cbc:TaxAmount currencyID="{currency_code}">{self._format_decimal(tax['tax_amount'])}</cbc:TaxAmount>
+            {taxable_amount_xml}
+            <cbc:TaxAmount currencyID="{currency_code}">{tax_amount}</cbc:TaxAmount>
             <cac:TaxCategory>
                 <cbc:ID schemeID="UN/ECE 5305" 
                         schemeName="Tax Category Identifier" 
                         schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
-                {f'<cbc:Percent>{self._format_decimal(tax.get("tax_percentage", 0))}</cbc:Percent>' if tax.get('tax_percentage') else ''}
+                {percentage_xml}
                 <cac:TaxScheme>
                     <cbc:ID schemeID="UN/ECE 5153" 
                             schemeAgencyID="6">{tax['tax_id']}</cbc:ID>
@@ -528,18 +538,28 @@ class BaseUBLGenerator:
         
         for line in lines_data:
             line_description = self._escape_xml(line['description'])
+            quantity = self._format_decimal(line['quantity'])
+            line_extension_amount = self._format_decimal(line['line_extension_amount'])
+            price_amount = self._format_decimal(line['price_amount'])
+            base_quantity = self._format_decimal(line['base_quantity'])
+            
+            # Calcular precio con IGV para PricingReference
+            tax_amount = sum(tax.get('tax_amount', 0) for tax in line.get('tax_data', []))
+            precio_con_igv = self._format_decimal(line['line_extension_amount'] + tax_amount)
+            
+            product_code_xml = f'<cac:SellersItemIdentification><cbc:ID>{line["product_code"]}</cbc:ID></cac:SellersItemIdentification>' if line.get('product_code') else ''
             
             lines_xml += f'''
     <cac:InvoiceLine>
         <cbc:ID>{line['id']}</cbc:ID>
         <cbc:InvoicedQuantity unitCode="{line['unit_code']}" 
                               unitCodeListID="UN/ECE rec 20" 
-                              unitCodeListAgencyName="United Nations Economic Commission for Europe">{self._format_decimal(line['quantity'])}</cbc:InvoicedQuantity>
-        <cbc:LineExtensionAmount currencyID="{currency_code}">{self._format_decimal(line['line_extension_amount'])}</cbc:LineExtensionAmount>
+                              unitCodeListAgencyName="United Nations Economic Commission for Europe">{quantity}</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="{currency_code}">{line_extension_amount}</cbc:LineExtensionAmount>
         
         <cac:PricingReference>
             <cac:AlternativeConditionPrice>
-                <cbc:PriceAmount currencyID="{currency_code}">{self._format_decimal(line['line_extension_amount'] + sum(tax.get('tax_amount', 0) for tax in line.get('tax_data', [])))}</cbc:PriceAmount>
+                <cbc:PriceAmount currencyID="{currency_code}">{precio_con_igv}</cbc:PriceAmount>
                 <cbc:PriceTypeCode listName="SUNAT:Indicador de Tipo de Precio" 
                                    listAgencyName="PE:SUNAT" 
                                    listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16">01</cbc:PriceTypeCode>
@@ -550,12 +570,12 @@ class BaseUBLGenerator:
         
         <cac:Item>
             <cbc:Description><![CDATA[{line_description}]]></cbc:Description>
-            {f'<cac:SellersItemIdentification><cbc:ID>{line["product_code"]}</cbc:ID></cac:SellersItemIdentification>' if line.get('product_code') else ''}
+            {product_code_xml}
         </cac:Item>
         
         <cac:Price>
-            <cbc:PriceAmount currencyID="{currency_code}">{self._format_decimal(line['price_amount'])}</cbc:PriceAmount>
-            <cbc:BaseQuantity unitCode="{line['unit_code']}">{self._format_decimal(line['base_quantity'])}</cbc:BaseQuantity>
+            <cbc:PriceAmount currencyID="{currency_code}">{price_amount}</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="{line['unit_code']}">{base_quantity}</cbc:BaseQuantity>
         </cac:Price>
     </cac:InvoiceLine>'''
         
@@ -566,18 +586,26 @@ class BaseUBLGenerator:
         tax_xml = ''
         
         for tax in tax_data:
+            tax_amount = self._format_decimal(tax['tax_amount'])
+            taxable_amount = self._format_decimal(tax.get('taxable_amount', 0)) if tax.get('taxable_amount') else ''
+            tax_percentage = self._format_decimal(tax.get('tax_percentage', 0)) if tax.get('tax_percentage') else ''
+            
+            taxable_amount_xml = f'<cbc:TaxableAmount currencyID="{currency_code}">{taxable_amount}</cbc:TaxableAmount>' if taxable_amount else ''
+            percentage_xml = f'<cbc:Percent>{tax_percentage}</cbc:Percent>' if tax_percentage else ''
+            exemption_code_xml = f'<cbc:TaxExemptionReasonCode listAgencyName="PE:SUNAT" listName="SUNAT:Codigo de Tipo de Afectación del IGV" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">{tax.get("exemption_reason_code", "")}</cbc:TaxExemptionReasonCode>' if tax.get('exemption_reason_code') else ''
+            
             tax_xml += f'''
         <cac:TaxTotal>
-            <cbc:TaxAmount currencyID="{currency_code}">{self._format_decimal(tax['tax_amount'])}</cbc:TaxAmount>
+            <cbc:TaxAmount currencyID="{currency_code}">{tax_amount}</cbc:TaxAmount>
             <cac:TaxSubtotal>
-                {f'<cbc:TaxableAmount currencyID="{currency_code}">{self._format_decimal(tax.get("taxable_amount", 0))}</cbc:TaxableAmount>' if tax.get('taxable_amount') else ''}
-                <cbc:TaxAmount currencyID="{currency_code}">{self._format_decimal(tax['tax_amount'])}</cbc:TaxAmount>
+                {taxable_amount_xml}
+                <cbc:TaxAmount currencyID="{currency_code}">{tax_amount}</cbc:TaxAmount>
                 <cac:TaxCategory>
                     <cbc:ID schemeID="UN/ECE 5305" 
                             schemeName="Tax Category Identifier" 
                             schemeAgencyName="United Nations Economic Commission for Europe">{tax['tax_category_id']}</cbc:ID>
-                    {f'<cbc:Percent>{self._format_decimal(tax.get("tax_percentage", 0))}</cbc:Percent>' if tax.get('tax_percentage') else ''}
-                    {f'<cbc:TaxExemptionReasonCode listAgencyName="PE:SUNAT" listName="SUNAT:Codigo de Tipo de Afectación del IGV" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">{tax.get("exemption_reason_code", "")}</cbc:TaxExemptionReasonCode>' if tax.get('exemption_reason_code') else ''}
+                    {percentage_xml}
+                    {exemption_code_xml}
                     <cac:TaxScheme>
                         <cbc:ID schemeID="UN/ECE 5153" 
                                 schemeAgencyID="6">{tax['tax_id']}</cbc:ID>
